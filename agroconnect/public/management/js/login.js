@@ -19,7 +19,7 @@ $(document).ready(function() {
         var password = $('#password').val();
 
         $.ajax({
-            url: 'http://127.0.0.1:8000/api/login', // Update this URL to match your Laravel route
+            url: '/api/login', // Update this URL to match your Laravel route
             method: 'POST',
             data: {
                 username: username,
@@ -46,7 +46,7 @@ $(document).ready(function() {
         var user = JSON.parse(sessionStorage.getItem('user'));
         if (user && user.role === 'admin') {
             window.location.href = '/management/admin'; // Redirect to admin page
-        } else if (user && user.role === 'admin') {
+        } else if (user && user.role === 'agriculturist') {
             window.location.href = '/management/agriculturist'; // Redirect to user page
         }
     }
