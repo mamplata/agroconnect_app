@@ -3,6 +3,8 @@ $(document).ready(function() {
     function loadContent(url) {
       $.getScript(url);
     }
+
+    var user = JSON.parse(localStorage.getItem('user'));
   
     // Prepend header and sidebar structure to the body
     $('body').prepend(`
@@ -13,7 +15,7 @@ $(document).ready(function() {
                     <h3 id="appName" class="pl-3">AgroConnect Cabuyao</h3>
                 </div>
                 <div class="pr-4 d-flex align-items-center">
-                    <span class="username font-weight-bold">Your Username</span>
+                    <span class="username font-weight-bold">${user.username}</span>
                     <span class="user-icon">
                         <i class="fas fa-user"></i>
                     </span>

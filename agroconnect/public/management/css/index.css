@@ -121,3 +121,9 @@ body {
     background-color: #2774E9 !important;
     color: white !important;
   }
+
+  /* Add this CSS for highlighting the selected row */
+.selected-row {
+    background-color: #B1BA4D !important; /* Light blue background */
+  }
+  
