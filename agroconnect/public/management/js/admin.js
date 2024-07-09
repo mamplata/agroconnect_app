@@ -10,13 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         // User is logged in, check if user is admin
         var user = JSON.parse(localStorage.getItem('user'));
-        console.log('Logged in user:', user);
 
         if (!user || user.role !== 'admin') {
-            console.log('User is not an admin. Redirecting to login page...');
             redirectToLogin();
         } else {
-            console.log('User is logged in as admin. Proceeding with admin page.');
             // Add further admin page initialization logic here
         }
     }

@@ -1,28 +1,123 @@
 // User.js
+let users = [];
 
 class User {
-    constructor(userId, username, password, role) {
-      this.userId = userId;
-      this.username = username;
-      this.password = password;
-      this.role = role;
-    }
-  
-    static createUser(username, password, role) {
-      // Create a new user instance
-      return new User(Date.now(), username, password, role);
-    }
-  
-    static removeUser(users, userId) {
-      // Remove user by userId
-      return users.filter(user => user.userId !== userId);
-    }
-  
-    static updateUser(users, userId, updatedUser) {
-      // Find and update user by userId
-      return users.map(user => (user.userId === userId ? { ...user, ...updatedUser } : user));
-    }
+  constructor(userId, firstName, lastName, username, role, password = '') {
+    this.userId = userId;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.username = username;
+    this.role = role;
+    this.password = password;
   }
-  
-  export default User;
-  
+
+  createUser(user) {
+    const existingUser = users.find(u => u.username === user.username);
+    if (existingUser) {
+      alert('Username already exists');
+      return;
+    }
+
+    fetch('/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        users.push(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  }
+
+  updateUser(updatedUser) {
+    const existingUser = users.find(user => user.username === updatedUser.username && user.userId !== updatedUser.userId);
+    if (existingUser) {
+      alert('Username already exists');
+      return;
+    }
+
+    users = users.map(user =>
+      user.userId === updatedUser.userId ? { ...user, ...updatedUser } : user
+    );
+
+    fetch(`/api/users/${updatedUser.userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedUser),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  }
+
+  removeUser(userId) {
+    fetch(`/api/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(response => {
+        if (response.status === 204) {
+          users = users.filter(user => user.userId !== userId);
+          console.log(`User with ID ${userId} deleted.`);
+        } else if (response.status === 404) {
+          console.error(`User with ID ${userId} not found.`);
+        } else {
+          console.error(`Failed to delete user with ID ${userId}.`);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  }
+}
+
+  function getUser() {
+        // Fetch users from Laravel backend
+        $.ajaxSetup({
+          headers: {
+              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          }
+        });
+    
+    
+        // Fetch users from Laravel backend
+        $.ajax({
+          url: '/api/users', // Endpoint to fetch users
+          method: 'GET',
+          success: function(response) {
+              // Assuming response is an array of users [{firstName, lastName, username, role}, ...]
+              user = response;
+
+              users = user;
+              console.log(users);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching users:', error);
+          }
+        });
+  }
+
+  getUser();
+
+  function searchUser(username) {
+    const foundUsers = users.filter(user => user.username.includes(username));
+    return foundUsers;
+  }
+
+
+
+

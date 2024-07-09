@@ -12,21 +12,27 @@ class UserController extends Controller
 
     public function index()
     {
-        return User::all();
+        $users = User::all();
+        return response()->json($users, 200);
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'firstName' => 'required|string',
+            'lastName' => 'required|string',
             'username' => 'required|unique:users,username',
             'password' => 'required',
             'role' => 'required',
         ]);
 
+        // Accessing input data using $request->input('fieldName')
         $user = new User([
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'firstName' => $request->input('firstName'),
+            'lastName' => $request->input('lastName'),
+            'username' => $request->input('username'),
+            'password' => Hash::make($request->input('password')),
+            'role' => $request->input('role'),
         ]);
 
         $user->save();
@@ -36,24 +42,43 @@ class UserController extends Controller
 
     public function show($id)
     {
-        return User::findOrFail($id);
+        $user = User::findOrFail($id);
+        return response()->json($user, 200);
     }
 
     public function update(Request $request, $id)
     {
+        // Find user by username
         $user = User::findOrFail($id);
 
-        $user->update($request->all());
+        // Validate request data
+        $request->validate([
+            'firstName' => 'string',
+            'lastName' => 'string',
+            'role' => 'in:admin,agriculturist',
+        ]);
 
+        // Update user attributes
+        $user->fill($request->only(['firstName', 'lastName', 'username', 'role']));
+
+        // Save updated user to the database
+        $user->save();
+
+        // Return JSON response with the updated user and status code 200 (OK)
         return response()->json($user, 200);
     }
 
     public function destroy($id)
     {
-        User::destroy($id);
-
-        return response()->json(null, 204);
+        $user = User::find($id);
+        if ($user) {
+            $user->delete();
+            return response()->json(null, 204);
+        } else {
+            return response()->json(['message' => 'User not found'], 404);
+        }
     }
+
 
     public function login(Request $request)
     {

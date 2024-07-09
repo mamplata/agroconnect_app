@@ -126,4 +126,12 @@ body {
 .selected-row {
     background-color: #B1BA4D !important; /* Light blue background */
   }
-  
+
+.input-group {
+    width: 25%;
+}
+
+#maintenance-option {
+    width: 120%;
+    border-radius: 15px;
+}

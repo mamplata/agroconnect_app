@@ -15,10 +15,54 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        User::create([
-            'username' => 'agriculturist',
-            'password' => Hash::make('agro1234'),
-            'role' => 'agriculturist',
-        ]);
+        // Creating 10 users for demonstration purposes
+        $users = [
+            [
+                'firstName' => 'John',
+                'lastName' => 'Doe',
+                'username' => 'admin1',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+            ],
+            [
+                'firstName' => 'Jane',
+                'lastName' => 'Smith',
+                'username' => 'admin2',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+            ],
+            [
+                'firstName' => 'Michael',
+                'lastName' => 'Johnson',
+                'username' => 'agriculturist1',
+                'password' => Hash::make('password123'),
+                'role' => 'agriculturist',
+            ],
+            [
+                'firstName' => 'Emily',
+                'lastName' => 'Brown',
+                'username' => 'agriculturist2',
+                'password' => Hash::make('password123'),
+                'role' => 'agriculturist',
+            ],
+            [
+                'firstName' => 'David',
+                'lastName' => 'Martinez',
+                'username' => 'agriculturist3',
+                'password' => Hash::make('password123'),
+                'role' => 'agriculturist',
+            ],
+            [
+                'firstName' => 'Sarah',
+                'lastName' => 'Garcia',
+                'username' => 'agriculturist4',
+                'password' => Hash::make('password123'),
+                'role' => 'agriculturist',
+            ],
+        ];
+
+        foreach ($users as $userData) {
+            User::create($userData);
+        }
     }
 }
