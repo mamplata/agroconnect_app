@@ -12,7 +12,9 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = User::all();
+        // Get all users, with admins first, ordered by their ID in descending order
+        $users = User::orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")->orderBy('userId', 'desc')->get();
+
         return response()->json($users, 200);
     }
 
@@ -55,7 +57,7 @@ class UserController extends Controller
         $request->validate([
             'firstName' => 'string',
             'lastName' => 'string',
-            'role' => 'in:admin,agriculturist',
+            'role' => 'in:agriculturist',
         ]);
 
         // Update user attributes

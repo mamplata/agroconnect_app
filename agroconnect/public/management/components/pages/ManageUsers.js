@@ -20,13 +20,6 @@ $(document).ready(function() {
             <div class="mb-3">
               <input placeholder="Last Name" type="text" class="form-control" id="lastName" name="lastName" required>
             </div>
-            <div class="mb-3">
-              <label for="role" class="form-label">Role: </label>
-              <select class="form-select" id="role" name="role" required>
-                <option value="admin">Admin</option>
-                <option value="agriculturist">Agriculturist</option>
-              </select>
-            </div>
              <input type="hidden" class="form-control" id="userId" name="userId">
             <div class="mb-3">
               <input placeholder="Username" type="text" class="form-control" id="username" name="username" required>
@@ -40,10 +33,12 @@ $(document).ready(function() {
         </div>
         <div class="col-md-7">
           <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;">Edit</button>
-            <button id="deleteBtn" class="btn btn-danger">Delete</button>
+            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+            <div id="delete"></div>
+            <div id="edit"></div>
           </div>
-          <table id="userTable" class="table table-custom text-center tablesorter">
+          <table id="userTable" class="table table-custom text-center">
             <thead>
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">First Name</th>
@@ -64,22 +59,10 @@ $(document).ready(function() {
       </div>
     `);
 
-    // Initialize tablesorter
-    $("#userTable").tablesorter({
-      theme: 'bootstrap',
-      headerTemplate: '{content} {icon}',
-      widgets: ['storage'],
-      widgetOptions: {
-        storage_key: 'tablesorter-users',
-        storage_storeHeaders: true,
-        storage_storeSort: true,
-        storage_group: 'tablesorter',
-      }
-    });
-
     var selectedRow = null;
     var pageSize = 5;
     var currentPage = 1;
+    var user = null;
 
     async function displayUsers(username = null) {
 
@@ -96,7 +79,7 @@ $(document).ready(function() {
           if (foundUsers.length > 0) {
             foundUsers.forEach(user => {
               $('#userTableBody').append(`
-                <tr data-index=${user.username}>
+                <tr data-index=${user.userId}>
                   <td style="display: none;">${user.userId}</td>
                   <td>${user.firstName}</td>
                   <td>${user.lastName}</td>
@@ -121,7 +104,7 @@ $(document).ready(function() {
           }
           var user = users[i];
           $('#userTableBody').append(`
-            <tr data-index=${user.username}>
+            <tr data-index=${user.userId}>
               <td style="display: none;">${user.userId}</td>
               <td>${user.firstName}</td>
               <td>${user.lastName}</td>
@@ -131,9 +114,6 @@ $(document).ready(function() {
           `);
         }
       }
-    
-      // Update tablesorter after updating the table
-      $('#userTable').trigger('update');
     }
     
 
@@ -172,15 +152,17 @@ $(document).ready(function() {
       var username = $('#username').val();
       var role = $('#role').val();
       var password = $('#password').val();
-      console.log(userId);
       if (selectedRow !== null) {
         // Update existing user
+        console.log(userId);
         let user = new User(userId, firstName, lastName, username, role);
         user.updateUser(user);
         selectedRow = null;
         $('#submitBtn').text('Add User');
         $('#cancelBtn').hide(); 
-        $('#password').show();
+        $('#password').attr('placeholder', 'Password');
+        $('#password').attr('required', 'required');
+        resetFields();
       } else {
         let user = new User(0, firstName, lastName, username, role, password);
         user.createUser(user);
@@ -188,24 +170,40 @@ $(document).ready(function() {
 
       // Clear form fields after submission
       $('#userForm')[0].reset();
+      selectedRow = null;
+      $('#userTableBody tr').removeClass('selected-row');
+      getUser();
       displayUsers();
     });
 
-    // Edit button click handler
-    $('#editBtn').click(function() {
-      if ($('#editBtn').hasClass('active')) {
-        var confirmation = confirm('Are you sure you want to cancel edit mode?');
-        if (confirmation) {
-          selectedRow = null;
-          $('#userForm')[0].reset();
-          $('#submitBtn').text('Add User');
-          $('#cancelBtn').hide();
-          $('#password').show();
-          toggleRowSelectionMode(false);
-        }
-      } else {
-        toggleRowSelectionMode(true);
-      }
+    function resetFields() {
+      // Reset UI states
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
+      selectedRow = null;
+      $('#userTableBody tr').removeClass('selected-row');
+    }
+
+    $('#editBtn').click(function() { 
+        // Open the delete modal
+        $('#editModal').modal('show');
+
+        // Edit button click handler
+        $('#confirmEditBtn').click(function() {
+          $('#editModal').modal('hide');
+          $('#cancelBtn').show();
+          $('#password').attr('placeholder', 'Password (optional)');
+          $('#password').removeAttr('required');
+          $('#userId').val(user.userId);
+          $('#firstName').val(user.firstName);
+          $('#lastName').val(user.lastName);
+          $('#username').val(user.username);
+          $('#submitBtn').text('Update User');
+        });
+
+        $('#cancelEdit').click(function() {
+          resetFields();
+        });
     });
 
     // Cancel button click handler
@@ -216,98 +214,59 @@ $(document).ready(function() {
         $('#userForm')[0].reset();
         $('#submitBtn').text('Add User');
         $('#cancelBtn').hide();
-        $('#password').show();
-        toggleRowSelectionMode(false);
+        $('#password').attr('placeholder', 'Password');
+        $('#password').attr('required', 'required');
+        $('#userTableBody tr').removeClass('selected-row');
       }
     });
 
-   // Delete button click handler
+  // Delete button click handler
   $('#deleteBtn').click(function() {
-    if ($('#deleteBtn').hasClass('active')) {
-      var confirmation = confirm('Are you sure you want to cancel delete mode?');
-      if (confirmation) {
-        toggleRowSelectionMode(false);
-      }
-    } else {
-      toggleRowSelectionMode(true, true);
-    }
+    // Open the delete modal
+    $('#deleteModal').modal('show');
+
+    // Click handler for modal's delete button
+    $('#confirmDeleteBtn').click(function() {
+      // Close the modal
+      $('#deleteModal').modal('hide');
+        userToDelete = new User();
+        userToDelete.removeUser(user.userId);
+        displayUsers();
+        resetFields();
+      });
+
+    $('#cancelDelete').click(function() {
+      resetFields();
+    });
   });
 
 // Row click handler (for selecting rows)
 $('#userTableBody').on('click', 'tr', function() {
   var $this = $(this);
-
-  if ($('#deleteBtn').hasClass('active')) {
-    var username = $this.data('index');
-    var user = users.find(u => u.username === username);
-    selectedRow = username;
-    $('#userTableBody tr').eq(selectedRow).addClass('selected-row');
-
-    // Delayed confirmation dialog
-    setTimeout(function() {
-      if (selectedRow !== null) {
-        var confirmation = confirm('Are you sure you want to delete this user?');
-        if (confirmation) {
-          userToDelete = new User();
-          userToDelete.removeUser(user.userId);
-          displayUsers();
-        }
-        selectedRow = null; // Reset selected row
-        $('#userTableBody tr').removeClass('selected-row');
-      }
-    }, 100); 
-
-  } else if ($('#editBtn').hasClass('active')) {
-
-    var username = $this.data('index');
-    var user = users.find(u => u.username === username);
-    selectedRow = username;
-    $('#userId').val(user.userId);
-    $('#firstName').val(user.firstName);
-    $('#lastName').val(user.lastName);
-    $('#username').val(user.username);
-    $('#role').val(user.role);
-    $('#submitBtn').text('Update User');
+  var userId = $this.data('index');
+  user = users.find(u => u.userId === userId);
+  selectedRow = userId;
+  // Highlight selected row
+  if (selectedRow !== null) {
+  $('#userTableBody tr').removeClass('selected-row');
+  $('#userTableBody tr').filter(function() {
+    return parseInt($(this).find('td:eq(0)').text(), 10) === selectedRow;
+  }).addClass('selected-row');
+  $('#editBtn').prop('disabled', false);
+  if (user.role !== 'admin') {
+    $('#deleteBtn').prop('disabled', false);
+  } else {
+    $('#deleteBtn').prop('disabled', true);
   }
-  toggleRowSelectionMode(false);
+} else {
+  $('#userTableBody tr').removeClass('selected-row');
+}
+
 });
 
-    let isDeleteActive = false;
-
-    // Function to toggle row selection mode
-    function toggleRowSelectionMode(enable, isDelete = false) {
-
-      if(!isDeleteActive && selectedRow !== null) {
-        $('#cancelBtn').show();
-        $('#password').hide();
-      }
-
-      if (enable && !isDelete) {
-        $('#editBtn').addClass('active');
-        $('#userTableBody tr').css('cursor', 'pointer');
-      } else if (enable && isDelete) {
-        isDeleteActive = true;
-        $('#deleteBtn').toggleClass('active', isDelete);
-        $('#userTableBody tr').css('cursor', 'pointer');
-      } else {
-        $('#editBtn').removeClass('active');
-        $('#deleteBtn').removeClass('active');
-        $('#userTableBody tr').css('cursor', 'default');
-      }
-
-      // Highlight selected row
-      if (selectedRow !== null) {
-        $('#userTableBody tr').removeClass('selected-row');
-        $('#userTableBody tr').filter(function() {
-          return $(this).find('td:eq(3)').text() === selectedRow;
-        }).addClass('selected-row');
-        isDeleteActive = false;
-      } else {
-        $('#userTableBody tr').removeClass('selected-row');
-      }
-    }
-  }
-
+}
   // Initialize manage users view when document is ready
   initializeManageUsersView();
+  createDeleteModal();
+  createEditModal();
 });

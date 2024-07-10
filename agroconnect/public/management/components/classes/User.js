@@ -7,7 +7,7 @@ class User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.username = username;
-    this.role = role;
+    this.role = 'agriculturist';
     this.password = password;
   }
 
@@ -28,7 +28,6 @@ class User {
       .then(response => response.json())
       .then(data => {
         console.log('Success:', data);
-        users.push(data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -36,8 +35,9 @@ class User {
   }
 
   updateUser(updatedUser) {
-    const existingUser = users.find(user => user.username === updatedUser.username && user.userId !== updatedUser.userId);
-    if (existingUser) {
+    const existingUser = users.find(u => u.username === updatedUser.username);
+
+    if (existingUser && existingUser.userId !== updatedUser.userId) {
       alert('Username already exists');
       return;
     }
@@ -85,38 +85,38 @@ class User {
   }
 }
 
-  function getUser() {
-        // Fetch users from Laravel backend
-        $.ajaxSetup({
-          headers: {
-              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-          }
-        });
-    
-    
-        // Fetch users from Laravel backend
-        $.ajax({
-          url: '/api/users', // Endpoint to fetch users
-          method: 'GET',
-          success: function(response) {
-              // Assuming response is an array of users [{firstName, lastName, username, role}, ...]
-              user = response;
+function getUser() {
+  // Fetch users from Laravel backend
+  $.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
 
-              users = user;
-              console.log(users);
-          },
-          error: function(xhr, status, error) {
-              console.error('Error fetching users:', error);
-          }
-        });
-  }
+  // Fetch users from Laravel backend
+  $.ajax({
+    url: '/api/users', // Endpoint to fetch users
+    method: 'GET',
+    success: function(response) {
+        // Assuming response is an array of users [{firstName, lastName, username, role}, ...]
+        user = response;
 
-  getUser();
+        users = user;
+        console.log(users);
+    },
+    error: function(xhr, status, error) {
+        console.error('Error fetching users:', error);
+    }
+  });
+}
 
-  function searchUser(username) {
-    const foundUsers = users.filter(user => user.username.includes(username));
-    return foundUsers;
-  }
+
+getUser();
+
+function searchUser(username) {
+  const foundUsers = users.filter(user => user.username.includes(username));
+  return foundUsers;
+}
 
 
 

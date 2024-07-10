@@ -131,6 +131,10 @@ body {
     width: 25%;
 }
 
+#userTableBody tr {
+    cursor: pointer;
+}
+
 #maintenance-option {
     width: 120%;
     border-radius: 15px;
