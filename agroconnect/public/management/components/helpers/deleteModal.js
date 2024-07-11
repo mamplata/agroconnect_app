@@ -10,7 +10,7 @@ function createDeleteModal() {
               <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
             </div>
             <div class="modal-body">
-              <p>Are you sure you want to delete this user?</p>
+              <p>Are you sure you want to delete this <span id='dataDelete'>user</span>?</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelDelete">Cancel</button>

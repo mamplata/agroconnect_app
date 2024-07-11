@@ -131,11 +131,16 @@ body {
     width: 25%;
 }
 
-#userTableBody tr {
+#userTableBody tr, #barangayTableBody tr {
     cursor: pointer;
 }
 
 #maintenance-option {
     width: 120%;
     border-radius: 15px;
+}
+
+/* Hide the original file input */
+input[type="file"].d-none {
+    display: none; /* Hide visually */
 }

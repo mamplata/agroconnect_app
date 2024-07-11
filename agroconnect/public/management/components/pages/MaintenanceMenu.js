@@ -36,10 +36,10 @@ function initializeBarangayView() {
     $('#maintenance-content').html(`
        <div class="row d-flex justify-content-between align-items-center mt-5">
         <div class="col-md-4">
-          <form id="userForm">
+          <form id="barangayForm">
              <input type="hidden" class="form-control" id="barangayId" name="barangayId">
             <div class="mb-3">
-              <input placeholder="Barangay" type="text" class="form-control" id="barangay" name="barangay" required>
+              <input placeholder="Barangay" type="text" class="form-control" id="barangayName" name="barangayName" required>
             </div>
             <button type="button" class="btn btn-custom" id="submitBtn">Add Barangay</button>
             <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
@@ -47,17 +47,19 @@ function initializeBarangayView() {
         </div>
         <div class="col-md-7">
           <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;">Edit</button>
-            <button id="deleteBtn" class="btn btn-danger">Delete</button>
+            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+            <div id="delete"></div>
+            <div id="edit"></div>
           </div>
-          <table id="userTable" class="table table-custom text-center tablesorter">
+          <table id="barangayTable" class="table table-custom text-center">
             <thead>
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">Barangay</th>
                 <th scope="col">Coordinates</th>
               </tr>
             </thead>
-            <tbody id="userTableBody">
+            <tbody id="barangayTableBody">
               <!-- Table rows will be dynamically added here -->
             </tbody>
           </table>
@@ -68,38 +70,163 @@ function initializeBarangayView() {
         </div>
       </div>
     `);
-    // Initialize tablesorter
-    $("#userTable").tablesorter({
-        theme: 'bootstrap',
-        headerTemplate: '{content} {icon}',
-        widgets: ['storage'],
-        widgetOptions: {
-            storage_key: 'tablesorter-users',
-            storage_storeHeaders: true,
-            storage_storeSort: true,
-            storage_group: 'tablesorter',
-        }
-    });
+    initializeMethodsBarangay();
+    createDeleteModal();
+    createEditModal();  
 }
 
 // Function to initialize Farmer Records view
 function initializeFarmerView() {
     // Example content for Farmer Records
     $('#maintenance-content').html(`
-        <!-- Insert your Farmer Records form and table structure here -->
-        <h2>Farmer Records</h2>
-        <p>Form and table content specific to Farmer Records...</p>
+      <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col-md-4">
+        <form id="farmerForm">
+            <input type="hidden" class="form-control" id="farmerId" name="farmerId">
+          <div class="mb-3">
+            <select style='width: 100%;' id="barangay-option" class="form-select" name="barangayId" required>
+            </select>
+          </div>
+          <div class="mb-3">
+            <input placeholder="Farmer Name" type="text" class="form-control" id="farmerName" name="farmerName" required>
+          </div>
+          <div class="mb-3">
+            <input placeholder="Field Area" type="number" step="0.01" class="form-control" id="fieldArea" name="fieldArea">
+          </div>
+          <div class="mb-3">
+            <select style='width: 100%;' id="fieldType" class="form-select" name="fieldType" required>
+             <option value='Vegetables'>Vegetables</option>
+             <option value='Rice'>Rice</option>
+             <option value='Fruit Trees'>Fruit Trees</option>
+             <option value='OA'>OA</option>
+             <option value='Corn'>Corn</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Farmer</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+      <div class="col-md-7">
+        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+          <div id="delete"></div>
+          <div id="edit"></div>
+        </div>
+        <table id="farmerTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">Barangay</th>
+              <th scope="col">Farmer Name</th>
+              <th scope="col">Field Area</th>
+              <th scope="col">Field Type</th>
+            </tr>
+          </thead>
+          <tbody id="farmerTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
     `);
+    getBarangayNames();
+    initializeMethodsFarmer();
+    createDeleteModal();
+    createEditModal();
 }
 
 // Function to initialize Supply and Market view
 function initializeSupplyMarketView() {
     // Example content for Supply and Market
     $('#maintenance-content').html(`
-        <!-- Insert your Supply and Market form and table structure here -->
-        <h2>Supply and Market</h2>
-        <p>Form and table content specific to Supply and Market...</p>
+      <div class="row d-flex justify-content-between align-items-center mt-5">
+        <div class="col-md-4">
+          <form id="recordForm" enctype="multipart/form-data">
+            <input type="hidden" class="form-control" id="recordId" name="recordId">
+            <input type="hidden" class="form-control" id="userId" name="userId">
+            <div class="mb-3">
+              <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+              <input placeholder="Season" type="text" class="form-control" id="season" name="season" required>
+            </div>
+            <div class="mb-3">
+              <div class="input-group date" id="monthPicker" style="width: 100%;">
+                  <input type="text" class="form-control" placeholder="Month" required>
+                  <span class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="input-group date" id="yearPicker" style="width: 100%;">
+                  <input type="text" class="form-control" placeholder="Year" required>
+                  <span class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="input-group" style="width: 100%;">
+                <input placeholder="Upload File" type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+                <div class="input-group-append">
+                  <span class="input-group-text">
+                    <i class="fas fa-upload"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+          </form>
+        </div>
+        <div class="col-md-7">
+          <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+            <div id="delete"></div>
+            <div id="edit"></div>
+          </div>
+          <table id="recordTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">File Name</th>
+                <th scope="col">File Size</th>
+              </tr>
+            </thead>
+            <tbody id="recordTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+          <div class="text-right">
+            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+            <button id="nextBtn" class="btn btn-green">Next</button>
+          </div>
+        </div>
+      </div>
     `);
+    $(document).ready(function() {
+        $('#monthPicker').datepicker({
+            format: "MM",
+            startView: "months", 
+            minViewMode: "months",
+            autoclose: true
+        });
+
+        $('#yearPicker').datepicker({
+            format: "yyyy",
+            startView: "years", 
+            minViewMode: "years",
+            autoclose: true
+        });
+    });
+    initializeMethodsRecord();
+    createDeleteModal();
+    createEditModal();
 }
 
 // Function to initialize Crop Price Monitoring view

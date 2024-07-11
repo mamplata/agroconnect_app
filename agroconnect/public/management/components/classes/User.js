@@ -110,14 +110,12 @@ function getUser() {
   });
 }
 
-
 getUser();
 
 function searchUser(username) {
   const foundUsers = users.filter(user => user.username.includes(username));
   return foundUsers;
 }
-
 
 
 

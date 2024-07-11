@@ -1,30 +1,29 @@
-// Farmer.js
-let farmers = [];
-let barangayArray = [];
+// Record.js
+let records = [];
 
-class Farmer {
-  constructor(barangayId, farmerId, farmerName, fieldArea, fieldType) {
-    this.barangayId = barangayId;
-    this.farmerId = farmerId;
-    this.farmerName = farmerName;
-    this.fieldArea = fieldArea;
-    this.fieldType = fieldType;
-    
+class Record {
+  constructor(recordId, userId, name, season, monthYear, fileRecord) {
+    this.recordId = recordId;
+    this.userId = userId;
+    this.name = name;
+    this.season = season;
+    this.monthYear = monthYear;
+    this.fileRecord = fileRecord;
   }
 
-  createFarmer(farmer) {
-    const existingFarmer = farmers.find(b => b.farmerName === farmer.farmerName);
-    if (existingFarmer) {
-      alert('Farmer already exists');
+  createRecord(record) {
+    const existingRecord = records.find(b => b.name === record.name);
+    if (existingRecord) {
+      alert('Record already exists');
       return;
     }
 
-    fetch('/api/farmers', {
+    fetch('/api/records', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(farmer),
+      body: JSON.stringify(record),
     })
       .then(response => response.json())
       .then(data => {
@@ -35,24 +34,24 @@ class Farmer {
       });
   }
 
-  updateFarmer(updatedFarmer) {
-    const existingFarmer = farmers.find(b => b.farmerName === updatedFarmer.farmerName);
+  updateRecord(updatedRecord) {
+    const existingRecord = records.find(b => b.name === updatedRecord.name);
 
-    if (existingFarmer && Farmer.farmerId !== updatedFarmer.farmerId) {
-      alert('Farmer already exists');
+    if (existingRecord && Record.recordId !== updatedRecord.recordId) {
+      alert('Record already exists');
       return;
     }
 
-    farmers = farmers.map(farmer =>
-        farmer.farmerId === updatedFarmer.farmerId ? { ...farmer, ...updatedFarmer } : farmers
+    records = records.map(record =>
+        record.recordId === updatedRecord.recordId ? { ...record, ...updatedRecord } : records
     );
 
-    fetch(`/api/farmers/${updatedFarmer.farmerId}`, {
+    fetch(`/api/records/${updatedRecord.recordId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedFarmer),
+      body: JSON.stringify(updatedRecord),
     })
       .then(response => response.json())
       .then(data => {
@@ -63,8 +62,8 @@ class Farmer {
       });
   }
 
-  removeFarmer(farmerId) {
-    fetch(`/api/farmers/${farmerId}`, {
+  removeRecord(recordId) {
+    fetch(`/api/records/${recordId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -72,12 +71,12 @@ class Farmer {
     })
       .then(response => {
         if (response.status === 204) {
-          farmers = farmers.filter(farmer => farmer.farmerId !== farmer);
-          console.log(`Farmer with ID ${farmerId} deleted.`);
+          records = records.filter(record => record.recordId !== record);
+          console.log(`Record with ID ${recordId} deleted.`);
         } else if (response.status === 404) {
-          console.error(`Farmer with ID ${farmerId} not found.`);
+          console.error(`Record with ID ${recordId} not found.`);
         } else {
-          console.error(`Failed to delete farmer with ID ${farmerId}.`);
+          console.error(`Failed to delete record with ID ${recordId}.`);
         }
       })
       .catch(error => {
@@ -86,33 +85,33 @@ class Farmer {
   }
 }
 
-function getFarmer() {
-  // Fetch farmers from Laravel backend
+function getRecord() {
+  // Fetch records from Laravel backend
   $.ajaxSetup({
     headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
 
-  // Fetch farmers from Laravel backend
+  // Fetch records from Laravel backend
   $.ajax({
-    url: '/api/farmers', // Endpoint to fetch farmers
+    url: '/api/records', // Endpoint to fetch records
     method: 'GET',
     success: function(response) {
-        // Assuming response is an array of farmers 
-        farmer = response;
+        // Assuming response is an array of records 
+        record = response;
 
-        farmers = farmer;
-        console.log(farmers);
+        records = record;
+        console.log(records);
         console.log('dasd');
     },
     error: function(xhr, status, error) {
-        console.error('Error fetching farmers:', error);
+        console.error('Error fetching records:', error);
     }
   });
 }
 
-getFarmer();
+getRecord();
 
 function getBarangayNames() {
     // Fetch barangays from Laravel backend
@@ -145,9 +144,9 @@ function getBarangayNames() {
     });
 }
 
-function searchFarmer(farmerName) {
-  const foundFarmers = farmers.filter(farmer => farmer.farmerName.includes(farmerName));
-  return foundFarmers;
+function searchRecord(recordName) {
+  const foundRecords = records.filter(record => record.recordName.includes(recordName));
+  return foundRecords;
 }
 
 function getBarangayName(id) {
@@ -168,58 +167,58 @@ function getBarangayId(name) {
     return barangay ? barangay.barangayId: null;
 }
 
-function initializeMethodsFarmer() {
+function initializeMethodsRecord() {
     var selectedRow = null;
     var pageSize = 5;
     var currentPage = 1;
-    var farmer = null;
+    var record = null;
 
-    async function displayFarmers(farmerName = null) {
+    async function displayRecords(recordName = null) {
 
       // Simulate a delay of 1 second
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      $('#farmerTableBody').empty();
+      $('#recordTableBody').empty();
     
       var startIndex = (currentPage - 1) * pageSize;
       var endIndex = startIndex + pageSize;
-      if (farmerName) {
-        // Display a single farmer if farmerName is provided
-          const foundfarmers = searchfarmer(farmerName);
-          if (foundfarmers.length > 0) {
-            foundfarmers.forEach(farmer => {
-              $('#farmerTableBody').append(`
-                <tr data-index=${farmer.farmerId}>
-                  <td style="display: none;">${farmer.farmerId}</td>
-                  <td>${getBarangayName(farmer.barangayId)}</td>
-                  <td>${farmer.farmerName}</td>
-                  <td>${farmer.fieldArea}</td>
-                  <td>${farmer.fieldType}</td>
+      if (recordName) {
+        // Display a single record if recordName is provided
+          const foundrecords = searchrecord(recordName);
+          if (foundrecords.length > 0) {
+            foundrecords.forEach(record => {
+              $('#recordTableBody').append(`
+                <tr data-index=${record.recordId}>
+                  <td style="display: none;">${record.recordId}</td>
+                  <td>${getBarangayName(record.barangayId)}</td>
+                  <td>${record.recordName}</td>
+                  <td>${record.fieldArea}</td>
+                  <td>${record.fieldType}</td>
                 </tr>
               `);
             });
           } else {
-            // Handle case where farmerName is not provided
-            $('#farmerTableBody').append(`
+            // Handle case where recordName is not provided
+            $('#recordTableBody').append(`
               <tr>
-                <td colspan="4">farmer not found!</td>
+                <td colspan="4">record not found!</td>
               </tr>
             `)
           }
       } else {
-        // Display paginated farmers if no farmerName is provided
+        // Display paginated records if no recordName is provided
         for (var i = startIndex; i < endIndex; i++) {
-          if (i >= farmers.length) {
+          if (i >= records.length) {
             break;
           }
-          var farmer = farmers[i];
-          $('#farmerTableBody').append(`
-            <tr data-index=${farmer.farmerId}>
-              <td style="display: none;">${farmer.farmerId}</td>
-                <td data-barangay-id=${farmer.barangayId}>${getBarangayName(farmer.barangayId)}</td>
-                <td>${farmer.farmerName}</td>
-                <td>${farmer.fieldArea}</td>
-                <td>${farmer.fieldType}</td>
+          var record = records[i];
+          $('#recordTableBody').append(`
+            <tr data-index=${record.recordId}>
+              <td style="display: none;">${record.recordId}</td>
+                <td data-barangay-id=${record.barangayId}>${getBarangayName(record.barangayId)}</td>
+                <td>${record.recordName}</td>
+                <td>${record.fieldArea}</td>
+                <td>${record.fieldType}</td>
             </tr>
           `);
         }
@@ -227,61 +226,61 @@ function initializeMethodsFarmer() {
     }
     
 
-    // Display initial farmers
-    displayFarmers();
+    // Display initial records
+    displayRecords();
 
     $('#search').change(function() {
-      let farmerName = $('#search').val();
-      displayfarmers(farmerName);
+      let recordName = $('#search').val();
+      displayrecords(recordName);
     });
 
     // Pagination: Previous button click handler
     $('#prevBtn').click(function() {
       if (currentPage > 1) {
         currentPage--;
-        displayfarmers();
+        displayrecords();
       }
     });
 
     // Pagination: Next button click handler
     $('#nextBtn').click(function() {
-      var totalPages = Math.ceil(farmers.length / pageSize);
+      var totalPages = Math.ceil(records.length / pageSize);
       if (currentPage < totalPages) {
         currentPage++;
-        displayFarmers();
+        displayRecords();
       }
     });
 
-    // Form submission handler (Add or Update farmer)
+    // Form submission handler (Add or Update record)
     $('#submitBtn').click(function(event) {
       event.preventDefault();
 
-      var farmerId = Number($('#farmerId').val());
-      var farmerName = $('#farmerName').val();
+      var recordId = Number($('#recordId').val());
+      var recordName = $('#recordName').val();
       var fieldArea = parseInt($('#fieldArea').val(), 10);
       var fieldType= $('#fieldType').val();
       var barangayId = parseInt($('#barangay-option').val(), 10);
       if (selectedRow !== null) {
 
-        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType);
-        console.log(farmer);
-        farmer.updateFarmer(farmer);
+        let record = new Record(barangayId, recordId, recordName, fieldArea, fieldType);
+        console.log(record);
+        record.updateRecord(record);
         selectedRow = null;
-        $('#submitBtn').text('Add farmer');
+        $('#submitBtn').text('Add record');
         $('#cancelBtn').hide(); 
         resetFields();
       } else {
-        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType);
-        console.log(farmer);
-        farmer.createFarmer(farmer);
+        let record = new Record(barangayId, recordId, recordName, fieldArea, fieldType);
+        console.log(record);
+        record.createRecord(record);
       }
 
       // Clear form fields after submission
-      $('#farmerForm')[0].reset();
+      $('#recordForm')[0].reset();
       selectedRow = null;
-      $('#farmerTableBody tr').removeClass('selected-row');
-      getFarmer();
-      displayFarmers();
+      $('#recordTableBody tr').removeClass('selected-row');
+      getRecord();
+      displayRecords();
     });
 
     function resetFields() {
@@ -289,24 +288,24 @@ function initializeMethodsFarmer() {
       $('#editBtn').prop('disabled', true);
       $('#deleteBtn').prop('disabled', true);
       selectedRow = null;
-      $('#farmerTableBody tr').removeClass('selected-row');
+      $('#recordTableBody tr').removeClass('selected-row');
     }
 
     $('#editBtn').click(function() { 
         // Open the delete modal
-        $('#dataEdit').text('farmer');
+        $('#dataEdit').text('record');
         $('#editModal').modal('show');
 
         // Edit button click handler
         $('#confirmEditBtn').click(function() {
           $('#editModal').modal('hide');
           $('#cancelBtn').show();
-          $('#farmerId').val(farmer.farmerId);
-          $('#farmerName').val(farmer.farmerName);
-          $('#fieldArea').val(farmer.fieldArea);
-          $('#fieldType').val(farmer.fieldType);
-          $('#barangay-option').val(farmer.barangayId);
-          $('#submitBtn').text('Update Farmer');
+          $('#recordId').val(record.recordId);
+          $('#recordName').val(record.recordName);
+          $('#fieldArea').val(record.fieldArea);
+          $('#fieldType').val(record.fieldType);
+          $('#barangay-option').val(record.barangayId);
+          $('#submitBtn').text('Update Record');
         });
 
         $('#cancelEdit').click(function() {
@@ -319,27 +318,27 @@ function initializeMethodsFarmer() {
       var confirmation = confirm('Are you sure you want to cancel editing?');
       if (confirmation) {
         selectedRow = null;
-        $('#farmerForm')[0].reset();
-        $('#submitBtn').text('Add Farmer');
+        $('#recordForm')[0].reset();
+        $('#submitBtn').text('Add Record');
         $('#cancelBtn').hide();
-        $('#farmerTableBody tr').removeClass('selected-row');
+        $('#recordTableBody tr').removeClass('selected-row');
       }
     });
 
   // Delete button click handler
   $('#deleteBtn').click(function() {
     // Open the delete modal
-    $('#dataDelete').text('farmer');
+    $('#dataDelete').text('record');
     $('#deleteModal').modal('show');
 
     // Click handler for modal's delete button
     $('#confirmDeleteBtn').click(function() {
       // Close the modal
       $('#deleteModal').modal('hide');
-        farmerToDelete = new Farmer();
-        farmerToDelete.removeFarmer(farmer.farmerId);
-        getFarmer();
-        displayFarmers();
+        recordToDelete = new Record();
+        recordToDelete.removeRecord(record.recordId);
+        getRecord();
+        displayRecords();
         resetFields();
       });
 
@@ -349,21 +348,21 @@ function initializeMethodsFarmer() {
   });
 
 // Row click handler (for selecting rows)
-$('#farmerTableBody').on('click', 'tr', function() {
+$('#recordTableBody').on('click', 'tr', function() {
   var $this = $(this);
-  var farmerId = $this.data('index');
-  farmer = farmers.find(u => u.farmerId === farmerId);
-  selectedRow = farmerId;
+  var recordId = $this.data('index');
+  record = records.find(u => u.recordId === recordId);
+  selectedRow = recordId;
   // Highlight selected row
   if (selectedRow !== null) {
-  $('#farmerTableBody tr').removeClass('selected-row');
-  $('#farmerTableBody tr').filter(function() {
+  $('#recordTableBody tr').removeClass('selected-row');
+  $('#recordTableBody tr').filter(function() {
     return parseInt($(this).find('td:eq(0)').text(), 10) === selectedRow;
   }).addClass('selected-row');
   $('#editBtn').prop('disabled', false);
   $('#deleteBtn').prop('disabled', false);
 } else {
-  $('#farmerTableBody tr').removeClass('selected-row');
+  $('#recordTableBody tr').removeClass('selected-row');
 }
 
 });

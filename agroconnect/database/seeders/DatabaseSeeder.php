@@ -3,8 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Barangay;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,34 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-
-        // Creating 10 users for demonstration purposes
-        $users = [
+        // Seed the barangays table
+        $barangays = [
             [
-                'firstName' => 'John',
-                'lastName' => 'Doe',
-                'username' => 'admin1',
-                'role' => 'admin',
-                'password' => Hash::make('password123'),
+                'barangayName' => 'Barangay 1',
+                'coordinates' => '123.456,789.012',
             ],
             [
-                'firstName' => 'Michael',
-                'lastName' => 'Johnson',
-                'username' => 'agriculturist1',
-                'role' => 'agriculturist',
-                'password' => Hash::make('password123'),
+                'barangayName' => 'Barangay 2',
+                'coordinates' => '456.789,012.345',
             ],
-            [
-                'firstName' => 'Emily',
-                'lastName' => 'Brown',
-                'username' => 'agriculturist2',
-                'role' => 'agriculturist',
-                'password' => Hash::make('password123'),
-            ],
+            // Add more barangays as needed
         ];
 
-        foreach ($users as $userData) {
-            User::create($userData);
+        foreach ($barangays as $barangay) {
+            Barangay::create($barangay);
         }
+
+        // You can add more seeders for other tables if needed
     }
 }

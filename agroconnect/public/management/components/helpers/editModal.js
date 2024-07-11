@@ -10,7 +10,7 @@ function createEditModal() {
               <h5 class="modal-title" id="editModalLabel">Confirm Edit</h5>
             </div>
             <div class="modal-body">
-              <p>Are you sure you want to edit this user?</p>
+              <p>Are you sure you want to edit this <span id='dataEdit'>user</span>?</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelEdit">Cancel</button>
