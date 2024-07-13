@@ -139,8 +139,3 @@ body {
     width: 120%;
     border-radius: 15px;
 }
-
-/* Hide the original file input */
-input[type="file"].d-none {
-    display: none; /* Hide visually */
-}

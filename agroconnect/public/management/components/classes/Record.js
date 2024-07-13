@@ -2,7 +2,7 @@
 let records = [];
 
 class Record {
-  constructor(recordId, userId, name, season, monthYear, fileRecord) {
+  constructor(recordId, userId, name, season, monthYear, fileRecord = '') {
     this.recordId = recordId;
     this.userId = userId;
     this.name = name;
@@ -25,22 +25,31 @@ class Record {
       },
       body: JSON.stringify(record),
     })
-      .then(response => response.json())
+      .then(response => {
+        console.log('Response Status:', response.status);
+        return response.json(); // Attempt to parse JSON
+      })
       .then(data => {
         console.log('Success:', data);
       })
       .catch(error => {
         console.error('Error:', error);
+        // Log the entire response for debugging purposes
+        response.text().then(text => {
+          console.log('Full Response:', text);
+        });
       });
   }
 
   updateRecord(updatedRecord) {
-    const existingRecord = records.find(b => b.name === updatedRecord.name);
+    const existingRecord = records.find(r => r.name === updatedRecord.name);
 
-    if (existingRecord && Record.recordId !== updatedRecord.recordId) {
+    if (existingRecord && existingRecord.recordId !== updatedRecord.recordId) {
       alert('Record already exists');
       return;
     }
+
+    console.log(updatedRecord.fileRecord);
 
     records = records.map(record =>
         record.recordId === updatedRecord.recordId ? { ...record, ...updatedRecord } : records
@@ -85,6 +94,8 @@ class Record {
   }
 }
 
+let links = '';
+
 function getRecord() {
   // Fetch records from Laravel backend
   $.ajaxSetup({
@@ -92,79 +103,91 @@ function getRecord() {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
+  
+  function getFormattedBase64FileSize(base64String) {
+    // Function to calculate the file size of a base64 string
+    function getBase64FileSize(base64String) {
+        let padding = 0;
+        if (base64String.endsWith('==')) padding = 2;
+        else if (base64String.endsWith('=')) padding = 1;
 
-  // Fetch records from Laravel backend
-  $.ajax({
-    url: '/api/records', // Endpoint to fetch records
-    method: 'GET',
-    success: function(response) {
-        // Assuming response is an array of records 
-        record = response;
-
-        records = record;
-        console.log(records);
-        console.log('dasd');
-    },
-    error: function(xhr, status, error) {
-        console.error('Error fetching records:', error);
+        let base64StringLength = base64String.length;
+        return (base64StringLength * 3 / 4) - padding;
     }
-  });
+
+    // Function to format the file size
+    function formatFileSize(size) {
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let unitIndex = 0;
+        let formattedSize = size;
+
+        while (formattedSize >= 1024 && unitIndex < units.length - 1) {
+            formattedSize /= 1024;
+            unitIndex++;
+        }
+
+        return `${formattedSize.toFixed(2)} ${units[unitIndex]}`;
+    }
+
+    const fileSize = getBase64FileSize(base64String);
+    return formatFileSize(fileSize);
 }
+
+// Fetch records from Laravel backend
+$.ajax({
+  url: '/api/records', // Endpoint to fetch records
+  method: 'GET',
+  success: function(response) {
+      console.log('Response:', response);
+      
+      // Assuming response is an array of records
+      if (Array.isArray(response) && response.length > 0) {
+        const recordsArray = response; // Store the array of records in recordsArray
+        records = [];
+        // Example: Accessing and logging properties of each record
+        recordsArray.forEach(record => {
+            
+            // Calculate and log the file size of the base64-encoded fileRecord
+            let fileSize = getFormattedBase64FileSize(record.fileRecord);
+            record.fileSize = fileSize; 
+            // Convert the base64-encoded fileRecord to a downloadable link
+            const base64String = record.fileRecord;
+            const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // MIME type for Excel files
+            const link = `data:${mimeType};base64,${base64String}`;
+            // Create an anchor tag with the download link
+            const anchorTag = `<a class="text-primary text-decoration-underline" onclick="confirmDownload('${link}', '${record.name}.xlsx')">${record.name} ${record.monthYear}</a>`;
+
+            record.downloadLink = anchorTag;
+
+            records.push(record);
+        });
+        
+      } else {
+        console.error('Expected an array of records, but received:', response);
+      }
+  },
+  error: function(xhr, status, error) {
+      console.error('Error fetching records:', error);
+  }
+});
+}
+
+  // Function to confirm download
+  function confirmDownload(link, filename) {
+    const confirmed = confirm('Are you sure you want to download this file?');
+    if (confirmed) {
+      const a = document.createElement('a');
+      a.href = link;
+      a.download = filename;
+      a.click();
+    }
+  }
 
 getRecord();
-
-function getBarangayNames() {
-    // Fetch barangays from Laravel backend
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    // Fetch barangays from Laravel backend
-    $.ajax({
-        url: '/api/barangays', // Endpoint to fetch barangays
-        method: 'GET',
-        success: function(response) {
-            // Assuming response is an array of barangays 
-            const barangays = response;
-            barangayArray = barangays;
-            console.log(barangays);
-
-            // Populate select dropdown with barangays
-            const barangaySelect = $('#barangay-option');
-            barangaySelect.empty(); // Clear existing options
-            barangays.forEach(b => {
-                barangaySelect.append(`<option value="${b.barangayId}">${b.barangayName}</option>`);
-            });
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching barangays:', error);
-        }
-    });
-}
 
 function searchRecord(recordName) {
   const foundRecords = records.filter(record => record.recordName.includes(recordName));
   return foundRecords;
-}
-
-function getBarangayName(id) {
-
-    // Find the barangay object with the matching ID
-    const barangay = barangayArray.find(barangay => barangay.barangayId === id);
-
-    // Return the name of the barangay if found, or null if not found
-    return barangay ? barangay.barangayName : null;
-}
-
-function getBarangayId(name) {
-
-    // Find the barangay object with the matching ID
-    const barangay = barangayArray.find(barangay => barangay.barangaName === name);
-
-    // Return the name of the barangay if found, or null if not found
-    return barangay ? barangay.barangayId: null;
 }
 
 function initializeMethodsRecord() {
@@ -189,11 +212,9 @@ function initializeMethodsRecord() {
             foundrecords.forEach(record => {
               $('#recordTableBody').append(`
                 <tr data-index=${record.recordId}>
-                  <td style="display: none;">${record.recordId}</td>
-                  <td>${getBarangayName(record.barangayId)}</td>
-                  <td>${record.recordName}</td>
-                  <td>${record.fieldArea}</td>
-                  <td>${record.fieldType}</td>
+                    <td style="display: none;">${record.recordId}</td>
+                    <td>${record.downloadLink}</td>
+                    <td>${record.fileSize}</td>
                 </tr>
               `);
             });
@@ -214,17 +235,14 @@ function initializeMethodsRecord() {
           var record = records[i];
           $('#recordTableBody').append(`
             <tr data-index=${record.recordId}>
-              <td style="display: none;">${record.recordId}</td>
-                <td data-barangay-id=${record.barangayId}>${getBarangayName(record.barangayId)}</td>
-                <td>${record.recordName}</td>
-                <td>${record.fieldArea}</td>
-                <td>${record.fieldType}</td>
+                <td style="display: none;">${record.recordId}</td>
+                <td>${record.downloadLink}</td>
+                <td>${record.fileSize}</td>
             </tr>
           `);
         }
       }
     }
-    
 
     // Display initial records
     displayRecords();
@@ -238,7 +256,7 @@ function initializeMethodsRecord() {
     $('#prevBtn').click(function() {
       if (currentPage > 1) {
         currentPage--;
-        displayrecords();
+        displayRecords();
       }
     });
 
@@ -251,36 +269,94 @@ function initializeMethodsRecord() {
       }
     });
 
+    function getSeason(month) {;
+      month = month.toLowerCase();
+      
+      // Define the dry and wet seasons
+      const drySeason = ['march', 'april', 'may', 'june', 'july', 'august'];
+      const wetSeason = ['september', 'october', 'november', 'december', 'january', 'february'];
+
+      // Determine the season based on the month
+      if (drySeason.includes(month)) {
+          return 'Dry';
+      } else if (wetSeason.includes(month)) {
+          return 'Wet';
+      } else {
+          return 'Invalid month';
+      }
+    }
+    
     // Form submission handler (Add or Update record)
     $('#submitBtn').click(function(event) {
       event.preventDefault();
-
+      
+      let users = JSON.parse(localStorage.getItem('user'));
       var recordId = Number($('#recordId').val());
-      var recordName = $('#recordName').val();
-      var fieldArea = parseInt($('#fieldArea').val(), 10);
-      var fieldType= $('#fieldType').val();
-      var barangayId = parseInt($('#barangay-option').val(), 10);
-      if (selectedRow !== null) {
-
-        let record = new Record(barangayId, recordId, recordName, fieldArea, fieldType);
-        console.log(record);
-        record.updateRecord(record);
-        selectedRow = null;
-        $('#submitBtn').text('Add record');
-        $('#cancelBtn').hide(); 
-        resetFields();
+      var userId = users.userId;
+      var name = $('#name').val();
+      var month = $('#monthPicker input').val(); // input is inside #monthPicker
+      var year = $('#yearPicker input').val(); // input is inside #yearPicker
+      var season = getSeason(month);
+      var monthYear = `${month} ${year}`;
+      
+      var fileInput = document.getElementById('fileRecord');
+      var file = fileInput.files[0];
+      
+      if (file) {
+          const reader = new FileReader();
+          
+          reader.onload = function(event) {
+              const arrayBuffer = event.target.result;
+              const blob = new Blob([arrayBuffer], { type: file.type });
+              
+              // Convert Blob to base64 string
+              const readerBase64 = new FileReader();
+              readerBase64.onload = function(e) {
+                  const fileRecord = e.target.result.split(',')[1]; // Extract base64 string
+                  
+                  if (selectedRow !== null) {
+                      let record = new Record(recordId, userId, name, season, monthYear, fileRecord);
+                      record.updateRecord(record); // Assuming this method updates the record
+                      selectedRow = null;
+                      $('#lblUpload').text('Upload File:');
+                      $('#submitBtn').text('Add record');
+                      $('#cancelBtn').hide();
+                      resetFields();
+                  } else {
+                      let record = new Record(recordId, userId, name, season, monthYear, fileRecord);
+                      record.createRecord(record); // Assuming this method creates a new record
+                  }
+              };
+              
+              readerBase64.readAsDataURL(blob);
+          };
+          reader.readAsArrayBuffer(file);
+          $('#lblUpload').text('Upload File:');
+          $('#submitBtn').text('Add record');
+          $('#cancelBtn').hide();
+           // Clear form fields after submission
+          $('#recordForm')[0].reset();
+          $('#fileRecord').attr('required', 'required');
+          getRecord();
+          displayRecords();
       } else {
-        let record = new Record(barangayId, recordId, recordName, fieldArea, fieldType);
-        console.log(record);
-        record.createRecord(record);
+          if (selectedRow !== null) {
+            let record = new Record(recordId, userId, name, season, monthYear, '');
+            record.updateRecord(record); // Assuming this method updates the record
+            selectedRow = null;
+            $('#lblUpload').text('Upload File:');
+            $('#submitBtn').text('Add record');
+            $('#cancelBtn').hide();
+             // Clear form fields after submission
+            $('#recordForm')[0].reset();
+            $('#fileRecord').attr('required', 'required');
+            getRecord();
+            displayRecords();
+            resetFields();
+        } else {
+            alert('Please select a file first.');
+        }
       }
-
-      // Clear form fields after submission
-      $('#recordForm')[0].reset();
-      selectedRow = null;
-      $('#recordTableBody tr').removeClass('selected-row');
-      getRecord();
-      displayRecords();
     });
 
     function resetFields() {
@@ -301,10 +377,20 @@ function initializeMethodsRecord() {
           $('#editModal').modal('hide');
           $('#cancelBtn').show();
           $('#recordId').val(record.recordId);
-          $('#recordName').val(record.recordName);
-          $('#fieldArea').val(record.fieldArea);
-          $('#fieldType').val(record.fieldType);
-          $('#barangay-option').val(record.barangayId);
+          $('#name').val(record.name);
+          // Assuming record.monthYear is like 'July 2024'
+          var monthYear = record.monthYear;
+
+          // Split the monthYear into month and year
+          var parts = monthYear.split(' ');
+          var month = parts[0]; // 'July'
+          var year = parts[1]; // '2024'
+
+          // Set the values in the input fields
+          $('#monthPicker input').val(month);
+          $('#yearPicker input').val(year);
+          $('#fileRecord').removeAttr('required');
+          $('#lblUpload').text('Insert New File (optional):');
           $('#submitBtn').text('Update Record');
         });
 
@@ -319,7 +405,9 @@ function initializeMethodsRecord() {
       if (confirmation) {
         selectedRow = null;
         $('#recordForm')[0].reset();
+        $('#lblUpload').text('Upload File:');
         $('#submitBtn').text('Add Record');
+        $('#fileRecord').attr('required', 'required');
         $('#cancelBtn').hide();
         $('#recordTableBody tr').removeClass('selected-row');
       }

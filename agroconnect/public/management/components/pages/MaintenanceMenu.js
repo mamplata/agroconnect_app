@@ -152,9 +152,6 @@ function initializeSupplyMarketView() {
               <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
             </div>
             <div class="mb-3">
-              <input placeholder="Season" type="text" class="form-control" id="season" name="season" required>
-            </div>
-            <div class="mb-3">
               <div class="input-group date" id="monthPicker" style="width: 100%;">
                   <input type="text" class="form-control" placeholder="Month" required>
                   <span class="input-group-append">
@@ -170,13 +167,16 @@ function initializeSupplyMarketView() {
                   </span>
               </div>
             </div>
-            <div class="mb-3">
+            <div  class="mb-3">
+              <label id="lblUpload">
+                Upload File:
+              </label>
               <div class="input-group" style="width: 100%;">
-                <input placeholder="Upload File" type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+                <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
                 <div class="input-group-append">
-                  <span class="input-group-text">
+                  <label class="input-group-text" for="fileRecord" id="btnUpload">
                     <i class="fas fa-upload"></i>
-                  </span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -209,6 +209,7 @@ function initializeSupplyMarketView() {
         </div>
       </div>
     `);
+
     $(document).ready(function() {
         $('#monthPicker').datepicker({
             format: "MM",

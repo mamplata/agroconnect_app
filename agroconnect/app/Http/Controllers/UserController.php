@@ -50,7 +50,7 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Find user by username
+        // Find user by ID
         $user = User::findOrFail($id);
 
         // Validate request data
@@ -58,10 +58,16 @@ class UserController extends Controller
             'firstName' => 'string',
             'lastName' => 'string',
             'role' => 'in:agriculturist',
+            'password' => 'nullable|string|min:4', // Ensure minimum length for password if required
         ]);
 
         // Update user attributes
         $user->fill($request->only(['firstName', 'lastName', 'username', 'role']));
+
+        // Check if password is provided and update if it has a value
+        if ($request->has('password') && !empty($request->password)) {
+            $user->password = Hash::make($request->password); // Hash the password
+        }
 
         // Save updated user to the database
         $user->save();

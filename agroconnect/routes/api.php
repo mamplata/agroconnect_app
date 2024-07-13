@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\FarmerController;
+use App\Http\Controllers\RecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -32,3 +33,10 @@ Route::post('/farmers', [FarmerController::class, 'store']);
 Route::get('/farmers/{id}', [FarmerController::class, 'show']);
 Route::put('/farmers/{id}', [FarmerController::class, 'update']);
 Route::delete('/farmers/{id}', [FarmerController::class, 'destroy']);
+
+// Api for records
+Route::get('/records', [RecordController::class, 'index']);
+Route::post('/records', [RecordController::class, 'store']);
+Route::get('/records/{id}', [RecordController::class, 'show']);
+Route::put('/records/{id}', [RecordController::class, 'update']);
+Route::delete('/records/{id}', [RecordController::class, 'destroy']);
