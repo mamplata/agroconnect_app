@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('season', 255);
             $table->string('monthYear', 255);
-            $table->text('fileRecord');
+            $table->string('type', 255);
+            $table->longText('fileRecord');
             $table->timestamps();
         });
     }

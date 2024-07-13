@@ -23,6 +23,7 @@ class RecordController extends Controller
             'name' => 'required|string|max:255',
             'season' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
             'fileRecord' => 'required|string',
         ]);
 
@@ -33,6 +34,7 @@ class RecordController extends Controller
             'name' => $request->input('name'),
             'season' => $request->input('season'),
             'monthYear' => $request->input('monthYear'),
+            'type' => $request->input('type'),
             'fileRecord' => $request->input('fileRecord'),
         ]);
 
@@ -54,6 +56,7 @@ class RecordController extends Controller
             'name' => 'string|max:255',
             'season' => 'string|max:255',
             'monthYear' => 'string|max:255',
+            'type' => 'string|max:255',
             'fileRecord' => 'nullable|string', // Allow fileRecord to be nullable and string
         ]);
 

@@ -15,6 +15,7 @@ class Record extends Model
         'name',
         'season',
         'monthYear',
+        'type',
         'fileRecord'
     ];
 

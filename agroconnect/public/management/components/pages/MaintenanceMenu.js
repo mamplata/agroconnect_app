@@ -167,6 +167,13 @@ function initializeSupplyMarketView() {
                   </span>
               </div>
             </div>
+            <div class="mb-3">
+                <select style='width: 100%;' id="type" class="form-select" name="type" required>
+                <option value='High Value Crops'>High Value Crops</option>
+                <option value='Rice'>Rice</option>
+                <option value='Corn'>Corn</option>
+                </select>
+            </div>
             <div  class="mb-3">
               <label id="lblUpload">
                 Upload File:

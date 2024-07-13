@@ -2,21 +2,24 @@
 let records = [];
 
 class Record {
-  constructor(recordId, userId, name, season, monthYear, fileRecord = '') {
+  constructor(recordId, userId, name, season, monthYear, type, fileRecord = '') {
     this.recordId = recordId;
     this.userId = userId;
     this.name = name;
     this.season = season;
+    this.type = type;
     this.monthYear = monthYear;
     this.fileRecord = fileRecord;
   }
 
   createRecord(record) {
-    const existingRecord = records.find(b => b.name === record.name);
+    const existingRecord = records.find(b => b.monthYear === record.monthYear && b.type === record.type);
     if (existingRecord) {
-      alert('Record already exists');
+      alert('Record with the same type already exists');
       return;
     }
+
+    console.log();
 
     fetch('/api/records', {
       method: 'POST',
@@ -42,10 +45,9 @@ class Record {
   }
 
   updateRecord(updatedRecord) {
-    const existingRecord = records.find(r => r.name === updatedRecord.name);
-
-    if (existingRecord && existingRecord.recordId !== updatedRecord.recordId) {
-      alert('Record already exists');
+    const existingRecord = records.find(b => b.monthYear === record.monthYear && b.type === record.type);
+    if (existingRecord) {
+      alert('Record with the same type already exists');
       return;
     }
 
@@ -133,7 +135,6 @@ function getRecord() {
     return formatFileSize(fileSize);
 }
 
-// Fetch records from Laravel backend
 $.ajax({
   url: '/api/records', // Endpoint to fetch records
   method: 'GET',
@@ -147,17 +148,33 @@ $.ajax({
         // Example: Accessing and logging properties of each record
         recordsArray.forEach(record => {
             
+            // Decode base64 string to binary
+            const binaryString = atob(record.fileRecord);
+
+            // Parse binary Excel data
+            const workbook = XLSX.read(binaryString, { type: 'binary' });
+
+            // Assuming there's only one sheet, get the first one
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            // Get the cell value of A1
+            const cellA2 = worksheet['A2'] ? worksheet['A2'].v : 'Cell A2 is empty';
+
             // Calculate and log the file size of the base64-encoded fileRecord
             let fileSize = getFormattedBase64FileSize(record.fileRecord);
             record.fileSize = fileSize; 
+
             // Convert the base64-encoded fileRecord to a downloadable link
             const base64String = record.fileRecord;
             const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // MIME type for Excel files
             const link = `data:${mimeType};base64,${base64String}`;
+
             // Create an anchor tag with the download link
             const anchorTag = `<a class="text-primary text-decoration-underline" onclick="confirmDownload('${link}', '${record.name}.xlsx')">${record.name} ${record.monthYear}</a>`;
 
             record.downloadLink = anchorTag;
+            console.log(cellA2);
 
             records.push(record);
         });
@@ -297,6 +314,7 @@ function initializeMethodsRecord() {
       var month = $('#monthPicker input').val(); // input is inside #monthPicker
       var year = $('#yearPicker input').val(); // input is inside #yearPicker
       var season = getSeason(month);
+      var type = $('#type').val();
       var monthYear = `${month} ${year}`;
       
       var fileInput = document.getElementById('fileRecord');
@@ -315,7 +333,7 @@ function initializeMethodsRecord() {
                   const fileRecord = e.target.result.split(',')[1]; // Extract base64 string
                   
                   if (selectedRow !== null) {
-                      let record = new Record(recordId, userId, name, season, monthYear, fileRecord);
+                      let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
                       record.updateRecord(record); // Assuming this method updates the record
                       selectedRow = null;
                       $('#lblUpload').text('Upload File:');
@@ -323,25 +341,25 @@ function initializeMethodsRecord() {
                       $('#cancelBtn').hide();
                       resetFields();
                   } else {
-                      let record = new Record(recordId, userId, name, season, monthYear, fileRecord);
+                      let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
                       record.createRecord(record); // Assuming this method creates a new record
                   }
+                  $('#lblUpload').text('Upload File:');
+                  $('#submitBtn').text('Add record');
+                  $('#cancelBtn').hide();
+                   // Clear form fields after submission
+                  $('#recordForm')[0].reset();
+                  $('#fileRecord').attr('required', 'required');
+                  getRecord();
+                  displayRecords();
               };
               
               readerBase64.readAsDataURL(blob);
           };
           reader.readAsArrayBuffer(file);
-          $('#lblUpload').text('Upload File:');
-          $('#submitBtn').text('Add record');
-          $('#cancelBtn').hide();
-           // Clear form fields after submission
-          $('#recordForm')[0].reset();
-          $('#fileRecord').attr('required', 'required');
-          getRecord();
-          displayRecords();
       } else {
           if (selectedRow !== null) {
-            let record = new Record(recordId, userId, name, season, monthYear, '');
+            let record = new Record(recordId, userId, name, season, monthYear, type, '');
             record.updateRecord(record); // Assuming this method updates the record
             selectedRow = null;
             $('#lblUpload').text('Upload File:');
