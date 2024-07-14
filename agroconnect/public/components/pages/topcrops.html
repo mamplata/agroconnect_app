@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AgroConnect Cabuyao - Seasonal Trends</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/index.css">
+  <link rel="stylesheet" href="../../css/home.css">
+  <style>
+    /* Add spacing between sections */
+    section {
+      margin-bottom: 40px; /* Adjust spacing as needed */
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <!-- Your header content or component -->
+  </div>
+  <div class="main-content">
+    <div class="container-fluid m-4">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card w-100 bg-white">
+            <div id="title" class="container-fluid bg-success text-white d-flex justify-content-center align-items-center" style="height: 15%;">
+              <h4>Seasonal Top Crops</h4>
+            </div>
+            <div class="card-body">
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <label for="season">Select Season:</label>
+                  <select id="season" class="form-control">
+                    <option value="summer">Summer</option>
+                    <option value="winter">Winter</option>
+                    <option value="rainy">Rainy</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="year">Select Year:</label>
+                  <select id="year" class="form-control">
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <table id="crops-table" class="table table-striped table-bordered tablesorter">
+                    <thead>
+                      <tr>
+                        <th>Crop Name</th>
+                        <th>Quantity</th>
+                        <th>Season</th>
+                        <th>Year</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Example rows -->
+                      <tr>
+                        <td>Rice</td>
+                        <td>5000 kg</td>
+                        <td>Summer</td>
+                        <td>2023</td>
+                      </tr>
+                      <tr>
+                        <td>Wheat</td>
+                        <td>3000 kg</td>
+                        <td>Winter</td>
+                        <td>2023</td>
+                      </tr>
+                      <tr>
+                        <td>Maize</td>
+                        <td>4000 kg</td>
+                        <td>Rainy</td>
+                        <td>2022</td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-container">
+    <!-- Your footer content or component -->
+  </div>
+  
+  <!-- Ensure jQuery is included first -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/widgets/widget-storage.min.js"></script>
+  <script src="../../components/Header.js"></script>
+  <script src="../../components/Footer.js"></script>
+  <script>
+    $(document).ready(function() {
+      $("#crops-table").tablesorter();
+    });
+  </script>
+</body>
+</html>

@@ -135,6 +135,7 @@ function getBarangayNames() {
             // Populate select dropdown with barangays
             const barangaySelect = $('#barangay-option');
             barangaySelect.empty(); // Clear existing options
+            barangaySelect.append(`<option value="" disabled selected>Select Barangay</option>`);
             barangays.forEach(b => {
                 barangaySelect.append(`<option value="${b.barangayId}">${b.barangayName}</option>`);
             });

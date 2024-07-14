@@ -5,6 +5,7 @@ $(document).ready(function() {
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
           <div>
               <select id="maintenance-option" class="form-select" name="role" required>
+                  <option value="crop">Crop Records</option>
                   <option value="barangay">Barangay Records</option>
                   <option value="farmer">Farmer Records</option>
                   <option value="supplyMarket">Supply and Market</option>

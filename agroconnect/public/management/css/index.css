@@ -139,3 +139,7 @@ body {
     width: 120%;
     border-radius: 15px;
 }
+
+.input-group .input-group-text {
+    cursor: pointer;
+}

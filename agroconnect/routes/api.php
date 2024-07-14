@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CropController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\FarmerController;
 use App\Http\Controllers\RecordController;
@@ -19,6 +20,13 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::post('/login', [UserController::class, 'login']);
+
+// Api for crops
+Route::get('/crops', [CropController::class, 'index']);
+Route::post('/crops', [CropController::class, 'store']);
+Route::get('/crops/{id}', [CropController::class, 'show']);
+Route::put('/crops/{id}', [CropController::class, 'update']);
+Route::delete('/crops/{id}', [CropController::class, 'destroy']);
 
 // Api for barangays
 Route::get('/barangays', [BarangayController::class, 'index']);
