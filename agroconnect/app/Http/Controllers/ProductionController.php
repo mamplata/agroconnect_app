@@ -24,10 +24,13 @@ class ProductionController extends Controller
             'cropName' => 'required|string|max:255',
             'variety' => 'required|string|max:255',
             'areaPlanted' => 'required|numeric',
+            'monthPlanted' => 'required|string|max:255',
+            'monthHarvested' => 'required|string|max:255',
+            'volumeProduction' => 'required|numeric',
             'productionCost' => 'required|numeric',
+            'price' => 'required|string|max:255',
             'volumeSold' => 'required|numeric',
             'season' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
         ]);
 
@@ -38,10 +41,13 @@ class ProductionController extends Controller
             'cropName' => $request->input('cropName'),
             'variety' => $request->input('variety'),
             'areaPlanted' => $request->input('areaPlanted'),
+            'monthPlanted' => $request->input('monthPlanted'),
+            'monthHarvested' => $request->input('monthHarvested'),
+            'volumeProduction' => $request->input('volumeProduction'),
             'productionCost' => $request->input('productionCost'),
+            'price' => $request->input('price'),
             'volumeSold' => $request->input('volumeSold'),
             'season' => $request->input('season'),
-            'type' => $request->input('type'),
             'monthYear' => $request->input('monthYear'),
         ]);
 
@@ -52,37 +58,51 @@ class ProductionController extends Controller
         return response()->json($production, 201);
     }
 
-    public function show($id)
+    public function storeBatch(Request $request)
     {
-        // Find a specific production by its ID
-        $production = Production::findOrFail($id);
-        return response()->json($production);
-    }
-
-    public function update(Request $request, $id)
-    {
-        // Validate incoming request data
+        // Validate the incoming data
         $request->validate([
-            'recordId' => 'exists:records,recordId',
-            'barangay' => 'string|max:255',
-            'cropName' => 'string|max:255',
-            'variety' => 'string|max:255',
-            'areaPlanted' => 'nullable|numeric',
-            'productionCost' => 'nullable|numeric',
-            'volumeSold' => 'nullable|numeric',
-            'season' => 'string|max:255',
-            'type' => 'string|max:255',
-            'monthYear' => 'string|max:255',
+            '*.recordId' => 'required|integer',
+            '*.barangay' => 'required|string',
+            '*.cropName' => 'required|string',
+            '*.variety' => 'nullable|string',
+            '*.areaPlanted' => 'required|numeric',
+            '*.monthPlanted' => 'required|string',
+            '*.monthHarvested' => 'required|string',
+            '*.volumeProduction' => 'required|numeric',
+            '*.productionCost' => 'required|numeric',
+            '*.volumeSold' => 'required|numeric',
+            '*.price' => 'required|string',
+            '*.season' => 'required|string',
+            '*.monthYear' => 'required|string',
         ]);
 
-        // Find the specific production record by its ID
-        $production = Production::findOrFail($id);
+        // Get all the productions from the request
+        $productions = $request->json()->all();
 
-        // Update the production record with validated data
-        $production->update($request->all());
+        // Store or update each production record
+        foreach ($productions as $productionData) {
 
-        // Return a JSON response with the updated production data and status code 200 (OK)
-        return response()->json($production, 200);
+            $production = new Production([
+                'recordId' => $productionData['recordId'],
+                'barangay' => $productionData['barangay'],
+                'cropName' => $productionData['cropName'],
+                'variety' => $productionData['variety'],
+                'areaPlanted' => $productionData['areaPlanted'],
+                'monthPlanted' => $productionData['monthPlanted'],
+                'monthHarvested' => $productionData['monthHarvested'],
+                'volumeProduction' => $productionData['volumeProduction'],
+                'productionCost' => $productionData['productionCost'],
+                'volumeSold' => $productionData['volumeSold'],
+                'price' => $productionData['price'],
+                'season' => $productionData['season'],
+                'monthYear' => $productionData['monthYear']
+            ]);
+
+            $production->save();
+        }
+
+        return response()->json(['message' => 'Batch stored successfully'], 200);
     }
 
     public function destroy($id)

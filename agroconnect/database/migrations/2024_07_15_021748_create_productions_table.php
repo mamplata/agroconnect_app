@@ -19,10 +19,13 @@ return new class extends Migration
             $table->string('cropName', 255);
             $table->string('variety', 255);
             $table->double('areaPlanted');
+            $table->string('monthPlanted', 255);
+            $table->string('monthHarvested', 255);
+            $table->double('volumeProduction');
             $table->double('productionCost');
+            $table->string('price', 255);
             $table->double('volumeSold');
             $table->string('season', 255);
-            $table->string('type', 255);
             $table->string('monthYear', 255);
             $table->timestamps();
         });

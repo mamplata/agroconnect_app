@@ -16,16 +16,19 @@ class Production extends Model
         'cropName',
         'variety',
         'areaPlanted',
+        'monthPlanted',
+        'monthHarvested',
+        'volumeProduction',
         'productionCost',
+        'price',
         'volumeSold',
         'season',
-        'type',
-        'monthYear',
+        'monthYear'
     ];
 
     // Define relationship with Record
     public function record()
     {
-        return $this->belongsTo(Record::class, 'recordId', 'recordId');
+        return $this->belongsTo(Record::class, 'recordId');
     }
 }
