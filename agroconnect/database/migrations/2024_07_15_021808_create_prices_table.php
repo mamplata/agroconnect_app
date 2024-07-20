@@ -16,9 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('recordId');
             $table->foreign('recordId')->references('recordId')->on('records');
             $table->string('cropName', 255);
-            $table->double('price');
+            $table->string('price');
             $table->string('season', 255);
-            $table->string('type', 255);
             $table->string('monthYear', 255);
             $table->timestamps();
         });

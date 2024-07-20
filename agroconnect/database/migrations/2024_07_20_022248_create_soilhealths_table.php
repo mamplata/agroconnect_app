@@ -11,13 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pests', function (Blueprint $table) {
-            $table->id('pestId');
+        Schema::create('soilhealths', function (Blueprint $table) {
+            $table->id('soilHealthId');
             $table->unsignedBigInteger('recordId');
             $table->foreign('recordId')->references('recordId')->on('records');
             $table->string('barangay', 255);
-            $table->string('cropName', 255);
-            $table->string('pestName', 255);
+            $table->string('farmerName', 255);
+            $table->string('nitrogenContent', 255);
+            $table->string('phosphorusContent', 255);
+            $table->string('potassiumContent', 255);
+            $table->string('pH', 255);
+            $table->string('generalRating', 255);
+            $table->string('recommendations', 255);
             $table->string('season', 255);
             $table->string('monthYear', 255);
             $table->timestamps();
@@ -29,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pests');
+        Schema::dropIfExists('soilhealths');
     }
 };

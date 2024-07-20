@@ -23,7 +23,6 @@ class PriceController extends Controller
             'cropName' => 'required|string|max:255',
             'price' => 'required|numeric',
             'season' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
         ]);
 
@@ -33,7 +32,6 @@ class PriceController extends Controller
             'cropName' => $request->input('cropName'),
             'price' => $request->input('price'),
             'season' => $request->input('season'),
-            'type' => $request->input('type'),
             'monthYear' => $request->input('monthYear'),
         ]);
 
@@ -44,33 +42,32 @@ class PriceController extends Controller
         return response()->json($price, 201);
     }
 
-    public function show($id)
+    public function storeBatch(Request $request)
     {
-        // Find a specific price by its ID
-        $price = Price::findOrFail($id);
-        return response()->json($price);
-    }
+        $priceDataArray = $request->input('priceData');
 
-    public function update(Request $request, $id)
-    {
-        // Validate incoming request data
-        $request->validate([
-            'recordId' => 'exists:records,recordId',
-            'cropName' => 'string|max:255',
-            'price' => 'numeric',
-            'season' => 'string|max:255',
-            'type' => 'string|max:255',
-            'monthYear' => 'string|max:255',
-        ]);
+        // Process and store each item in the validated data
+        foreach ($priceDataArray as $priceData) {
+            $request->validate([
+                'priceData.*.recordId' => 'required|exists:records,recordId',
+                'priceData.*.cropName' => 'required|string|max:255',
+                'priceData.*.price' => 'required|numeric',
+                'priceData.*.season' => 'required|string|max:255',
+                'priceData.*.monthYear' => 'required|string|max:255',
+            ]);
 
-        // Find the specific price record by its ID
-        $price = Price::findOrFail($id);
+            Price::updateOrCreate(
+                [
+                    'recordId' => $priceData['recordId'],
+                    'cropName' => $priceData['cropName'],
+                    'price' => $priceData['price'],
+                    'season' => $priceData['season'],
+                    'monthYear' => $priceData['monthYear']
+                ]
+            );
+        }
 
-        // Update the price record with validated data
-        $price->update($request->all());
-
-        // Return a JSON response with the updated price data and status code 200 (OK)
-        return response()->json($price, 200);
+        return response()->json(['message' => 'Batch data stored successfully']);
     }
 
     public function destroy($id)
@@ -80,6 +77,39 @@ class PriceController extends Controller
 
         // Delete the price record from the database
         $price->delete();
+
+        // Return a JSON response with status code 204 (No Content)
+        return response()->json(null, 204);
+    }
+
+    public function destroyBatch(Request $request)
+    {
+        // Retrieve the array of records from the request
+        $priceDataArray = $request->input('priceData');
+
+        // Check if the input is an array and not empty
+        if (!is_array($priceDataArray) || empty($priceDataArray)) {
+            return response()->json(['error' => 'Invalid input'], 400);
+        }
+
+        // Extract foreign keys (recordIds) from the price data array
+        $foreignKeys = array_column($priceDataArray, 'recordId');
+
+        // Validate that foreign keys are properly extracted
+        if (empty($foreignKeys)) {
+            return response()->json(['error' => 'No valid foreign keys found'], 400);
+        }
+
+        // Find the primary keys of records in the Price table that match the foreign keys
+        $recordsToDelete = Price::whereIn('recordId', $foreignKeys)->pluck('priceId');
+
+        // Ensure that we have valid records to delete
+        if ($recordsToDelete->isEmpty()) {
+            return response()->json(['error' => 'No records found to delete'], 404);
+        }
+
+        // Delete the records from the database
+        Price::whereIn('priceId', $recordsToDelete)->delete();
 
         // Return a JSON response with status code 204 (No Content)
         return response()->json(null, 204);

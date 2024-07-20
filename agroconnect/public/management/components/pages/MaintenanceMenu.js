@@ -299,30 +299,266 @@ function initializeSupplyMarketView() {
 
 // Function to initialize Crop Price Monitoring view
 function initializePriceMonitoringView() {
-    // Example content for Crop Price Monitoring
-    $('#maintenance-content').html(`
-        <!-- Insert your Crop Price Monitoring form and table structure here -->
-        <h2>Crop Price Monitoring</h2>
-        <p>Form and table content specific to Crop Price Monitoring...</p>
-    `);
+      // Example content for Price Monitoring
+      $('#maintenance-content').html(`
+        <div class="row d-flex justify-content-between align-items-center mt-5">
+          <div class="col-md-4">
+            <form id="recordForm" enctype="multipart/form-data">
+              <input type="hidden" class="form-control" id="recordId" name="recordId">
+              <input type="hidden" class="form-control" id="userId" name="userId">
+              <div class="mb-3">
+                <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
+              </div>
+              <div class="mb-3">
+                <div class="input-group" id="monthPicker" style="width: 100%;">
+                    <select class="form-control" required>
+                        <option value="" disabled selected>Month</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    <span class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    </span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="input-group" id="yearPicker" style="width: 100%;">
+                    <input type="text" class="form-control" placeholder="Year" required>
+                    <span class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    </span>
+                </div>
+            </div>
+              <div  class="mb-3">
+                <label id="lblUpload">
+                  Upload File:
+                </label>
+                <div class="input-group" style="width: 100%;">
+                  <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+                  <div class="input-group-append">
+                    <label class="input-group-text" for="fileRecord" id="btnUpload">
+                      <i class="fas fa-upload"></i>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+              <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+            </form>
+          </div>
+          <div class="col-md-7">
+            <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+              <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+              <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+              <div id="delete"></div>
+              <div id="edit"></div>
+            </div>
+            <table id="recordTable" class="table table-custom text-center">
+              <thead>
+                <tr style="background-color: #2774E9; color: white;">
+                  <th scope="col">File Name</th>
+                  <th scope="col">File Size</th>
+                </tr>
+              </thead>
+              <tbody id="recordTableBody">
+                <!-- Table rows will be dynamically added here -->
+              </tbody>
+            </table>
+            <div class="text-right">
+              <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+              <button id="nextBtn" class="btn btn-green">Next</button>
+            </div>
+          </div>
+        </div>
+      `);
+      initializeMethodsRecord('price');
+      createDeleteModal();
+      createEditModal();
 }
 
 // Function to initialize Pest and Disease Reports view
 function initializePestReportsView() {
     // Example content for Pest and Disease Reports
     $('#maintenance-content').html(`
-        <!-- Insert your Pest and Disease Reports form and table structure here -->
-        <h2>Pest and Disease Reports</h2>
-        <p>Form and table content specific to Pest and Disease Reports...</p>
+      <div class="row d-flex justify-content-between align-items-center mt-5">
+        <div class="col-md-4">
+          <form id="recordForm" enctype="multipart/form-data">
+            <input type="hidden" class="form-control" id="recordId" name="recordId">
+            <input type="hidden" class="form-control" id="userId" name="userId">
+            <div class="mb-3">
+              <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+              <div class="input-group" id="monthPicker" style="width: 100%;">
+                  <select class="form-control" required>
+                      <option value="" disabled selected>Month</option>
+                      <option value="January">January</option>
+                      <option value="February">February</option>
+                      <option value="March">March</option>
+                      <option value="April">April</option>
+                      <option value="May">May</option>
+                      <option value="June">June</option>
+                      <option value="July">July</option>
+                      <option value="August">August</option>
+                      <option value="September">September</option>
+                      <option value="October">October</option>
+                      <option value="November">November</option>
+                      <option value="December">December</option>
+                  </select>
+                  <span class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
+              </div>
+          </div>
+          <div class="mb-3">
+              <div class="input-group" id="yearPicker" style="width: 100%;">
+                  <input type="text" class="form-control" placeholder="Year" required>
+                  <span class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
+              </div>
+          </div>
+            <div  class="mb-3">
+              <label id="lblUpload">
+                Upload File:
+              </label>
+              <div class="input-group" style="width: 100%;">
+                <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+                <div class="input-group-append">
+                  <label class="input-group-text" for="fileRecord" id="btnUpload">
+                    <i class="fas fa-upload"></i>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+          </form>
+        </div>
+        <div class="col-md-7">
+          <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+            <div id="delete"></div>
+            <div id="edit"></div>
+          </div>
+          <table id="recordTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">File Name</th>
+                <th scope="col">File Size</th>
+              </tr>
+            </thead>
+            <tbody id="recordTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+          <div class="text-right">
+            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+            <button id="nextBtn" class="btn btn-green">Next</button>
+          </div>
+        </div>
+      </div>
     `);
+    initializeMethodsRecord('pestDisease');
+    createDeleteModal();
+    createEditModal();
 }
 
 // Function to initialize Soil Health Records view
 function initializeSoilHealthView() {
-    // Example content for Soil Health Records
-    $('#maintenance-content').html(`
-        <!-- Insert your Soil Health Records form and table structure here -->
-        <h2>Soil Health Records</h2>
-        <p>Form and table content specific to Soil Health Records...</p>
-    `);
+  $('#maintenance-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col-md-4">
+        <form id="recordForm" enctype="multipart/form-data">
+          <input type="hidden" class="form-control" id="recordId" name="recordId">
+          <input type="hidden" class="form-control" id="userId" name="userId">
+          <div class="mb-3">
+            <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <div class="input-group" id="monthPicker" style="width: 100%;">
+                <select class="form-control" required>
+                    <option value="" disabled selected>Month</option>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
+                <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="input-group" id="yearPicker" style="width: 100%;">
+                <input type="text" class="form-control" placeholder="Year" required>
+                <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+            </div>
+        </div>
+          <div  class="mb-3">
+            <label id="lblUpload">
+              Upload File:
+            </label>
+            <div class="input-group" style="width: 100%;">
+              <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+              <div class="input-group-append">
+                <label class="input-group-text" for="fileRecord" id="btnUpload">
+                  <i class="fas fa-upload"></i>
+                </label>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+      <div class="col-md-7">
+        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+          <div id="delete"></div>
+          <div id="edit"></div>
+        </div>
+        <table id="recordTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">File Name</th>
+              <th scope="col">File Size</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);
+  initializeMethodsRecord('soilHealth');
+  createDeleteModal();
+  createEditModal();
 }

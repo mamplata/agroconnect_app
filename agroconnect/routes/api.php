@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\PestController;
 use App\Http\Controllers\DiseaseController;
+use App\Http\Controllers\SoilHealthController;
 use App\Http\Controllers\ConcernController;
 use App\Http\Controllers\WeatherForecastController;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,7 @@ Route::delete('/farmers/{id}', [FarmerController::class, 'destroy']);
 
 // Api for records
 Route::get('/records', [RecordController::class, 'index']);
+Route::get('/records/{type}', [RecordController::class, 'indexByType']);
 Route::post('/records', [RecordController::class, 'store']);
 Route::get('/records/{id}', [RecordController::class, 'show']);
 Route::put('/records/{id}', [RecordController::class, 'update']);
@@ -58,9 +60,9 @@ Route::delete('/records/{id}', [RecordController::class, 'destroy']);
 // Api for productions
 Route::get('/productions', [ProductionController::class, 'index']);
 Route::post('/productions', [ProductionController::class, 'store']);
-Route::post('/productions-batch', [ProductionController::class, 'storeBatch']);
 Route::get('/productions/{id}', [ProductionController::class, 'show']);
 Route::put('/productions/{id}', [ProductionController::class, 'update']);
+Route::post('/productions-batch', [ProductionController::class, 'storeBatch']);
 Route::delete('/productionsByRecords', [ProductionController::class, 'destroyBatch']);
 
 // Api for prices
@@ -69,6 +71,8 @@ Route::post('/prices', [PriceController::class, 'store']);
 Route::get('/prices/{id}', [PriceController::class, 'show']);
 Route::put('/prices/{id}', [PriceController::class, 'update']);
 Route::delete('/prices/{id}', [PriceController::class, 'destroy']);
+Route::post('/prices-batch', [PriceController::class, 'storeBatch']);
+Route::delete('/pricesByRecords', [PriceController::class, 'destroyBatch']);
 
 // Api for pests
 Route::get('/pests', [PestController::class, 'index']);
@@ -76,6 +80,8 @@ Route::post('/pests', [PestController::class, 'store']);
 Route::get('/pests/{id}', [PestController::class, 'show']);
 Route::put('/pests/{id}', [PestController::class, 'update']);
 Route::delete('/pests/{id}', [PestController::class, 'destroy']);
+Route::post('/pests-batch', [PestController::class, 'storeBatch']);
+Route::delete('/pestsByRecords', [PestController::class, 'destroyBatch']);
 
 // Api for diseases
 Route::get('/diseases', [DiseaseController::class, 'index']);
@@ -83,6 +89,17 @@ Route::post('/diseases', [DiseaseController::class, 'store']);
 Route::get('/diseases/{id}', [DiseaseController::class, 'show']);
 Route::put('/diseases/{id}', [DiseaseController::class, 'update']);
 Route::delete('/diseases/{id}', [DiseaseController::class, 'destroy']);
+Route::post('/diseases-batch', [DiseaseController::class, 'storeBatch']);
+Route::delete('/diseasesByRecords', [DiseaseController::class, 'destroyBatch']);
+
+// Api for soilhealths
+Route::get('/soilhealths', [SoilHealthController::class, 'index']);
+Route::post('/soilhealths', [SoilHealthController::class, 'store']);
+Route::get('/soilhealths/{id}', [SoilHealthController::class, 'show']);
+Route::put('/soilhealths/{id}', [SoilHealthController::class, 'update']);
+Route::delete('/soilhealths/{id}', [SoilHealthController::class, 'destroy']);
+Route::post('/soilhealths-batch', [SoilHealthController::class, 'storeBatch']);
+Route::delete('/soilhealthsByRecords', [SoilHealthController::class, 'destroyBatch']);
 
 // Api for concerns
 Route::get('/concerns', [ConcernController::class, 'index']);

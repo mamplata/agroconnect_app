@@ -12,10 +12,10 @@ class Pest extends Model
     protected $primaryKey = 'pestId'; // Specify the primary key field name
     protected $fillable = [
         'recordId',
+        'barangay',
         'cropName',
         'pestName',
         'season',
-        'type',
         'monthYear',
     ];
 

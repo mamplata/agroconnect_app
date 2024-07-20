@@ -103,7 +103,7 @@ async updateRecord(updatedRecord) {
 
 let links = '';
 
-function getRecord() {
+function getRecord(dataType) {
   // Fetch records from Laravel backend
   $.ajaxSetup({
     headers: {
@@ -141,7 +141,7 @@ function getRecord() {
 }
 
 $.ajax({
-  url: '/api/records', // Endpoint to fetch records
+  url: `/api/records/${dataType}`, // Endpoint to fetch records
   method: 'GET',
   success: function(response) {
       console.log('Response:', response);
@@ -193,14 +193,15 @@ $.ajax({
     }
   }
 
-getRecord();
-
 function searchRecord(recordName) {
   const foundRecords = records.filter(record => record.recordName.includes(recordName));
   return foundRecords;
 }
 
 function initializeMethodsRecord(dataType) {
+
+   getRecord(dataType);
+
     var selectedRow = null;
     var pageSize = 5;
     var currentPage = 1;
@@ -353,7 +354,7 @@ function initializeMethodsRecord(dataType) {
                    // Clear form fields after submission
                   $('#recordForm')[0].reset();
                   $('#fileRecord').attr('required', 'required');
-                  getRecord();
+                  getRecord(dataType);
                   displayRecords();
               };
               
@@ -371,7 +372,7 @@ function initializeMethodsRecord(dataType) {
              // Clear form fields after submission
             $('#recordForm')[0].reset();
             $('#fileRecord').attr('required', 'required');
-            getRecord();
+            getRecord(dataType);
             displayRecords();
             resetFields();
         } else {
@@ -392,16 +393,18 @@ function initializeMethodsRecord(dataType) {
             extractData(workbook, productionSearchTerms, processProductionData, id, season, monthYear);
             break;
           case 'price':
-            const priceSearchTerms = ["Crop Name", "Variety", "Price", "Type", "Price Value"];
+            const priceSearchTerms = ["Crop Name", "Price"];
             extractData(workbook, priceSearchTerms, processPriceData, id, season, monthYear);
             break;
-          case 'pest':
+          case 'pestDisease':
             const pestSearchTerms = ["Crop Name", "Pest Name"];
             extractData(workbook, pestSearchTerms, processPestData, id, season, monthYear);
-            break;
-          case 'disease':
             const diseaseSearchTerms = ["Crop Name", "Disease Name"];
             extractData(workbook, diseaseSearchTerms, processDiseaseData, id, season, monthYear);
+            break;
+          case 'soilHealth':
+            const soilHealthSearchTerms = ["Barangay", "Farmer", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", , "Recommendations"];
+            extractData(workbook, soilHealthSearchTerms, processSoilHealthData, id, season, monthYear);
             break;
           default:
             console.error("Unknown data type");
@@ -526,7 +529,7 @@ function initializeMethodsRecord(dataType) {
       $('#deleteModal').modal('hide');
         recordToDelete = new Record();
         recordToDelete.removeRecord(record.recordId);
-        getRecord();
+        getRecord(dataType);
         displayRecords();
         resetFields();
       });

@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id('diseaseId');
             $table->unsignedBigInteger('recordId');
             $table->foreign('recordId')->references('recordId')->on('records');
+            $table->string('barangay', 255);
+            $table->string('cropName', 255);
             $table->string('diseaseName', 255);
-            $table->string('pestName', 255);
             $table->string('season', 255);
-            $table->string('type', 255);
             $table->string('monthYear', 255);
             $table->timestamps();
         });

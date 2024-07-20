@@ -5,16 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Disease extends Model
+class SoilHealth extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'diseaseId'; // Specify the primary key field name
+    protected $primaryKey = 'soilHealthId'; // Specify the primary key field name
     protected $fillable = [
         'recordId',
         'barangay',
-        'cropName',
-        'diseaseName',
+        'farmerName',
+        'nitrogenContent',
+        'phosphorusContent',
+        'potassiumContent',
+        'pH',
+        'generalRating',
+        'recommendations',
         'season',
         'monthYear',
     ];

@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Record;
 use App\Models\Production;
+use App\Models\Price;
+use App\Models\Pest;
+use App\Models\Disease;
+use App\Models\SoilHealth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -16,6 +20,18 @@ class RecordController extends Controller
 
         return response()->json($records, 200);
     }
+
+    public function indexByType($type)
+    {
+        // Query records, filter by type and order by recordId in descending order
+        $records = record::where('type', $type)
+            ->orderBy('recordId', 'desc')
+            ->get();
+
+        // Return the response as JSON
+        return response()->json($records, 200);
+    }
+
 
     public function store(Request $request)
     {
@@ -85,12 +101,26 @@ class RecordController extends Controller
         DB::beginTransaction();
 
         try {
-            // Find and delete the record from the Record table
+            // Find the record by ID
             $record = Record::findOrFail($id);
-            // Delete associated records from the Production table
-            // Assuming 'record_id' is the foreign key in the Production table
-            Production::where('recordId', $id)->delete();
 
+            // Check the type of the record
+            if ($record->type === 'production') {
+                // Delete associated records from the Production table
+                Production::where('recordId', $id)->delete();
+            } else if ($record->type === 'price') {
+                // Delete associated records from the Price table
+                Price::where('recordId', $id)->delete();
+            } else if ($record->type === 'pestDisease') {
+                // Delete associated records from the Price table
+                Pest::where('recordId', $id)->delete();
+                Disease::where('recordId', $id)->delete();
+            } else if ($record->type === 'soilHealth') {
+                // Delete associated records from the Price table
+                SoilHealth::where('recordId', $id)->delete();
+            }
+
+            // Delete the record itself
             $record->delete();
 
             // Commit the transaction

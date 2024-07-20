@@ -15,7 +15,6 @@ class Price extends Model
         'cropName',
         'price',
         'season',
-        'type',
         'monthYear',
     ];
 
