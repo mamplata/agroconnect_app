@@ -46,13 +46,11 @@ class Record {
 }
 
 async updateRecord(updatedRecord) {
-    const existingRecord = records.find(b => b.monthYear === updatedRecord.monthYear && b.type === updatedRecord.type);
+    const existingRecord = records.find(b => b.monthYear === updatedRecord.monthYear && b.type !== updatedRecord.type);
     if (existingRecord) {
       alert('Record with the same type already exists');
       return;
     }
-
-    console.log(updatedRecord.fileRecord);
 
     records = records.map(record =>
       record.recordId === updatedRecord.recordId ? { ...record, ...updatedRecord } : record
@@ -173,7 +171,9 @@ $.ajax({
         });
         
       } else {
-        console.error('Expected an array of records, but received:', response);
+        console.log('Expected an array of records, but received:', response);
+        records = [];
+        console.log('Response:', records);
       }
   },
   error: function(xhr, status, error) {
@@ -328,13 +328,16 @@ function initializeMethodsRecord(dataType) {
                   
                   if (selectedRow !== null) {
                       let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
-                      let id = record.updateRecord(record); // Assuming this method updates the record
+                      record.updateRecord(record).then(id => {
+                          processDataBasedOnType(dataType, file, id, season, monthYear);
+                      }).catch(error => {
+                          console.error("Error creating record:", error);
+                      });
                       selectedRow = null;
                       $('#lblUpload').text('Upload File:');
                       $('#submitBtn').text('Add record');
                       $('#cancelBtn').hide();
                       resetFields();
-                      processDataBasedOnType(dataType, file, id, season, monthYear);
                   } else {
                       // Assuming createRecord returns a promise
                       let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
@@ -360,7 +363,7 @@ function initializeMethodsRecord(dataType) {
       } else {
           if (selectedRow !== null) {
             let record = new Record(recordId, userId, name, season, monthYear, type, '');
-            let id = record.updateRecord(record); // Assuming this method updates the record
+            record.updateRecord(record); // Assuming this method updates the record
             selectedRow = null;
             $('#lblUpload').text('Upload File:');
             $('#submitBtn').text('Add record');
@@ -371,7 +374,6 @@ function initializeMethodsRecord(dataType) {
             getRecord();
             displayRecords();
             resetFields();
-            processDataBasedOnType(dataType, file, id, season, monthYear);
         } else {
             alert('Please select a file first.');
         }
@@ -486,7 +488,7 @@ function initializeMethodsRecord(dataType) {
           var year = parts[1]; // '2024'
 
           // Set the values in the input fields
-          $('#monthPicker input').val(month);
+          $('#monthPicker select').val(month);
           $('#yearPicker input').val(year);
           $('#fileRecord').removeAttr('required');
           $('#lblUpload').text('Insert New File (optional):');

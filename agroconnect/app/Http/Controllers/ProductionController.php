@@ -60,49 +60,46 @@ class ProductionController extends Controller
 
     public function storeBatch(Request $request)
     {
-        // Validate the incoming data
-        $request->validate([
-            '*.recordId' => 'required|integer',
-            '*.barangay' => 'required|string',
-            '*.cropName' => 'required|string',
-            '*.variety' => 'nullable|string',
-            '*.areaPlanted' => 'required|numeric',
-            '*.monthPlanted' => 'required|string',
-            '*.monthHarvested' => 'required|string',
-            '*.volumeProduction' => 'required|numeric',
-            '*.productionCost' => 'required|numeric',
-            '*.volumeSold' => 'required|numeric',
-            '*.price' => 'required|string',
-            '*.season' => 'required|string',
-            '*.monthYear' => 'required|string',
-        ]);
+        $productionDataArray = $request->input('productionData');
 
-        // Get all the productions from the request
-        $productions = $request->json()->all();
-
-        // Store or update each production record
-        foreach ($productions as $productionData) {
-
-            $production = new Production([
-                'recordId' => $productionData['recordId'],
-                'barangay' => $productionData['barangay'],
-                'cropName' => $productionData['cropName'],
-                'variety' => $productionData['variety'],
-                'areaPlanted' => $productionData['areaPlanted'],
-                'monthPlanted' => $productionData['monthPlanted'],
-                'monthHarvested' => $productionData['monthHarvested'],
-                'volumeProduction' => $productionData['volumeProduction'],
-                'productionCost' => $productionData['productionCost'],
-                'volumeSold' => $productionData['volumeSold'],
-                'price' => $productionData['price'],
-                'season' => $productionData['season'],
-                'monthYear' => $productionData['monthYear']
+        // Process and store each item in the validated data
+        foreach ($productionDataArray as $productionData) {
+            $request->validate([
+                'productionData.*.recordId' => 'required|exists:records,recordId',
+                'productionData.*.recordId' => 'required|exists:records,recordId',
+                'productionData.*.barangay' => 'required|string|max:255',
+                'productionData.*.cropName' => 'required|string|max:255',
+                'productionData.*.variety' => 'nullable|string|max:255',
+                'productionData.*.areaPlanted' => 'required|numeric',
+                'productionData.*.monthPlanted' => 'required|string|max:50',
+                'productionData.*.monthHarvested' => 'required|string|max:50',
+                'productionData.*.volumeProduction' => 'required|numeric',
+                'productionData.*.productionCost' => 'required|numeric',
+                'productionData.*.volumeSold' => 'required|numeric',
+                'productionData.*.price' => 'required|string|max:255',
+                'productionData.*.season' => 'required|string|max:50',
+                'productionData.*.monthYear' => 'required|string|max:255',
             ]);
-
-            $production->save();
+            Production::updateOrCreate(
+                [
+                    'recordId' => $productionData['recordId'],
+                    'barangay' => $productionData['barangay'],
+                    'cropName' => $productionData['cropName'],
+                    'variety' => $productionData['variety'] ?? '',
+                    'areaPlanted' => $productionData['areaPlanted'],
+                    'monthPlanted' => $productionData['monthPlanted'],
+                    'monthHarvested' => $productionData['monthHarvested'],
+                    'volumeProduction' => $productionData['volumeProduction'],
+                    'productionCost' => $productionData['productionCost'],
+                    'volumeSold' => $productionData['volumeSold'],
+                    'price' => $productionData['price'],
+                    'season' => $productionData['season'],
+                    'monthYear' => $productionData['monthYear']
+                ]
+            );
         }
 
-        return response()->json(['message' => 'Batch stored successfully'], 200);
+        return response()->json(['message' => 'Batch data stored successfully']);
     }
 
     public function destroy($id)
@@ -112,6 +109,39 @@ class ProductionController extends Controller
 
         // Delete the production record from the database
         $production->delete();
+
+        // Return a JSON response with status code 204 (No Content)
+        return response()->json(null, 204);
+    }
+
+    public function destroyBatch(Request $request)
+    {
+        // Retrieve the array of records from the request
+        $productionDataArray = $request->input('productionData');
+
+        // Check if the input is an array and not empty
+        if (!is_array($productionDataArray) || empty($productionDataArray)) {
+            return response()->json(['error' => 'Invalid input'], 400);
+        }
+
+        // Extract foreign keys (recordIds) from the production data array
+        $foreignKeys = array_column($productionDataArray, 'recordId');
+
+        // Validate that foreign keys are properly extracted
+        if (empty($foreignKeys)) {
+            return response()->json(['error' => 'No valid foreign keys found'], 400);
+        }
+
+        // Find the primary keys of records in the Production table that match the foreign keys
+        $recordsToDelete = Production::whereIn('recordId', $foreignKeys)->pluck('productionId');
+
+        // Ensure that we have valid records to delete
+        if ($recordsToDelete->isEmpty()) {
+            return response()->json(['error' => 'No records found to delete'], 404);
+        }
+
+        // Delete the records from the database
+        Production::whereIn('productionId', $recordsToDelete)->delete();
 
         // Return a JSON response with status code 204 (No Content)
         return response()->json(null, 204);

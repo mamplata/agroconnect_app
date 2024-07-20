@@ -21,30 +21,22 @@ class Production {
 
     console.log(productions);
 
-    try {
-      const response = await fetch('/api/productions', {
+    $.ajax({
+        url: '/api/productions-batch',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+        data: {
+            productionData: productions, // Custom key for data
+            _token: $('meta[name="csrf-token"]').attr('content')
         },
-        body: JSON.stringify(productions),
-      });
-      
-      console.log('Response Status:', response.status);
+        success: function(response) {
+            console.log(response);
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+        }
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Full Response:', errorText);
-        throw new Error('Failed to create record');
-      }
-
-      const data = await response.json();
-      console.log('Success:', data);
-      return data.recordId;
-    } catch (error) {
-      console.error('Error:', error);
-      return null;
-    }
+    getProduction();
   }
 
   updateProduction(updatedProduction) {
@@ -73,28 +65,25 @@ class Production {
       .catch(error => {
         console.error('Error:', error);
       });
+      getProduction();
   }
 
-  removeProduction(productionId) {
-    fetch(`/api/productions/${productionId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(response => {
-        if (response.status === 204) {
-          productions = productions.filter(production => production.productionId !== productionId);
-          console.log(`Production with ID ${productionId} deleted.`);
-        } else if (response.status === 404) {
-          console.error(`Production with ID ${productionId} not found.`);
-        } else {
-          console.error(`Failed to delete production with ID ${productionId}.`);
+  removeProduction(productions) {
+      $.ajax({
+        url: '/api/productionsByRecords',
+        method: 'DELETE',
+        data: {
+            productionData: productions, // Custom key for data
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            console.log(response);
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
         }
-      })
-      .catch(error => {
-        console.error('Error:', error);
       });
+      getProduction();
   }
 }
 
@@ -180,19 +169,20 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
           monthYear,
       );
 
-      // Check if the record ID already exists in the productions array
-      var existingProduction = productions.find(p => p.productionId === production.productionId);
-
-      if (existingProduction) {
-          // Remove existing production before adding the new one
-          await removeProduction(existingProduction.productionId);
-      }
       // Add the new production instance to productions array using addProduction method
       productionDatas.push(production);
   }
 
-  productionDatas[0].addProduction(productionDatas);
+  // Check if the record ID already exists in the productions array
+  var existingProduction = productions.find(p => p.recordId === productionDatas[0].recordId);
 
+  if (existingProduction) {
+      // Remove existing production before adding the new one
+      await productionDatas[0].removeProduction(productionDatas);
+      console.log('dasdadas');
+  }
+
+  productionDatas[0].addProduction(productionDatas);
   return productions;
 }
 

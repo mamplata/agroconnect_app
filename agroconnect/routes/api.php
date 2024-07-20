@@ -57,10 +57,11 @@ Route::delete('/records/{id}', [RecordController::class, 'destroy']);
 
 // Api for productions
 Route::get('/productions', [ProductionController::class, 'index']);
-Route::post('/productions', [ProductionController::class, 'storeBatch']);
+Route::post('/productions', [ProductionController::class, 'store']);
+Route::post('/productions-batch', [ProductionController::class, 'storeBatch']);
 Route::get('/productions/{id}', [ProductionController::class, 'show']);
 Route::put('/productions/{id}', [ProductionController::class, 'update']);
-Route::delete('/productions/{id}', [ProductionController::class, 'destroy']);
+Route::delete('/productionsByRecords', [ProductionController::class, 'destroyBatch']);
 
 // Api for prices
 Route::get('/prices', [PriceController::class, 'index']);

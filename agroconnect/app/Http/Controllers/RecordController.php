@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Record;
+use App\Models\Production;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class RecordController extends Controller
@@ -79,9 +81,28 @@ class RecordController extends Controller
 
     public function destroy($id)
     {
-        $record = Record::findOrFail($id);
-        $record->delete();
+        // Start a database transaction to ensure atomicity
+        DB::beginTransaction();
 
-        return response()->json(null, 204);
+        try {
+            // Find and delete the record from the Record table
+            $record = Record::findOrFail($id);
+            // Delete associated records from the Production table
+            // Assuming 'record_id' is the foreign key in the Production table
+            Production::where('recordId', $id)->delete();
+
+            $record->delete();
+
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            // Rollback the transaction if something goes wrong
+            DB::rollBack();
+
+            // Return a JSON response with status code 500 (Internal Server Error)
+            return response()->json(['error' => 'Failed to delete record'], 500);
+        }
     }
 }
