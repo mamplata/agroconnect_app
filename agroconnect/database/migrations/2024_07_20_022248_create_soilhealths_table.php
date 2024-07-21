@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('soilhealths', function (Blueprint $table) {
+        Schema::create('soil_healths', function (Blueprint $table) {
             $table->id('soilHealthId');
             $table->unsignedBigInteger('recordId');
             $table->foreign('recordId')->references('recordId')->on('records');
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('soilhealths');
+        Schema::dropIfExists('soil_healths');
     }
 };

@@ -21,7 +21,7 @@ class PriceController extends Controller
         $request->validate([
             'recordId' => 'required|exists:records,recordId',
             'cropName' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'price' => 'required|string|max:255',
             'season' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
         ]);
@@ -51,7 +51,7 @@ class PriceController extends Controller
             $request->validate([
                 'priceData.*.recordId' => 'required|exists:records,recordId',
                 'priceData.*.cropName' => 'required|string|max:255',
-                'priceData.*.price' => 'required|numeric',
+                'priceData.*.price' => 'required|string|max:255',
                 'priceData.*.season' => 'required|string|max:255',
                 'priceData.*.monthYear' => 'required|string|max:255',
             ]);

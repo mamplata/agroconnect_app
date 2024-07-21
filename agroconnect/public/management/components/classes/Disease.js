@@ -1,3 +1,5 @@
+let diseases = [];
+
 class Disease {
     constructor(recordId, barangay, cropName, diseaseName, season, monthYear) {
       this.recordId = recordId;
@@ -103,59 +105,69 @@ class Disease {
     return foundDiseases;
   }
   
-  async function processDiseaseData(workbook, cellMappings, id, season, monthYear) {
-    var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
-    var worksheet = workbook.Sheets[sheetName];
-  
-    var cropNameColumn = getKeyBySubstring(cellMappings, 'Crop Name');
-    var diseaseNameColumn = getKeyBySubstring(cellMappings, 'Disease Name');
-    console.log(cropNameColumn, diseaseNameColumn);
-  
-    var range = XLSX.utils.decode_range(worksheet['!ref']);
-    let diseaseDatas = [];
-  
-    for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-      var cellAddressCropName = cropNameColumn.charAt(0) + (rowNum + 1);
-      var cellAddressDiseaseName = diseaseNameColumn.charAt(0) + (rowNum + 1);
-  
-      var cellValueCropName = worksheet[cellAddressCropName] ? worksheet[cellAddressCropName].v : '';
-      var cellValueDiseaseName = worksheet[cellAddressDiseaseName] ? worksheet[cellAddressDiseaseName].v : '';
-  
-      if (!cellValueCropName || !cellValueDiseaseName) {
-        continue; // Skip this row if it doesn't meet the criteria
+// Function to build and return table rows as an array of Disease instances
+async function processDiseaseData(workbook, cellMappings, id, season, monthYear) {
+  // Select the sheet you want to read from
+  var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
+  var worksheet = workbook.Sheets[sheetName];   
+
+  // Find the column index for 'Disease Observed' and 'Crops Planted' in cellMappings
+  var diseaseColumn = getKeyBySubstring(cellMappings, 'Disease Observed');
+  var cropsPlantedColumn = getKeyBySubstring(cellMappings, 'Crops Planted');
+  console.log(diseaseColumn, cropsPlantedColumn);
+
+  // Decode the range of the worksheet
+  var range = XLSX.utils.decode_range(worksheet['!ref']);
+  let diseaseDatas = [];
+
+  // Loop through rows starting from the first row after the header
+  for (var rowNum = range.s.r + 5; rowNum <= range.e.r; rowNum++) {
+      // Check if the corresponding row in column 'Disease Observed' and 'Crops Planted' are not empty or 'None'
+      var cellAddressDisease = diseaseColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Disease Observed' cell address
+      var cellValueDisease = worksheet[cellAddressDisease] ? worksheet[cellAddressDisease].v : '';
+
+      var cellAddressCrops = cropsPlantedColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Crops Planted' cell address
+      var cellValueCrops = worksheet[cellAddressCrops] ? worksheet[cellAddressCrops].v : '';
+
+      // Check if the disease value and crops planted value are valid
+      if ((cellValueDisease === '' || cellValueDisease === 'None') || (cellValueCrops === '')) {
+          continue; // Skip this row if it doesn't meet the filter criteria
       }
-  
-      var diseaseData = {
-        recordId: id,
-        barangay: getKeyBySubstring(cellMappings, 'Barangay'),
-        cropName: cellValueCropName,
-        diseaseName: cellValueDiseaseName,
-        season: season,
-        monthYear: monthYear
-      };
-  
+
+      // Read values based on the defined cell mappings
+      var diseaseData = {};
+      Object.keys(cellMappings).forEach(function(key) {
+          var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
+          
+          var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
+          diseaseData[key] = cellValue; // Store value for the current key in diseaseData
+      });
+
+      // Create a new Disease instance
       var disease = new Disease(
-        diseaseData.recordId,
-        diseaseData.barangay,
-        diseaseData.cropName,
-        diseaseData.diseaseName,
-        diseaseData.season,
-        diseaseData.monthYear
+          id,
+          getKeyBySubstring(diseaseData, 'Farm Location'),
+          getKeyBySubstring(diseaseData, 'Crops Planted'),
+          getKeyBySubstring(diseaseData, 'Disease Observed'),
+          season,
+          monthYear,
       );
-  
+
+      // Add the new disease instance to diseaseDatas array using addDisease method
       diseaseDatas.push(disease);
-    }
-  
-    var existingDisease = diseases.find(d => d.recordId === diseaseDatas[0].recordId);
-  
-    if (existingDisease) {
-      await diseaseDatas[0].removeDisease(diseaseDatas);
-      console.log('Existing disease removed');
-    }
-  
-    diseaseDatas[0].addDisease(diseaseDatas);
-    return diseases;
   }
+
+  // Check if the record ID already exists in the diseaseDatas array
+  var existingDisease = diseases.find(d => d.recordId === diseaseDatas[0].recordId);
+
+  if (existingDisease) {
+      // Remove existing disease before adding the new one
+      await diseaseDatas[0].removeDisease(diseases);
+  }
+
+  diseaseDatas[0].addDisease(diseaseDatas);
+  return diseases;
+}
   
   function getKeyBySubstring(obj, substr) {
     for (let key in obj) {

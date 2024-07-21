@@ -106,19 +106,36 @@ function searchPrice(cropName) {
   const foundPrices = prices.filter(price => price.cropName.includes(cropName));
   return foundPrices;
 }
+// Function to check if the data is numeric or a valid range
+function isNumeric(data) {
+  // Check if the data is a single number
+  if (!isNaN(data) && !isNaN(parseFloat(data))) {
+      return true;
+  }
+
+  // Check if the data is a range in the format 'number-number'
+  const rangePattern = /^\d+-\d+$/;
+  if (rangePattern.test(data)) {
+      const [start, end] = data.split('-').map(Number);
+      // Ensure both parts of the range are valid numbers and the range is valid
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+          return true;
+      }
+  }
+
+  // If neither check passed, return false
+  return false;
+}
 
 // Function to build and return table rows as an array of Price instances
 async function processPriceData(workbook, cellMappings, id, season, monthYear) {
-  // Assuming workbook is already loaded or passed as a parameter
-
   // Select the sheet you want to read from
   var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
   var worksheet = workbook.Sheets[sheetName];   
 
-  // Find the column index for 'Commodity' in cellMappings
-  var commodityColumn = getKeyBySubstring(cellMappings, 'Commodity');
+  // Find the column index for 'Price' in cellMappings
   var priceColumn = getKeyBySubstring(cellMappings, 'Price');
-  console.log(commodityColumn, priceColumn);
+  console.log(priceColumn);
 
   // Decode the range of the worksheet
   var range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -126,35 +143,43 @@ async function processPriceData(workbook, cellMappings, id, season, monthYear) {
 
   // Loop through rows starting from the first row after the header
   for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-    // Read values based on the defined cell mappings
-    var priceData = {};
-    Object.keys(cellMappings).forEach(function(key) {
-      var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
-      
-      var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
-      priceData[key] = cellValue; // Store value for the current key in priceData
-    });
+      // Check if the corresponding row in column 'Price' has a numeric value or valid range
+      var cellAddressPrice = priceColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Price' cell address
+      var cellValuePrice = worksheet[cellAddressPrice] ? worksheet[cellAddressPrice].v : '';
 
-    // Create a new Price instance
-    var price = new Price(
-      id,
-      getKeyBySubstring(priceData, 'Commodity'),
-      getKeyBySubstring(priceData, 'Price'),
-      season,
-      monthYear
-    );
+      // Check if the value is numeric or a valid range
+      if (!isNumeric(cellValuePrice)) {
+          continue; // Skip this row if it doesn't meet the filter criteria
+      }
 
-    // Add the new price instance to prices array using addPrice method
-    priceDatas.push(price);
+      // Read values based on the defined cell mappings
+      var priceData = {};
+      Object.keys(cellMappings).forEach(function(key) {
+          var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
+          
+          var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
+          priceData[key] = cellValue; // Store value for the current key in priceData
+      });
+
+      // Create a new Price instance
+      var price = new Price(
+          id,
+          getKeyBySubstring(priceData, 'Commodity'),
+          String(getKeyBySubstring(priceData, 'Price')),
+          season,
+          monthYear,
+      );
+
+      // Add the new price instance to priceDatas array using addPrice method
+      priceDatas.push(price);
   }
 
-  // Check if the record ID already exists in the prices array
+  // Check if the record ID already exists in the priceDatas array
   var existingPrice = prices.find(p => p.recordId === priceDatas[0].recordId);
 
   if (existingPrice) {
-    // Remove existing price before adding the new one
-    await priceDatas[0].removePrice(priceDatas);
-    console.log('Existing price removed.');
+      // Remove existing price before adding the new one
+      await priceDatas[0].removePrice(priceDatas);
   }
 
   priceDatas[0].addPrice(priceDatas);

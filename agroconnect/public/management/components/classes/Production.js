@@ -179,7 +179,6 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
   if (existingProduction) {
       // Remove existing production before adding the new one
       await productionDatas[0].removeProduction(productionDatas);
-      console.log('dasdadas');
   }
 
   productionDatas[0].addProduction(productionDatas);

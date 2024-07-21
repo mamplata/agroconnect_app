@@ -1,3 +1,5 @@
+let pests = [];
+
 class Pest {
     constructor(recordId, barangay, cropName, pestName, season, monthYear) {
       this.recordId = recordId;
@@ -103,59 +105,70 @@ class Pest {
     return foundPests;
   }
   
-  async function processPestData(workbook, cellMappings, id, season, monthYear) {
-    var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
-    var worksheet = workbook.Sheets[sheetName];
-  
-    var cropNameColumn = getKeyBySubstring(cellMappings, 'Crop Name');
-    var pestNameColumn = getKeyBySubstring(cellMappings, 'Pest Name');
-    console.log(cropNameColumn, pestNameColumn);
-  
-    var range = XLSX.utils.decode_range(worksheet['!ref']);
-    let pestDatas = [];
-  
-    for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-      var cellAddressCropName = cropNameColumn.charAt(0) + (rowNum + 1);
-      var cellAddressPestName = pestNameColumn.charAt(0) + (rowNum + 1);
-  
-      var cellValueCropName = worksheet[cellAddressCropName] ? worksheet[cellAddressCropName].v : '';
-      var cellValuePestName = worksheet[cellAddressPestName] ? worksheet[cellAddressPestName].v : '';
-  
-      if (!cellValueCropName || !cellValuePestName) {
-        continue; // Skip this row if it doesn't meet the criteria
+// Function to build and return table rows as an array of Pest instances
+async function processPestData(workbook, cellMappings, id, season, monthYear) {
+  // Select the sheet you want to read from
+  var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
+  var worksheet = workbook.Sheets[sheetName];   
+
+  // Find the column index for 'Pest Observed' and 'Crops Planted' in cellMappings
+  var pestColumn = getKeyBySubstring(cellMappings, 'Pest Observed');
+  var cropsPlantedColumn = getKeyBySubstring(cellMappings, 'Crops Planted');
+  console.log(pestColumn, cropsPlantedColumn);
+
+  // Decode the range of the worksheet
+  var range = XLSX.utils.decode_range(worksheet['!ref']);
+  let pestDatas = [];
+
+  // Loop through rows starting from the first row after the header
+  for (var rowNum = range.s.r + 5; rowNum <= range.e.r; rowNum++) {
+      // Check if the corresponding row in column 'Pest Observed' and 'Crops Planted' are not empty or 'None'
+      var cellAddressPest = pestColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Pest Observed' cell address
+      var cellValuePest = worksheet[cellAddressPest] ? worksheet[cellAddressPest].v : '';
+
+      var cellAddressCrops = cropsPlantedColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Crops Planted' cell address
+      var cellValueCrops = worksheet[cellAddressCrops] ? worksheet[cellAddressCrops].v : '';
+
+      // Check if the pest value and crops planted value are valid
+      if ((cellValuePest === '' || cellValuePest === 'None') || (cellValueCrops === '')) {
+           console.log(cellValueCrops);
+          continue; // Skip this row if it doesn't meet the filter criteria
       }
-  
-      var pestData = {
-        recordId: id,
-        barangay: getKeyBySubstring(cellMappings, 'Barangay'),
-        cropName: cellValueCropName,
-        pestName: cellValuePestName,
-        season: season,
-        monthYear: monthYear
-      };
-  
+
+      // Read values based on the defined cell mappings
+      var pestData = {};
+      Object.keys(cellMappings).forEach(function(key) {
+          var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
+          
+          var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
+          pestData[key] = cellValue; // Store value for the current key in pestData
+      });
+
+      // Create a new Pest instance
       var pest = new Pest(
-        pestData.recordId,
-        pestData.barangay,
-        pestData.cropName,
-        pestData.pestName,
-        pestData.season,
-        pestData.monthYear
+          id,
+          getKeyBySubstring(pestData, 'Farm Location'),
+          getKeyBySubstring(pestData, 'Crops Planted'),
+          getKeyBySubstring(pestData, 'Pest Observed'),
+          season,
+          monthYear,
       );
-  
+
+      // Add the new pest instance to pestDatas array using addPest method
       pestDatas.push(pest);
-    }
-  
-    var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
-  
-    if (existingPest) {
-      await pestDatas[0].removePest(pestDatas);
-      console.log('Existing pest removed');
-    }
-  
-    pestDatas[0].addPest(pestDatas);
-    return pests;
   }
+
+  // Check if the record ID already exists in the pestDatas array
+  var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
+
+  if (existingPest) {
+      // Remove existing pest before adding the new one
+      await pestDatas[0].removePest(pests);
+  }
+
+  pestDatas[0].addPest(pestDatas);
+  return pests;
+}
   
   function getKeyBySubstring(obj, substr) {
     for (let key in obj) {

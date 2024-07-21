@@ -298,10 +298,9 @@ function initializeMethodsRecord(dataType) {
       }
     }
     
-    // Form submission handler (Add or Update record)
-    $('#submitBtn').click(function(event) {
+    $('#submitBtn').click(async function(event) {
       event.preventDefault();
-      
+    
       let users = JSON.parse(localStorage.getItem('user'));
       var recordId = Number($('#recordId').val());
       var userId = users.userId;
@@ -311,108 +310,188 @@ function initializeMethodsRecord(dataType) {
       var season = getSeason(month);
       var type = dataType;
       var monthYear = `${month} ${year}`;
-      
+    
       var fileInput = document.getElementById('fileRecord');
       var file = fileInput.files[0];
-      
-      if (file) {
-          const reader = new FileReader();
+      let terms = getSearchTerms(dataType);
+    
+      try {
+        if (file) {
+          // Validate the search terms asynchronously
+          let isValid = await validateSearchTerms(file, terms[0]);
           
-          reader.onload = function(event) {
-              const arrayBuffer = event.target.result;
-              const blob = new Blob([arrayBuffer], { type: file.type });
-              
-              // Convert Blob to base64 string
-              const readerBase64 = new FileReader();
-              readerBase64.onload = function(e) {
-                  const fileRecord = e.target.result.split(',')[1]; // Extract base64 string
-                  
-                  if (selectedRow !== null) {
-                      let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
-                      record.updateRecord(record).then(id => {
-                          processDataBasedOnType(dataType, file, id, season, monthYear);
-                      }).catch(error => {
-                          console.error("Error creating record:", error);
-                      });
-                      selectedRow = null;
-                      $('#lblUpload').text('Upload File:');
-                      $('#submitBtn').text('Add record');
-                      $('#cancelBtn').hide();
-                      resetFields();
-                  } else {
-                      // Assuming createRecord returns a promise
-                      let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
-                      record.createRecord(record).then(id => {
-                          processDataBasedOnType(dataType, file, id, season, monthYear);
-                      }).catch(error => {
-                          console.error("Error creating record:", error);
-                      });
-                  }
-                  $('#lblUpload').text('Upload File:');
-                  $('#submitBtn').text('Add record');
-                  $('#cancelBtn').hide();
-                   // Clear form fields after submission
-                  $('#recordForm')[0].reset();
-                  $('#fileRecord').attr('required', 'required');
-                  getRecord(dataType);
-                  displayRecords();
-              };
-              
-              readerBase64.readAsDataURL(blob);
+          if (!isValid) {
+            alert('The file is not a valid format.');
+            return;
+          }
+      
+          const arrayBuffer = await file.arrayBuffer();
+          const blob = new Blob([arrayBuffer], { type: file.type });
+          
+          // Convert Blob to base64 string
+          const readerBase64 = new FileReader();
+          readerBase64.onload = function(e) {
+            const fileRecord = e.target.result.split(',')[1]; // Extract base64 string
+            
+            // Prepare the record object
+            let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
+            
+            // Create or update record based on the selectedRow
+            let recordPromise = selectedRow !== null ? 
+              record.updateRecord(record) :
+              record.createRecord(record);
+            
+            recordPromise.then(id => {
+              processDataBasedOnType(dataType, terms[0], terms[1], terms[2], terms[3], file, id, season, monthYear);
+              // Reset form and update UI
+              $('#lblUpload').text('Upload File:');
+              $('#submitBtn').text('Add record');
+              $('#cancelBtn').hide();
+              $('#recordForm')[0].reset();
+              $('#fileRecord').attr('required', 'required');
+              getRecord(dataType);
+              displayRecords();
+              resetFields();
+              selectedRow = null;
+            }).catch(error => {
+              console.error("Error creating/updating record:", error);
+            });
           };
-          reader.readAsArrayBuffer(file);
-      } else {
+          
+          readerBase64.readAsDataURL(blob);
+        } else {
           if (selectedRow !== null) {
             let record = new Record(recordId, userId, name, season, monthYear, type, '');
-            record.updateRecord(record); // Assuming this method updates the record
-            selectedRow = null;
-            $('#lblUpload').text('Upload File:');
-            $('#submitBtn').text('Add record');
-            $('#cancelBtn').hide();
-             // Clear form fields after submission
-            $('#recordForm')[0].reset();
-            $('#fileRecord').attr('required', 'required');
-            getRecord(dataType);
-            displayRecords();
-            resetFields();
-        } else {
+            record.updateRecord(record).then(() => {
+              // Reset form and update UI
+              $('#lblUpload').text('Upload File:');
+              $('#submitBtn').text('Add record');
+              $('#cancelBtn').hide();
+              $('#recordForm')[0].reset();
+              $('#fileRecord').attr('required', 'required');
+              getRecord(dataType);
+              displayRecords();
+              resetFields();
+              selectedRow = null;
+            }).catch(error => {
+              console.error("Error updating record:", error);
+            });
+          } else {
             alert('Please select a file first.');
+          }
         }
+      } catch (error) {
+        console.error('Error during file validation:', error);
       }
+      
     });
+    
 
-    function processDataBasedOnType(dataType, file, id, season, monthYear) {
+    function getSearchTerms(dataType) {
+      let terms;
+      let terms2;
+      let methodName;
+      let methodName2;
+      switch (dataType) {
+        case 'production':
+          terms = ["Barangay", "Commodity", "Variety", "Area Planted", "Month Planted", "Month Harvested", "Volume of Production", "Cost of Production", "Farm Gate Price", "Volume Sold", "Mode of Delivery"];
+          methodName = processProductionData;
+          break;
+        case 'price':
+          terms = ["Commodity", "Price"];
+          methodName = processPriceData;
+          break;
+        case 'pestDisease':
+          terms = ["Farm Location" ,"Crops Planted", "Pest Observed"];
+          terms2 = ["Farm Location", "Crops Planted", "Disease Observed"];
+          methodName = processPestData;
+          methodName2 = processDiseaseData;
+          break;
+        case 'soilHealth':
+          terms = ["Barangay", "Farmer", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
+          methodName = processSoilHealthData;
+          break;
+        default:
+          console.error("Unknown data type");
+      }
+
+      return [terms, terms2, methodName, methodName2];
+    }
+
+    function validateSearchTerms(file, searchTerms) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+          try {
+            const data = event.target.result;
+            const workbook = XLSX.read(new Uint8Array(data), { type: 'array' });
+    
+            // Normalize the search terms
+            const normalizedSearchTerms = searchTerms.map(normalizeString);
+    
+            // Create a Set to keep track of found search terms
+            const foundTerms = new Set();
+    
+            // Iterate through each sheet in the workbook
+            for (let sheetName of workbook.SheetNames) {
+              const worksheet = workbook.Sheets[sheetName];
+              const range = XLSX.utils.decode_range(worksheet['!ref']);
+    
+              // Iterate through each row in the sheet
+              for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
+                // Iterate through each cell in the row
+                for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
+                  const cellAddress = XLSX.utils.encode_cell({ r: rowNum, c: colNum });
+                  const cell = worksheet[cellAddress];
+    
+                  if (cell && cell.v) {
+                    const cellValue = cell.v;
+                    if (cellMatchesSearchTerms(cellValue, normalizedSearchTerms)) {
+                      normalizedSearchTerms.forEach(term => {
+                        if (cellMatchesSearchTerms(cellValue, [term])) {
+                          foundTerms.add(term);
+                        }
+                      });
+                    }
+                  }
+                }
+              }
+            }
+    
+            console.log(foundTerms);
+            // Check if all search terms are found
+            const allTermsFound = normalizedSearchTerms.every(term => foundTerms.has(term));
+            resolve(allTermsFound);
+          } catch (error) {
+            reject(error);
+          }
+        };
+    
+        reader.onerror = function(event) {
+          reject(event.target.error);
+        };
+    
+        reader.readAsArrayBuffer(file);
+      });
+    }
+    
+
+    function processDataBasedOnType(dataType, searchTerms, searchTerms2, methodName, methodName2, file, id, season, monthYear) {
       const reader = new FileReader();
       reader.onload = function(event) {
         const data = event.target.result;
         const workbook = XLSX.read(data, { type: 'binary' });
-    
-        switch (dataType) {
-          case 'production':
-            const productionSearchTerms = ["Barangay", "Commodity", "Variety", "Area Planted", "Month Planted", "Month Harvested", "Volume of Production", "Cost of Production", "Farm Gate Price", "Volume Sold", "Mode of Delivery"];
-            extractData(workbook, productionSearchTerms, processProductionData, id, season, monthYear);
-            break;
-          case 'price':
-            const priceSearchTerms = ["Crop Name", "Price"];
-            extractData(workbook, priceSearchTerms, processPriceData, id, season, monthYear);
-            break;
-          case 'pestDisease':
-            const pestSearchTerms = ["Crop Name", "Pest Name"];
-            extractData(workbook, pestSearchTerms, processPestData, id, season, monthYear);
-            const diseaseSearchTerms = ["Crop Name", "Disease Name"];
-            extractData(workbook, diseaseSearchTerms, processDiseaseData, id, season, monthYear);
-            break;
-          case 'soilHealth':
-            const soilHealthSearchTerms = ["Barangay", "Farmer", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", , "Recommendations"];
-            extractData(workbook, soilHealthSearchTerms, processSoilHealthData, id, season, monthYear);
-            break;
-          default:
-            console.error("Unknown data type");
-        }
+        if (dataType === 'pestDisease') {
+          extractData(workbook, searchTerms, methodName, id, season, monthYear);
+          extractData(workbook, searchTerms2, methodName2, id, season, monthYear);
+
+        } else {
+          extractData(workbook, searchTerms, methodName, id, season, monthYear);
+        }     
       };
       reader.readAsBinaryString(file);
     }
-
 
     // Normalize search term: remove whitespace and convert to lowercase
     function normalizeString(str) {
@@ -443,9 +522,9 @@ function initializeMethodsRecord(dataType) {
       workbook.SheetNames.forEach((sheetName) => {
           const worksheet = workbook.Sheets[sheetName];
           const range = XLSX.utils.decode_range(worksheet['!ref']);
-          
+  
           // Iterate through each row in the sheet
-          for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
+          for (let rowNum = (range.s.r + 4); rowNum <= range.e.r; rowNum++) {
               // Iterate through each cell in the row
               for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
                   const cellAddress = XLSX.utils.encode_cell({ r: rowNum, c: colNum });
