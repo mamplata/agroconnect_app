@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('cropName', 255);
             $table->string('variety', 255);
             $table->string('type', 255);
-            $table->string('priceValue', 255);
             $table->timestamps();
         });
     }

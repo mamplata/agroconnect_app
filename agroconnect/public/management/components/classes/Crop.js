@@ -2,12 +2,11 @@
 let crops = [];
 
 class Crop {
-  constructor(cropId, cropName, variety, type, priceValue) {
+  constructor(cropId, cropName, variety, type) {
     this.cropId = cropId;
     this.cropName = cropName;
     this.variety = variety;
     this.type = type;
-    this.priceValue = priceValue;
   }
 
   createCrop(crop) {
@@ -147,7 +146,6 @@ function initializeMethodsCrop() {
                   <td>${crop.cropName}</td>
                   <td>${crop.variety}</td>
                   <td>${crop.type}</td>
-                  <td>${crop.priceValue}</td>
                 </tr>
               `);
             });
@@ -172,7 +170,6 @@ function initializeMethodsCrop() {
                 <td>${crop.cropName}</td>
                 <td>${crop.variety}</td>
                 <td>${crop.type}</td>
-                <td>${crop.priceValue}</td>
             </tr>
           `);
         }
@@ -213,9 +210,8 @@ function initializeMethodsCrop() {
       var cropName = $('#cropName').val();
       var variety = $('#variety').val();
       var type = $('#type').val();
-      var priceValue = $('#priceValue').val();
       if (selectedRow !== null) {
-        let crop = new Crop(cropId, cropName, variety, type, priceValue);
+        let crop = new Crop(cropId, cropName, variety, type);
         crop.updateCrop(crop);
         getCrop();
         displayCrops();
@@ -224,7 +220,7 @@ function initializeMethodsCrop() {
         $('#cancelBtn').hide(); 
         resetFields();
       } else {
-        let crop = new Crop(cropId, cropName, variety, type, priceValue);
+        let crop = new Crop(cropId, cropName, variety, type);
         crop.createCrop(crop);
         getCrop();
         displayCrops();
@@ -257,7 +253,6 @@ function initializeMethodsCrop() {
           $('#cropName').val(crop.cropName);
           $('#variety').val(crop.variety);
           $('#type').val(crop.type);
-          $('#priceValue').val(crop.priceValue);
           $('#submitBtn').text('Update Crop');
         });
 

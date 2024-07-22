@@ -55,13 +55,6 @@ function initializeCropView() {
              <option value="Fruit Trees">Fruit Trees</option>
            </select>
          </div>
-         <div class="mb-3">
-           <select class="form-control" id="priceValue" name="priceValue" required>
-             <option value="" disabled selected>Select Price Value</option>
-             <option value="kg">kg</option>
-             <option value="pcs">pcs</option>
-           </select>
-         </div>
          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
        </form>
@@ -79,7 +72,6 @@ function initializeCropView() {
              <th scope="col">Crop Name</th>
              <th scope="col">Variety</th>
              <th scope="col">Type</th>
-             <th scope="col">Price Value</th>
            </tr>
          </thead>
          <tbody id="cropTableBody">

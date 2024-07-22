@@ -140,6 +140,11 @@ body {
     border-radius: 15px;
 }
 
+#entries-option {
+    width: 220%;
+    border-radius: 15px;
+}
+
 .input-group .input-group-text {
     cursor: pointer;
 }
