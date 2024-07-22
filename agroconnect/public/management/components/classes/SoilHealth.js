@@ -84,7 +84,7 @@ class SoilHealth {
     }
   }
   
-  function getSoilHealth() {
+  function getSoilHealths() {
     // Fetch soil health data from Laravel backend
     $.ajaxSetup({
       headers: {
@@ -105,10 +105,92 @@ class SoilHealth {
     });
   }
   
-  function searchSoilHealth(farmerName) {
-    const foundSoilHealth = soilHealthData.filter(soilHealth => soilHealth.farmerName.includes(farmerName));
-    return foundSoilHealth;
+  function initializeMethodsSoilHealth() {
+
+    function searchSoilHealth(searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+      const foundSoilHealths = soilHealths.filter(soilHealth => {
+        return Object.values(soilHealth).some(value => 
+          value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+        );
+      });
+      return foundSoilHealths;
+    }
+  
+    var pageSize = 5;
+    var currentPage = 1;
+  
+    async function displaySoilHealth(searchTerm = null) {
+      // Simulate a delay of 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+  
+      $('#soilHealthTableBody').empty();
+  
+      var startIndex = (currentPage - 1) * pageSize;
+      var endIndex = startIndex + pageSize;
+  
+      const foundSoilHealths = searchTerm ? searchSoilHealth(searchTerm) : soilHealths;
+  
+      if (foundSoilHealths.length > 0) {
+        for (var i = startIndex; i < endIndex; i++) {
+          if (i >= foundSoilHealths.length) {
+            break;
+          }
+          var soilHealth = foundSoilHealths[i];
+          $('#soilHealthTableBody').append(`
+            <tr data-index=${soilHealth.recordId}>
+              <td>${soilHealth.barangay}</td>
+              <td>${soilHealth.farmerName}</td>
+              <td>${soilHealth.nitrogenContent}</td>
+              <td>${soilHealth.phosphorusContent}</td>
+              <td>${soilHealth.potassiumContent}</td>
+              <td>${soilHealth.pH}</td>
+              <td>${soilHealth.generalRating}</td>
+              <td>${soilHealth.recommendations}</td>
+              <td>${soilHealth.season}</td>
+              <td>${soilHealth.monthYear}</td>
+            </tr>
+          `);
+        }
+      } else {
+        $('#soilHealthTableBody').append(`
+          <tr>
+            <td colspan="10">No results found!</td>
+          </tr>
+        `);
+      }
+
+      // Reinitialize tablesorter after adding rows
+      $('#soilHealthTable').trigger('update');
+    }
+  
+    $('#search').on('input', function() {
+      let searchTerm = $('#search').val();
+      displaySoilHealth(searchTerm);
+    });
+  
+    // Pagination: Previous button click handler
+    $('#prevBtn').click(function() {
+      if (currentPage > 1) {
+        currentPage--;
+        displaySoilHealth($('#search').val());
+      }
+    });
+  
+    // Pagination: Next button click handler
+    $('#nextBtn').click(function() {
+      var totalPages = Math.ceil((searchSoilHealth($('#search').val()).length) / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displaySoilHealth($('#search').val());
+      }
+    });
+  
+    getSoilHealths();
+    displaySoilHealth();
   }
+  
+
   // Function to build and return table rows as an array of SoilHealth instances
 async function processSoilHealthData(workbook, cellMappings, id, season, monthYear) {
   // Select the sheet you want to read from

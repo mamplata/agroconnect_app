@@ -100,10 +100,86 @@ class Disease {
     });
   }
   
-  function searchDisease(cropName) {
-    const foundDiseases = diseases.filter(disease => disease.cropName.includes(cropName));
-    return foundDiseases;
+  function initializeMethodsDisease() {
+
+    function searchDisease(searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+      const foundDiseases = diseases.filter(disease => {
+        return Object.values(disease).some(value => 
+          value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+        );
+      });
+      return foundDiseases;
+    }
+  
+    var pageSize = 5;
+    var currentPage = 1;
+  
+    async function displayDisease(searchTerm = null) {
+      // Simulate a delay of 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+  
+      $('#diseaseTableBody').empty();
+  
+      var startIndex = (currentPage - 1) * pageSize;
+      var endIndex = startIndex + pageSize;
+  
+      const foundDiseases = searchTerm ? searchDisease(searchTerm) : diseases;
+  
+      if (foundDiseases.length > 0) {
+        for (var i = startIndex; i < endIndex; i++) {
+          if (i >= foundDiseases.length) {
+            break;
+          }
+          var disease = foundDiseases[i];
+          $('#diseaseTableBody').append(`
+            <tr data-index=${disease.diseaseId}>
+              <td>${disease.barangay}</td>
+              <td>${disease.cropName}</td>
+              <td>${disease.diseaseName}</td>
+              <td>${disease.season}</td>
+              <td>${disease.monthYear}</td>
+            </tr>
+          `);
+        }
+      } else {
+        $('#diseaseTableBody').append(`
+          <tr>
+            <td colspan="5">No results found!</td>
+          </tr>
+        `);
+      }
+
+      // Reinitialize tablesorter after adding rows
+      $('#diseaseTable').trigger('update');
+    }
+  
+    $('#search').on('input', function() {
+      let searchTerm = $('#search').val();
+      displayDisease(searchTerm);
+    });
+  
+    // Pagination: Previous button click handler
+    $('#prevBtn').click(function() {
+      if (currentPage > 1) {
+        currentPage--;
+        displayDisease($('#search').val());
+      }
+    });
+  
+    // Pagination: Next button click handler
+    $('#nextBtn').click(function() {
+      var totalPages = Math.ceil((searchDisease($('#search').val()).length) / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayDisease($('#search').val());
+      }
+    });
+  
+    getDiseases();
+    displayDisease();
   }
+  
   
 // Function to build and return table rows as an array of Disease instances
 async function processDiseaseData(workbook, cellMappings, id, season, monthYear) {

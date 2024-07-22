@@ -100,10 +100,86 @@ class Pest {
     });
   }
   
-  function searchPest(cropName) {
-    const foundPests = pests.filter(pest => pest.cropName.includes(cropName));
-    return foundPests;
+  function initializeMethodsPest() {
+
+    function searchPest(searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+      const foundPests = pests.filter(pest => {
+        return Object.values(pest).some(value => 
+          value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+        );
+      });
+      return foundPests;
+    }
+  
+    var pageSize = 5;
+    var currentPage = 1;
+  
+    async function displayPest(searchTerm = null) {
+      // Simulate a delay of 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+  
+      $('#pestTableBody').empty();
+  
+      var startIndex = (currentPage - 1) * pageSize;
+      var endIndex = startIndex + pageSize;
+  
+      const foundPests = searchTerm ? searchPest(searchTerm) : pests;
+  
+      if (foundPests.length > 0) {
+        for (var i = startIndex; i < endIndex; i++) {
+          if (i >= foundPests.length) {
+            break;
+          }
+          var pest = foundPests[i];
+          $('#pestTableBody').append(`
+            <tr data-index=${pest.pestId}>
+              <td>${pest.barangay}</td>
+              <td>${pest.cropName}</td>
+              <td>${pest.pestName}</td>
+              <td>${pest.season}</td>
+              <td>${pest.monthYear}</td>
+            </tr>
+          `);
+        }
+      } else {
+        $('#pestTableBody').append(`
+          <tr>
+            <td colspan="5">No results found!</td>
+          </tr>
+        `);
+      }
+
+      // Reinitialize tablesorter after adding rows
+      $('#pestTable').trigger('update');
+    }
+  
+    $('#search').on('input', function() {
+      let searchTerm = $('#search').val();
+      displayPest(searchTerm);
+    });
+  
+    // Pagination: Previous button click handler
+    $('#prevBtn').click(function() {
+      if (currentPage > 1) {
+        currentPage--;
+        displayPest($('#search').val());
+      }
+    });
+  
+    // Pagination: Next button click handler
+    $('#nextBtn').click(function() {
+      var totalPages = Math.ceil((searchPest($('#search').val()).length) / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayPest($('#search').val());
+      }
+    });
+  
+    getPests();
+    displayPest();
   }
+  
   
 // Function to build and return table rows as an array of Pest instances
 async function processPestData(workbook, cellMappings, id, season, monthYear) {

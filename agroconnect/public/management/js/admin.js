@@ -1,16 +1,14 @@
-// admin.js
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Admin page loaded.');
+   
 
     // Check if user is logged in
-    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+    if (!sessionStorage.getItem('isLoggedIn') || sessionStorage.getItem('isLoggedIn') !== 'true') {
         console.log('User not logged in. Redirecting to login page...');
         redirectToLogin();
     } else {
         // User is logged in, check if user is admin
-        var user = JSON.parse(localStorage.getItem('user'));
-
+        var user = JSON.parse(sessionStorage.getItem('user'));
+        console.log('Admin page loadedss.');
         if (!user || user.role !== 'admin') {
             redirectToLogin();
         } else {

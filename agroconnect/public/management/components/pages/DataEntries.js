@@ -9,14 +9,14 @@ $(document).ready(function() {
                   <option value="prices">Prices</option>
                   <option value="pests">Pests</option>
                   <option value="diseases">Diseases</option>
-                  <option value="soi_healths">Soil Healths</option>
+                  <option value="soil_healths">Soil Healths</option>
               </select>
           </div>
           <div class="input-group">
               <div class="input-group-prepend">
                   <span class="input-group-text border-0 bg-transparent"><i class="fas fa-search"></i></span>
               </div>
-              <input placeholder="Search name..." type="text" class="form-control rounded-pill" id="search" name="search">
+              <input placeholder="Search query..." type="text" class="form-control rounded-pill" id="search" name="search">
           </div>
       </div>
       <div id="entries-content">
@@ -34,5 +34,6 @@ $(document).ready(function() {
       initializeDataEntriesMenu(defaultOption);
   }
   // Initialize manage users view when document is ready
+  getProduction();
   initializeDataEntriesView();
 });

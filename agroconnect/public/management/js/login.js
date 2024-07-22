@@ -7,7 +7,7 @@ $(document).ready(function() {
     });
 
     // Check if already logged in
-    if (localStorage.getItem('isLoggedIn') === 'true') {
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
         // Redirect based on role
         redirectBasedOnRole();
     }
@@ -26,9 +26,9 @@ $(document).ready(function() {
                 password: password
             },
             success: function(response) {
-                // Store user data in localStorage upon successful login
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('user', JSON.stringify(response.user)); // Store user details
+                // Store user data in sessionStorage upon successful login
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('user', JSON.stringify(response.user)); // Store user details
 
                 $('#loginResult').html('<div class="alert alert-success">Login successful!</div>');
                 
@@ -43,7 +43,7 @@ $(document).ready(function() {
     });
 
     function redirectBasedOnRole() {
-        var user = JSON.parse(localStorage.getItem('user'));
+        var user = JSON.parse(sessionStorage.getItem('user'));
         if (user && user.role === 'admin') {
             window.location.href = '/management/admin'; // Redirect to admin page
         } else if (user && user.role === 'agriculturist') {

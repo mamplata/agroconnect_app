@@ -109,12 +109,93 @@ function getProduction() {
   });
 }
 
-getProduction();
+function initializeMethodsProduction(){
+  
+  function searchProduction(searchTerm) {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+    const foundProductions = productions.filter(production => {
+      return Object.values(production).some(value => 
+        value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+      );
+    });
+    return foundProductions;
+  }
 
-function searchProduction(cropName) {
-  const foundProductions = productions.filter(production => production.cropName.includes(cropName));
-  return foundProductions;
+  var pageSize = 5;
+  var currentPage = 1;
+
+  async function displayProduction(searchTerm = null) {
+    // Simulate a delay of 1 second
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    $('#productionTableBody').empty();
+
+    var startIndex = (currentPage - 1) * pageSize;
+    var endIndex = startIndex + pageSize;
+
+    const foundProductions = searchTerm ? searchProduction(searchTerm) : productions;
+
+    if (foundProductions.length > 0) {
+      for (var i = startIndex; i < endIndex; i++) {
+        if (i >= foundProductions.length) {
+          break;
+        }
+        var production = foundProductions[i];
+        $('#productionTableBody').append(`
+          <tr data-index=${production.productionId}>
+            <td>${production.barangay}</td>
+            <td>${production.cropName}</td>
+            <td>${production.variety}</td>
+            <td>${production.areaPlanted}</td>
+            <td>${production.monthPlanted}</td>
+            <td>${production.monthHarvested}</td>
+            <td>${production.volumeProduction}</td>
+            <td>${production.productionCost}</td>
+            <td>${production.price}</td>
+            <td>${production.volumeSold}</td>
+            <td>${production.season}</td>
+            <td>${production.monthYear}</td>
+          </tr>
+        `);
+      }
+    } else {
+      $('#productionTableBody').append(`
+        <tr>
+          <td colspan="12">No results found!</td>
+        </tr>
+      `);
+    }
+
+     // Reinitialize tablesorter after adding rows
+     $('#productionTable').trigger('update');
+  }
+
+  $('#search').on('input', function() {
+    let searchTerm = $('#search').val();
+    displayProduction(searchTerm);
+  });
+
+  // Pagination: Previous button click handler
+  $('#prevBtn').click(function() {
+    if (currentPage > 1) {
+      currentPage--;
+      displayProduction($('#search').val());
+    }
+  });
+
+  // Pagination: Next button click handler
+  $('#nextBtn').click(function() {
+    var totalPages = Math.ceil((searchProduction($('#search').val()).length) / pageSize);
+    if (currentPage < totalPages) {
+      currentPage++;
+      displayProduction($('#search').val());
+    }
+  });
+
+  getProduction();
+  displayProduction();
 }
+
 
 // Function to build and return table rows as an array of Production instances
 async function processProductionData(workbook, cellMappings, id, season, monthYear) {

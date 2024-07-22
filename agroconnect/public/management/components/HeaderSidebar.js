@@ -10,7 +10,7 @@ $(document).ready(function() {
         $.getScript(url);
     }
 
-    var user = JSON.parse(localStorage.getItem('user'));
+    var user = JSON.parse(sessionStorage.getItem('user'));
 
     // Prepend header and sidebar structure to the body
     $('body').prepend(`
@@ -73,7 +73,7 @@ $(document).ready(function() {
                     </ul>
                 </div>
             </nav>
-            <main role="main" id="main-content" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <main role="main" id="main-content" class="ml-sm-auto col-lg-10 pr-4 pl-0">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Main Content</h1>
                 </div>
@@ -146,8 +146,8 @@ $(document).ready(function() {
         // Ask for confirmation before logging out
         if (confirm("Are you sure you want to log out?")) {
             // Clear session storage
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('user');
             // Redirect to login page
             window.location.href = '/management/login';
         } else {

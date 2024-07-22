@@ -100,12 +100,85 @@ function getPrices() {
   });
 }
 
-getPrices();
+function initializeMethodsPrice() {
 
-function searchPrice(cropName) {
-  const foundPrices = prices.filter(price => price.cropName.includes(cropName));
-  return foundPrices;
+  function searchPrice(searchTerm) {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+    const foundPrices = prices.filter(price => {
+      return Object.values(price).some(value => 
+        value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+      );
+    });
+    return foundPrices;
+  }
+
+  var pageSize = 5;
+  var currentPage = 1;
+
+  async function displayPrice(searchTerm = null) {
+    // Simulate a delay of 1 second
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    $('#priceTableBody').empty();
+
+    var startIndex = (currentPage - 1) * pageSize;
+    var endIndex = startIndex + pageSize;
+
+    const foundPrices = searchTerm ? searchPrice(searchTerm) : prices;
+
+    if (foundPrices.length > 0) {
+      for (var i = startIndex; i < endIndex; i++) {
+        if (i >= foundPrices.length) {
+          break;
+        }
+        var price = foundPrices[i];
+        $('#priceTableBody').append(`
+          <tr data-index=${price.priceId}>
+            <td>${price.cropName}</td>
+            <td>${price.price}</td>
+            <td>${price.season}</td>
+            <td>${price.monthYear}</td>
+          </tr>
+        `);
+      }
+    } else {
+      $('#priceTableBody').append(`
+        <tr>
+          <td colspan="4">No results found!</td>
+        </tr>
+      `);
+    }
+
+     // Reinitialize tablesorter after adding rows
+     $('#priceTable').trigger('update');
+  }
+
+  $('#search').on('input', function() {
+    let searchTerm = $('#search').val();
+    displayPrice(searchTerm);
+  });
+
+  // Pagination: Previous button click handler
+  $('#prevBtn').click(function() {
+    if (currentPage > 1) {
+      currentPage--;
+      displayPrice($('#search').val());
+    }
+  });
+
+  // Pagination: Next button click handler
+  $('#nextBtn').click(function() {
+    var totalPages = Math.ceil((searchPrice($('#search').val()).length) / pageSize);
+    if (currentPage < totalPages) {
+      currentPage++;
+      displayPrice($('#search').val());
+    }
+  });
+
+  getPrices();
+  displayPrice();
 }
+
 // Function to check if the data is numeric or a valid range
 function isNumeric(data) {
   // Check if the data is a single number

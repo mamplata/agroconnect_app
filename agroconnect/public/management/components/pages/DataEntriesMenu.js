@@ -13,7 +13,7 @@ function initializeDataEntriesMenu(option) {
         case 'prices':
             initializePriceView();
             break;
-        case 'pest':
+        case 'pests':
             initializePestView();
             break;
         case 'diseases':
@@ -29,30 +29,32 @@ function initializeDataEntriesMenu(option) {
 
 // Function to initialize Barangay Records view
 function initializeProductionView() {
-   $('#entries-content').html(`
+  $('#entries-content').html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
-      <div class="col-md-12">
-        <table id="productionTable" class="table table-custom text-center">
-          <thead>
-            <tr style="background-color: #2774E9; color: white;">
-              <th scope="col">Barangay</th>
-              <th scope="col">Commodity</th>
-              <th scope="col">Variety</th>
-              <th scope="col">Area Planted</th>
-              <th scope="col">Month Planted</th>
-              <th scope="col">Month Harvested</th>
-              <th scope="col">Volume of Production</th>
-              <th scope="col">Cost of Production</th>
-              <th scope="col">Farm Gate Price</th>
-              <th scope="col">Volume Sold</th>
-              <th scope="col">Season</th>
-              <th scope="col">Month Year</th>
-            </tr>
-          </thead>
-          <tbody id="productionTableBody">
-            <!-- Table rows will be dynamically added here -->
-          </tbody>
-        </table>
+      <div class="col">
+        <div class="table-responsive">
+          <table id="productionTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Barangay</th>
+                <th scope="col">Commodity</th>
+                <th scope="col">Variety</th>
+                <th scope="col">Area Planted</th>
+                <th scope="col">Month Planted</th>
+                <th scope="col">Month Harvested</th>
+                <th scope="col">Volume of Production</th>
+                <th scope="col">Cost of Production</th>
+                <th scope="col">Farm Gate Price</th>
+                <th scope="col">Volume Sold</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="productionTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
         <div class="text-right">
           <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
           <button id="nextBtn" class="btn btn-green">Next</button>
@@ -60,7 +62,180 @@ function initializeProductionView() {
       </div>
     </div>
   `);  
-  initializeMethodsCrop();
-  createDeleteModal();
-  createEditModal();  
+
+  initializeMethodsProduction();
+
+  // Initialize tablesorter
+  $('#productionTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
+}
+
+function initializePriceView() {
+  $('#entries-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col">
+        <div class="table-responsive">
+          <table id="priceTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Commodity</th>
+                <th scope="col">Price</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="priceTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);  
+  initializeMethodsPrice();
+
+  // Initialize tablesorter
+  $('#priceTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
+}
+
+function initializePestView() {
+  $('#entries-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col">
+        <div class="table-responsive">
+          <table id="pestTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Farm Location</th>
+                <th scope="col">Crops Planted</th>
+                <th scope="col">Pest Observed</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="pestTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);  
+  initializeMethodsPest();
+
+  // Initialize tablesorter
+  $('#pestTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
+}
+
+function initializeDiseaseView() {
+  $('#entries-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col">
+        <div class="table-responsive">
+          <table id="diseaseTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Farm Location</th>
+                <th scope="col">Crops Planted</th>
+                <th scope="col">Disease Observed</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="diseaseTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);  
+  initializeMethodsDisease();
+
+  // Initialize tablesorter
+  $('#diseaseTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
+}
+
+function initializeSoilHealthView() {
+  $('#entries-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col">
+        <div class="table-responsive">
+          <table id="soilHealthTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Barangay</th>
+                <th scope="col">Farmer</th>
+                <th scope="col">Nitrogen</th>
+                <th scope="col">Phosphorus</th>
+                <th scope="col">Potassium</th>
+                <th scope="col">pH</th>
+                <th scope="col">General Fertility</th>
+                <th scope="col">Recommendations</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="soilHealthTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);  
+  initializeMethodsSoilHealth();
+
+  // Initialize tablesorter
+  $('#soilHealthTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
 }

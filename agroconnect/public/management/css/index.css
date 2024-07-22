@@ -131,7 +131,7 @@ body {
     width: 25%;
 }
 
-#userTableBody tr, #barangayTableBody tr {
+tr {
     cursor: pointer;
 }
 
@@ -145,6 +145,53 @@ body {
     border-radius: 15px;
 }
 
+#productionTableBody {
+    width: 50%;
+}
+
 .input-group .input-group-text {
     cursor: pointer;
 }
+
+.table-custom {
+font-size: 1rem; /* Adjust the font size if needed */
+}
+
+.table-responsive {
+ overflow: auto;
+}
+
+.table-responsive::-webkit-scrollbar {
+width: 12px;
+height: 12px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+background-color: #2774E9;
+border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+background-color: #f1f1f1;
+}
+
+.table thead th {
+    vertical-align: middle;
+}
+
+.table-custom td {
+    vertical-align: middle; /* Center text vertically */
+}
+
+  /* Ensure sorting icons are visible and styled */
+  .tablesorter-headerAsc .tablesorter-header-inner::after {
+    content: '\25B2'; /* Upward arrow character */
+    font-size: 0.8em;
+    margin-left: 5px;
+  }
+
+  .tablesorter-headerDesc .tablesorter-header-inner::after {
+    content: '\25BC'; /* Downward arrow character */
+    font-size: 0.8em;
+    margin-left: 5px;
+  }
