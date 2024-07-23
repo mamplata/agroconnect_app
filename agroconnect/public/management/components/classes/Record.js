@@ -211,49 +211,58 @@ function initializeMethodsRecord(dataType) {
 
       // Simulate a delay of 1 second
       await new Promise(resolve => setTimeout(resolve, 1000));
-
+  
       $('#recordTableBody').empty();
-    
+  
+      // Retrieve and parse user info from sessionStorage
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const userId = user ? user.userId : null;
+      const userRole = user ? user.role : 'admin';
       var startIndex = (currentPage - 1) * pageSize;
       var endIndex = startIndex + pageSize;
+  
+      // Filter records based on user role
+      const filteredRecords = userRole === 'admin' ? records : records.filter(record => record.userId === userId);
+  
       if (recordName) {
-        // Display a single record if recordName is provided
-          const foundrecords = searchrecord(recordName);
-          if (foundrecords.length > 0) {
-            foundrecords.forEach(record => {
-              $('#recordTableBody').append(`
-                <tr data-index=${record.recordId}>
-                    <td style="display: none;">${record.recordId}</td>
-                    <td>${record.downloadLink}</td>
-                    <td>${record.fileSize}</td>
-                </tr>
-              `);
-            });
+          // Display a single record if recordName is provided
+          const foundRecords = searchrecord(recordName).filter(record => filteredRecords.some(fr => fr.recordId === record.recordId));
+          if (foundRecords.length > 0) {
+              foundRecords.forEach(record => {
+                  $('#recordTableBody').append(`
+                      <tr data-index=${record.recordId}>
+                          <td style="display: none;">${record.recordId}</td>
+                          <td>${record.downloadLink}</td>
+                          <td>${record.fileSize}</td>
+                      </tr>
+                  `);
+              });
           } else {
-            // Handle case where recordName is not provided
-            $('#recordTableBody').append(`
-              <tr>
-                <td colspan="4">record not found!</td>
-              </tr>
-            `)
+              // Handle case where recordName is not provided
+              $('#recordTableBody').append(`
+                  <tr>
+                      <td colspan="3">Record not found!</td>
+                  </tr>
+              `);
           }
       } else {
-        // Display paginated records if no recordName is provided
-        for (var i = startIndex; i < endIndex; i++) {
-          if (i >= records.length) {
-            break;
+          // Display paginated records if no recordName is provided
+          for (var i = startIndex; i < endIndex; i++) {
+              if (i >= filteredRecords.length) {
+                  break;
+              }
+              var record = filteredRecords[i];
+              $('#recordTableBody').append(`
+                  <tr data-index=${record.recordId}>
+                      <td style="display: none;">${record.recordId}</td>
+                      <td>${record.downloadLink}</td>
+                      <td>${record.fileSize}</td>
+                  </tr>
+              `);
           }
-          var record = records[i];
-          $('#recordTableBody').append(`
-            <tr data-index=${record.recordId}>
-                <td style="display: none;">${record.recordId}</td>
-                <td>${record.downloadLink}</td>
-                <td>${record.fileSize}</td>
-            </tr>
-          `);
-        }
       }
-    }
+  }
+  
 
     // Display initial records
     displayRecords();
@@ -301,7 +310,7 @@ function initializeMethodsRecord(dataType) {
     $('#submitBtn').click(async function(event) {
       event.preventDefault();
     
-      let users = JSON.parse(localStorage.getItem('user'));
+      let users = JSON.parse(sessionStorage.getItem('user'));
       var recordId = Number($('#recordId').val());
       var userId = users.userId;
       var name = $('#name').val();
@@ -318,7 +327,7 @@ function initializeMethodsRecord(dataType) {
       try {
         if (file) {
           // Validate the search terms asynchronously
-          let isValid = await validateSearchTerms(file, terms[0]);
+          let isValid = await validateSearchTerms(file, terms[0], terms[4]);
           
           if (!isValid) {
             alert('The file is not a valid format.');
@@ -342,6 +351,10 @@ function initializeMethodsRecord(dataType) {
               record.createRecord(record);
             
             recordPromise.then(id => {
+              if (id === undefined) {
+                  console.warn("Record ID is undefined. Skipping further processing.");
+                  return; // Exit the then block
+              }
               processDataBasedOnType(dataType, terms[0], terms[1], terms[2], terms[3], file, id, season, monthYear);
               // Reset form and update UI
               $('#lblUpload').text('Upload File:');
@@ -394,20 +407,24 @@ function initializeMethodsRecord(dataType) {
       let methodName2;
       switch (dataType) {
         case 'production':
+          checkFormat = "SUPPLY AND MARKET PROFILE";
           terms = ["Barangay", "Commodity", "Variety", "Area Planted", "Month Planted", "Month Harvested", "Volume of Production", "Cost of Production", "Farm Gate Price", "Volume Sold", "Mode of Delivery"];
           methodName = processProductionData;
           break;
         case 'price':
+          checkFormat = "PRICE MONITORING REPORT";
           terms = ["Commodity", "Price"];
           methodName = processPriceData;
           break;
         case 'pestDisease':
+          checkFormat = "PEST MONITORING REPORT";
           terms = ["Farm Location" ,"Crops Planted", "Pest Observed"];
           terms2 = ["Farm Location", "Crops Planted", "Disease Observed"];
           methodName = processPestData;
           methodName2 = processDiseaseData;
           break;
         case 'soilHealth':
+          checkFormat = "GENERAL SOIL FERTILITY RATING";
           terms = ["Barangay", "Farmer", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
           methodName = processSoilHealthData;
           break;
@@ -415,10 +432,11 @@ function initializeMethodsRecord(dataType) {
           console.error("Unknown data type");
       }
 
-      return [terms, terms2, methodName, methodName2];
+      return [terms, terms2, methodName, methodName2, checkFormat];
     }
 
-    function validateSearchTerms(file, searchTerms) {
+    function validateSearchTerms(file, searchTerms, checkFormat) {
+      searchTerms.push(checkFormat);
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         

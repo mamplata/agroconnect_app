@@ -65,11 +65,6 @@ body {
     padding-left: 5px;
 }
 
-.form-control {
-    background-color: #D9D9D9;
-    padding-left: 20px;
-}
-
 .form-select {
     padding: 3px;
     background-color: #B1BA4D;
@@ -81,7 +76,7 @@ body {
 .btn-custom {
     width: 100%;
     padding: 10px;
-    background-color: #B1BA4D;
+    background-color: #008000;
     border-radius: 3px;
     color: white;
     font-weight: 600;
@@ -108,7 +103,7 @@ body {
   
 /* Styles for footer */
 .footer {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     width: 100%;
     background-color: #008000; /* Light background color */
@@ -117,7 +112,8 @@ body {
     z-index: 1000; /* Ensure footer appears above other content */
 }
 
-#title {
+#pageTitle {
+    background-color: #6FC700;
     font-weight: bolder;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
@@ -129,4 +125,13 @@ section {
 
 img {
     cursor: pointer;
+}
+
+h2 {
+    font-weight: bolder;
+}
+
+.form-control {
+    background-color: #D9D9D9;
+    padding-left: 20px;
 }

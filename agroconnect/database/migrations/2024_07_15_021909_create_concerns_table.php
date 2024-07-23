@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('userId')->references('userId')->on('users');
             $table->string('title', 255);
             $table->string('content', 255);
-            $table->longText('attachment');
+            $table->longText('attachment')->nullable();
             $table->timestamps();
         });
     }

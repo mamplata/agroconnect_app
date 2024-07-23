@@ -2,47 +2,73 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Concern;
 use Illuminate\Http\Request;
 
 class ConcernController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the concerns.
      */
     public function index()
     {
-        //
+        $concerns = Concern::all();
+        return response()->json($concerns);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created concern in storage.
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'userId' => 'required|exists:users,userId',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'attachment' => 'nullable',
+        ]);
+
+        $concern = Concern::create($validatedData);
+
+        return response()->json($concern, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified concern.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $concern = Concern::findOrFail($id);
+        return response()->json($concern);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified concern in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $concern = Concern::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'userId' => 'required|exists:users,userId',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'attachment' => 'nullable|string|max:255',
+        ]);
+
+        $concern->update($validatedData);
+
+        return response()->json($concern);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified concern from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $concern = Concern::findOrFail($id);
+        $concern->delete();
+
+        return response()->json(null, 204);
     }
 }

@@ -4,7 +4,7 @@ $(document).ready(function() {
     if (!window.location.hash) {
         window.location.hash = '#dashboard';
     }
-    
+
     // Function to load content from a JavaScript file into main content area
     function loadContent(url) {
         $.getScript(url);
@@ -31,37 +31,8 @@ $(document).ready(function() {
         <div class="container-fluid sidebar-container pl-0 d-flex justify-content-center">
             <nav class="sidebar" style="background-color: #2774E9; height: calc(100vh - 60px);"> <!-- 60px is the height of the header -->
                 <div class="sidebar-sticky">
-                    <ul class="nav flex-column mt-4">
-                        <li class="nav-item">
-                            <a id="dashboard-link" class="nav-link active" href="#dashboard">
-                                <i class="fas fa-tachometer-alt"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item mt-3">
-                            <a id="manage-users-link" class="nav-link" href="#manage-users">
-                                <i class="fas fa-users"></i>
-                                Manage Users
-                            </a>
-                        </li>
-                        <li class="nav-item mt-3">
-                            <a id="maintenance-link" class="nav-link" href="#maintenance">
-                                <i class="fas fa-wrench"></i>
-                                Maintenance
-                            </a>
-                        </li>
-                        <li class="nav-item mt-3">
-                            <a id="data-entries-link" class="nav-link" href="#data-entries">
-                                <i class="fas fa-database"></i>
-                                Data Entries
-                            </a>
-                        </li>
-                        <li class="nav-item mt-3">
-                            <a id="concerns-link" class="nav-link" href="#concerns">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Concerns
-                            </a>
-                        </li>
+                    <ul class="nav flex-column mt-4" id="sidebar-links">
+                        <!-- Links will be dynamically added here -->
                     </ul>
                     <ul class="nav flex-column logout">
                         <li class="nav-item mt-auto">
@@ -85,6 +56,47 @@ $(document).ready(function() {
             </main>
         </div>
     `);
+
+    // Determine which sidebar links to show based on user role
+    function initializeSidebar() {
+        var links = [
+            { id: 'dashboard-link', href: '#dashboard', icon: 'fas fa-tachometer-alt', text: 'Dashboard' },
+            { id: 'manage-users-link', href: '#manage-users', icon: 'fas fa-users', text: 'Manage Users' },
+            { id: 'maintenance-link', href: '#maintenance', icon: 'fas fa-wrench', text: 'Maintenance' },
+            { id: 'data-entries-link', href: '#data-entries', icon: 'fas fa-database', text: 'Data Entries' },
+            { id: 'concerns-link', href: '#concerns', icon: 'fas fa-exclamation-triangle', text: 'Concerns' }
+        ];
+
+        // Filter links based on user role
+        if (user.role === 'admin') {
+            links.forEach(link => {
+                $('#sidebar-links').append(`
+                    <li class="nav-item mt-3">
+                        <a id="${link.id}" class="nav-link" href="${link.href}">
+                            <i class="${link.icon}"></i>
+                            ${link.text}
+                        </a>
+                    </li>
+                `);
+            });
+        } else if (user.role === 'agriculturist') {
+            const agriculturistLinks = [
+                links[0], // Dashboard
+                links[2], // Maintenance
+                links[4]  // Concerns
+            ];
+            agriculturistLinks.forEach(link => {
+                $('#sidebar-links').append(`
+                    <li class="nav-item mt-3">
+                        <a id="${link.id}" class="nav-link" href="${link.href}">
+                            <i class="${link.icon}"></i>
+                            ${link.text}
+                        </a>
+                    </li>
+                `);
+            });
+        }
+    }
 
     // Load default content based on URL hash
     function loadDefaultContent() {
@@ -124,7 +136,7 @@ $(document).ready(function() {
     }
 
     // Handle sidebar link clicks to load corresponding content and update URL
-    $('.nav-link').click(function(e) {
+    $(document).on('click', '.nav-link', function(e) {
         e.preventDefault();
         const target = $(this).attr('href');
         window.location.hash = target;
@@ -139,6 +151,8 @@ $(document).ready(function() {
         loadDefaultContent();
     });
 
+    // Initialize sidebar based on user role
+    initializeSidebar();
 
     // Example logout link handling
     $('.logout a').click(function(e) {

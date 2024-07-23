@@ -20,7 +20,7 @@ function initializeDataEntriesMenu(option) {
             initializeDiseaseView();
             break;
         case 'soil_healths':
-            initializeSoilHealthView();
+            initializeSoilHealthsView();
             break;
         default:
             initializeProductionView();
@@ -195,7 +195,7 @@ function initializeDiseaseView() {
   });
 }
 
-function initializeSoilHealthView() {
+function initializeSoilHealthsView() {
   $('#entries-content').html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col">

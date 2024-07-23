@@ -22,10 +22,10 @@ function initializeMaintenanceMenu(option) {
         case 'price':
             initializePriceMonitoringView();
             break;
-        case 'pest':
+        case 'pestDisease':
             initializePestReportsView();
             break;
-        case 'disease':
+        case 'soilHealth':
             initializeSoilHealthView();
             break;
         default:
