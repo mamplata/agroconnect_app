@@ -45,15 +45,22 @@ function initializeCropView() {
            <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
          </div>
          <div class="mb-3">
-           <input placeholder="Variety" type="text" class="form-control" id="variety" name="variety" required>
-         </div>
-         <div class="mb-3">
            <select class="form-control" id="type" name="type" required>
              <option value="" disabled selected>Select Type</option>
              <option value="Vegetables">Vegetables</option>
              <option value="Rice">Rice</option>
-             <option value="Fruit Trees">Fruit Trees</option>
+             <option value="Fruits">Fruits</option>
            </select>
+         </div>
+           <div class="mb-3">
+           <select class="form-control" id="priceWeight" name="priceWeight" required>
+             <option value="" disabled selected>Select Price Weight (kg/pc)</option>
+             <option value="kg">kilogram</option>
+             <option value="pc">piece</option>
+           </select>
+         </div>
+        <div class="mb-3">
+           <input style="displayNone" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg" required>
          </div>
          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
@@ -70,8 +77,8 @@ function initializeCropView() {
          <thead>
            <tr style="background-color: #2774E9; color: white;">
              <th scope="col">Crop Name</th>
-             <th scope="col">Variety</th>
              <th scope="col">Type</th>
+             <th scope="col">Price Weight(pc/kg)</th>
            </tr>
          </thead>
          <tbody id="cropTableBody">
@@ -85,6 +92,16 @@ function initializeCropView() {
      </div>
    </div>
  `);
+  $(document).ready(function() {
+      $('#priceWeight').change(function() {
+          if ($(this).val() === 'pc') {
+              $('#pcToKg').show();
+          } else {
+              $('#pcToKg').hide();
+          }
+      });
+  });
+
   initializeMethodsCrop();
   createDeleteModal();
   createEditModal();  
@@ -163,6 +180,9 @@ function initializeFarmerView() {
              <option value='Corn'>Corn</option>
             </select>
           </div>
+          <div class="mb-3">
+            <input placeholder="Phone Number (optional)" type="text" class="form-control" id="phoneNumber" name="phoneNumber">
+          </div>
           <button type="button" class="btn btn-custom" id="submitBtn">Add Farmer</button>
           <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
         </form>
@@ -181,6 +201,7 @@ function initializeFarmerView() {
               <th scope="col">Farmer Name</th>
               <th scope="col">Field Area</th>
               <th scope="col">Field Type</th>
+              <th scope="col">Phone Number</th>
             </tr>
           </thead>
           <tbody id="farmerTableBody">

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('farmerName', 255)->nullable(false);
             $table->double('fieldArea')->nullable();
             $table->string('fieldType', 255)->nullable(false);
+            $table->string('phoneNumber', 255)->nullable();
             $table->timestamps(); // Adds 'created_at' and 'updated_at' columns
         });
     }

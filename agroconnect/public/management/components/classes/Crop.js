@@ -2,17 +2,17 @@
 let crops = [];
 
 class Crop {
-  constructor(cropId, cropName, variety, type) {
+  constructor(cropId, cropName, priceWeight, type) {
     this.cropId = cropId;
     this.cropName = cropName;
-    this.variety = variety;
+    this.priceWeight = priceWeight;
     this.type = type;
   }
 
   createCrop(crop) {
-    const existingCrop = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
+    const existingCrop = crops.find(c => c.cropName === crop.cropName);
     if (existingCrop) {
-      alert('Crop with the same name and variety already exists');
+      alert('Crop with the same name already exists');
       return;
     }
 
@@ -33,9 +33,9 @@ class Crop {
   }
 
   updateCrop(updatedCrop) {
-    const existingCrop = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
+    const existingCrop = crops.find(c => c.cropName === crop.cropName);
     if (existingCrop) {
-      alert('Crop with the same name and variety already exists');
+      alert('Crop with the same name already exists');
       return;
     }
 
@@ -144,8 +144,8 @@ function initializeMethodsCrop() {
                 <tr data-index=${crop.cropId}>
                   <td style="display: none;">${crop.cropId}</td>
                   <td>${crop.cropName}</td>
-                  <td>${crop.variety}</td>
                   <td>${crop.type}</td>
+                  <td>${crop.priceWeight}</td>
                 </tr>
               `);
             });
@@ -168,8 +168,8 @@ function initializeMethodsCrop() {
             <tr data-index=${crop.cropId}>
               <td style="display: none;">${crop.cropId}</td>
                 <td>${crop.cropName}</td>
-                <td>${crop.variety}</td>
                 <td>${crop.type}</td>
+                <td>${crop.priceWeight}</td>
             </tr>
           `);
         }
@@ -208,10 +208,10 @@ function initializeMethodsCrop() {
 
       var cropId = Number($('#cropId').val());
       var cropName = $('#cropName').val();
-      var variety = $('#variety').val();
+      var priceWeight = $('#priceWeight').val();
       var type = $('#type').val();
       if (selectedRow !== null) {
-        let crop = new Crop(cropId, cropName, variety, type);
+        let crop = new Crop(cropId, cropName, priceWeight, type);
         crop.updateCrop(crop);
         getCrop();
         displayCrops();
@@ -220,7 +220,7 @@ function initializeMethodsCrop() {
         $('#cancelBtn').hide(); 
         resetFields();
       } else {
-        let crop = new Crop(cropId, cropName, variety, type);
+        let crop = new Crop(cropId, cropName, priceWeight, type);
         crop.createCrop(crop);
         getCrop();
         displayCrops();
@@ -251,7 +251,7 @@ function initializeMethodsCrop() {
           $('#cancelBtn').show();
           $('#cropId').val(crop.cropId);
           $('#cropName').val(crop.cropName);
-          $('#variety').val(crop.variety);
+          $('#priceWeight').val(crop.priceWeight);
           $('#type').val(crop.type);
           $('#submitBtn').text('Update Crop');
         });

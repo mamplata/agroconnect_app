@@ -205,6 +205,7 @@ function initializeSoilHealthsView() {
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">Barangay</th>
                 <th scope="col">Farmer</th>
+                <th scope="col">Field Type</th>
                 <th scope="col">Nitrogen</th>
                 <th scope="col">Phosphorus</th>
                 <th scope="col">Potassium</th>

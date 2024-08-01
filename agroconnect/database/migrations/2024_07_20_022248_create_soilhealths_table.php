@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('recordId')->references('recordId')->on('records');
             $table->string('barangay', 255);
             $table->string('farmerName', 255);
+            $table->string('fieldType', 255);
             $table->string('nitrogenContent', 255);
             $table->string('phosphorusContent', 255);
             $table->string('potassiumContent', 255);

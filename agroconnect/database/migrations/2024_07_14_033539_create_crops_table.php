@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('crops', function (Blueprint $table) {
             $table->id('cropId');
             $table->string('cropName', 255);
-            $table->string('variety', 255);
+            $table->string('priceWeight', 255);
             $table->string('type', 255);
             $table->timestamps();
         });

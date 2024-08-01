@@ -15,6 +15,7 @@ class Farmer extends Model
         'farmerName',
         'fieldArea',
         'fieldType',
+        'phoneNumber',
     ];
 
     // Define relationship with Barangay

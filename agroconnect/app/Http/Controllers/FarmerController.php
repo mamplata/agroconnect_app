@@ -23,6 +23,7 @@ class FarmerController extends Controller
             'farmerName' => 'required|string|max:255',
             'fieldArea' => 'nullable|numeric',
             'fieldType' => 'required|string|max:255',
+            'phoneNumber' => 'nullable|string|max:255',
         ]);
 
         // If validation passes, create a new farmer record
@@ -31,6 +32,7 @@ class FarmerController extends Controller
             'farmerName' => $request->input('farmerName'),
             'fieldArea' => $request->input('fieldArea'),
             'fieldType' => $request->input('fieldType'),
+            'phoneNumber' => $request->input('fieldType'),
         ]);
 
         // Save the farmer record to the database
@@ -53,6 +55,7 @@ class FarmerController extends Controller
             'farmerName' => 'string|max:255',
             'fieldArea' => 'nullable|numeric',
             'fieldType' => 'string|max:255',
+            'phoneNumber' => 'nullable|string|max:255',
         ]);
 
         $farmer = Farmer::findOrFail($id);

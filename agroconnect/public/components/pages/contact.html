@@ -10,7 +10,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../../css/index.css">
   <style>
-    .card-body {
+    .bg {
       background-image: url('../../img/contact.png');
       background-size: cover;
       background-position: center;
@@ -28,6 +28,22 @@
       margin: 3.25rem;
       margin-top: 2rem;
     }
+    .modal-dialog {
+      max-width: 90%;
+    }
+    .modal-content {
+      max-width: 100%;
+    }
+    .modal-body {
+      overflow: hidden;
+    }
+    .card-body {
+      padding: 0;
+    }
+    #modal-image {
+      max-width: 300px;
+      height: auto;
+    }
   </style>
 </head>
 <body>
@@ -42,7 +58,7 @@
             <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
               <h2>Send Feedback</h2>
             </div>
-            <div class="card-body">
+            <div class="bg card-body">
               <!-- Button container -->
               <div class="btn-container text-center">
                 <button type="button" class="btn btn-custom" onclick="sendConcern()">Send Feedback</button>
@@ -106,28 +122,28 @@
   </div>
 
   <!-- Image Preview Modal -->
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="card">
-            <div class="card-body">
-              <img id="modal-image" src="" alt="" class="img-responsive">
-            </div>
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered w-50">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-body text-center">
+            <img id="modal-image" src="" alt="" class="img-fluid">
           </div>
         </div>
-        <div class="modal-footer">
-          <button id="btnCloseModal" type="button" class="btn btn-secondary">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCloseModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Success Modal -->
   <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">

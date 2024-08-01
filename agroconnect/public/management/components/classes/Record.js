@@ -425,7 +425,7 @@ function initializeMethodsRecord(dataType) {
           break;
         case 'soilHealth':
           checkFormat = "GENERAL SOIL FERTILITY RATING";
-          terms = ["Barangay", "Farmer", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
+          terms = ["Barangay", "Farmer", "Field Type", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
           methodName = processSoilHealthData;
           break;
         default:

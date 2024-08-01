@@ -3,13 +3,13 @@ let farmers = [];
 let barangayArray = [];
 
 class Farmer {
-  constructor(barangayId, farmerId, farmerName, fieldArea, fieldType) {
+  constructor(barangayId, farmerId, farmerName, fieldArea, fieldType, phoneNumber) {
     this.barangayId = barangayId;
     this.farmerId = farmerId;
     this.farmerName = farmerName;
     this.fieldArea = fieldArea;
     this.fieldType = fieldType;
-    
+    this.phoneNumber = phoneNumber;
   }
 
   createFarmer(farmer) {
@@ -104,7 +104,6 @@ function getFarmer() {
 
         farmers = farmer;
         console.log(farmers);
-        console.log('dasd');
     },
     error: function(xhr, status, error) {
         console.error('Error fetching farmers:', error);
@@ -196,6 +195,7 @@ function initializeMethodsFarmer() {
                   <td>${farmer.farmerName}</td>
                   <td>${farmer.fieldArea}</td>
                   <td>${farmer.fieldType}</td>
+                  <td>${farmer.phoneNumber}</td>
                 </tr>
               `);
             });
@@ -221,6 +221,7 @@ function initializeMethodsFarmer() {
                 <td>${farmer.farmerName}</td>
                 <td>${farmer.fieldArea}</td>
                 <td>${farmer.fieldType}</td>
+                <td>${farmer.phoneNumber}</td>
             </tr>
           `);
         }
@@ -261,10 +262,11 @@ function initializeMethodsFarmer() {
       var farmerName = $('#farmerName').val();
       var fieldArea = parseInt($('#fieldArea').val(), 10);
       var fieldType= $('#fieldType').val();
+      var fieldType= $('#phoneNumber').val();
       var barangayId = parseInt($('#barangay-option').val(), 10);
       if (selectedRow !== null) {
 
-        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType);
+        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType, phoneNumber);
         console.log(farmer);
         farmer.updateFarmer(farmer);
         selectedRow = null;
@@ -272,7 +274,7 @@ function initializeMethodsFarmer() {
         $('#cancelBtn').hide(); 
         resetFields();
       } else {
-        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType);
+        let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType, phoneNumber);
         console.log(farmer);
         farmer.createFarmer(farmer);
       }
@@ -306,6 +308,7 @@ function initializeMethodsFarmer() {
           $('#farmerName').val(farmer.farmerName);
           $('#fieldArea').val(farmer.fieldArea);
           $('#fieldType').val(farmer.fieldType);
+          $('#phoneNumber').val(farmer.phoneNumber);
           $('#barangay-option').val(farmer.barangayId);
           $('#submitBtn').text('Update Farmer');
         });

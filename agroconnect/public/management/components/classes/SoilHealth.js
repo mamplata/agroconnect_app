@@ -1,10 +1,11 @@
 let soilHealths = [];
 
 class SoilHealth {
-    constructor(recordId, barangay, farmerName, nitrogenContent, phosphorusContent, potassiumContent, pH, generalRating, recommendations, season, monthYear) {
+    constructor(recordId, barangay, farmerName, fieldType, nitrogenContent, phosphorusContent, potassiumContent, pH, generalRating, recommendations, season, monthYear) {
       this.recordId = recordId;
       this.barangay = barangay;
       this.farmerName = farmerName;
+      this.fieldType = fieldType;
       this.nitrogenContent = nitrogenContent;
       this.phosphorusContent = phosphorusContent;
       this.potassiumContent = potassiumContent;
@@ -84,7 +85,7 @@ class SoilHealth {
     }
   }
   
-  function getSoilHealths() {
+  function getSoilHealth() {
     // Fetch soil health data from Laravel backend
     $.ajaxSetup({
       headers: {
@@ -141,6 +142,7 @@ class SoilHealth {
             <tr data-index=${soilHealth.recordId}>
               <td>${soilHealth.barangay}</td>
               <td>${soilHealth.farmerName}</td>
+              <td>${soilHealth.fieldType}</td>
               <td>${soilHealth.nitrogenContent}</td>
               <td>${soilHealth.phosphorusContent}</td>
               <td>${soilHealth.potassiumContent}</td>
@@ -186,7 +188,7 @@ class SoilHealth {
       }
     });
   
-    getSoilHealths();
+    getSoilHealth();
     displaySoilHealth();
   }
   
@@ -200,6 +202,7 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
   // Find the column index for the relevant fields in cellMappings
   var barangayColumn = getKeyBySubstring(cellMappings, 'Barangay');
   var farmerColumn = getKeyBySubstring(cellMappings, 'Farmer');
+  var typeColumn = getKeyBySubstring(cellMappings, 'Field Type');
   var nitrogenColumn = getKeyBySubstring(cellMappings, 'Nitrogen');
   var phosphorusColumn = getKeyBySubstring(cellMappings, 'Phosphorus');
   var potassiumColumn = getKeyBySubstring(cellMappings, 'Potassium');
@@ -249,6 +252,7 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
           id,
           getKeyBySubstring(soilHealthData, 'Barangay'),
           getKeyBySubstring(soilHealthData, 'Farmer'),
+          getKeyBySubstring(soilHealthData, 'Field Type'),
           getKeyBySubstring(soilHealthData, 'Nitrogen'),
           getKeyBySubstring(soilHealthData, 'Phosphorus'),
           getKeyBySubstring(soilHealthData, 'Potassium'),

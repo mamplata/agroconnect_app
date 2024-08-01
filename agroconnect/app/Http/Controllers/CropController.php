@@ -20,7 +20,7 @@ class CropController extends Controller
     {
         $request->validate([
             'cropName' => 'required|string',
-            'variety' => 'required|string',
+            'priceWeight' => 'required|string',
             'type' => 'required|string',
             'priceValue' => 'required|string',
         ]);
@@ -28,9 +28,8 @@ class CropController extends Controller
         // Accessing input data using $request->input('fieldName')
         $crop = new Crop([
             'cropName' => $request->input('cropName'),
-            'variety' => $request->input('variety'),
+            'priceWeight' => $request->input('priceWeight'),
             'type' => $request->input('type'),
-            'priceValue' => $request->input('priceValue'),
         ]);
 
         $crop->save();
@@ -52,13 +51,12 @@ class CropController extends Controller
         // Validate request data
         $request->validate([
             'cropName' => 'required|string',
-            'variety' => 'required|string',
+            'priceWeight' => 'required|string',
             'type' => 'required|string',
-            'priceValue' => 'required|string',
         ]);
 
         // Update crop attributes
-        $crop->fill($request->only(['cropName', 'variety', 'type', 'priceValue']));
+        $crop->fill($request->only(['cropName', 'priceWeight', 'type']));
 
         // Save updated crop to the database
         $crop->save();

@@ -14,6 +14,7 @@ class SoilHealth extends Model
         'recordId',
         'barangay',
         'farmerName',
+        'fieldType',
         'nitrogenContent',
         'phosphorusContent',
         'potassiumContent',
