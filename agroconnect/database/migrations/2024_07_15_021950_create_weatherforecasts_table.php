@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('weatherforecasts', function (Blueprint $table) {
             $table->id('weatherforecastId');
-            $table->json('weatherData');
+            $table->json('weather_data');
+            $table->unsignedBigInteger('timestamp');
             $table->timestamps();
         });
     }
