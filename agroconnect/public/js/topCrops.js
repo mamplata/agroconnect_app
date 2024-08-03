@@ -23,6 +23,7 @@ class TopCrops {
             const topCrops = this.generateTopCrops(cropData);
             this.displayTopCrops(topCrops);
             dataEntry = topCrops;
+            console.log(topCrops);
         } catch (error) {
             console.error('Failed to initialize TopCrops:', error);
         }
@@ -34,7 +35,11 @@ class TopCrops {
             return { min: Math.min(...values), max: Math.max(...values) };
         };
 
-        const normalize = (value, min, max) => (value - min) / (max - min);
+        const normalize = (value, min, max) => {
+            if (max === min) return 0; // Avoid division by zero
+            // Normalize and ensure non-negative values
+            return Math.max(0, (value - min) / (max - min));
+        };
 
         const calculateCompositeScore = (entry, ranges) => {
             const indicators = {
@@ -42,8 +47,8 @@ class TopCrops {
                 income: entry.incomePerHectare,
                 benefit: entry.benefitPerHectare,
                 price: entry.price,
-                pest: -entry.pestOccurrence,
-                disease: -entry.diseaseOccurrence
+                pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
+                disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence
             };
 
             const normalizedIndicators = {
@@ -54,6 +59,8 @@ class TopCrops {
                 pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
                 disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min)
             };
+
+            console.log('Indicators:', normalizedIndicators);
 
             return (
                 0.2 * normalizedIndicators.volumeProduction +
@@ -244,18 +251,30 @@ function downloadCSV(filename, data) {
 }
 
 function downloadExcel(filename, data) {
-    const ws = XLSX.utils.json_to_sheet(data);
+    // Filter out 'remarks' key from each row
+    const filteredData = data.map(row => {
+        const { remarks, ...rest } = row;
+        return rest;
+    });
+
+    // Create worksheet and workbook
+    const ws = XLSX.utils.json_to_sheet(filteredData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // Write workbook to file
     XLSX.writeFile(wb, filename);
 }
 
 function downloadPDF(filename, data) {
+    const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    const columns = Object.keys(data[0]).filter(key => key !== 'remarks');
+    // Specify the columns you want to include in the PDF
+    const columns = ['cropName', 'variety', 'type', 'remarks'];
     const headers = columns.map(formatHeader);
 
+    // Create the table using only the specified columns
     doc.autoTable({
         head: [headers],
         body: data.map(row => columns.map(key => row[key])),

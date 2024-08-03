@@ -444,6 +444,14 @@ function priceIncomePerHectare(data) {
         return [];
     }
 
+    const parsePrice = (price) => {
+        if (typeof price === 'string' && price.includes('-')) {
+            const [min, max] = price.split('-').map(parseFloat);
+            return (min + max) / 2;
+        }
+        return parseFloat(price);
+    };
+
     const monthCropTotals = data.reduce((acc, item) => {
         const { monthPlanted, cropName, season, volumeSold, areaPlanted, price } = item;
 
@@ -455,16 +463,15 @@ function priceIncomePerHectare(data) {
             acc[monthPlanted][cropName] = { season, totalIncome: 0, totalArea: 0 };
         }
 
-        let calculatedPrice = price;
+        let calculatedPrice = parsePrice(price);
+        let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
         // Apply specific conversion logic for Upo or any other crop
         if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice = price * 3; // Example for Upo
-        } else if (cropName.toLowerCase().includes('kg')) {
-            calculatedPrice = price / 1000; // Example for crops measured in kg
+            calculatedPrice *= 3; // Example multiplier for Upo
         }
 
-        acc[monthPlanted][cropName].totalIncome += volumeSold * calculatedPrice;
+        acc[monthPlanted][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[monthPlanted][cropName].totalArea += areaPlanted;
 
         return acc;
@@ -477,7 +484,7 @@ function priceIncomePerHectare(data) {
             season,
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
-            incomePerHectare: parseFloat((totalIncome / totalArea).toFixed(2))
+            incomePerHectare: totalArea > 0 ? parseFloat((totalIncome / totalArea).toFixed(2)) : 0 // Avoid division by zero
         }))
     );
 }
@@ -487,6 +494,14 @@ function priceIncomePerHectareBarangay(data) {
         console.error('Expected data to be an array');
         return [];
     }
+
+    const parsePrice = (price) => {
+        if (typeof price === 'string' && price.includes('-')) {
+            const [min, max] = price.split('-').map(parseFloat);
+            return (min + max) / 2;
+        }
+        return parseFloat(price);
+    };
 
     const barangayCropTotals = data.reduce((acc, item) => {
         const { barangay, cropName, volumeSold, areaPlanted, price } = item;
@@ -499,16 +514,15 @@ function priceIncomePerHectareBarangay(data) {
             acc[barangay][cropName] = { totalIncome: 0, totalArea: 0 };
         }
 
-        let calculatedPrice = price;
+        let calculatedPrice = parsePrice(price);
+        let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
         // Apply specific conversion logic for Upo or any other crop
         if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice = price * 3; // Example for Upo
-        } else if (cropName.toLowerCase().includes('kg')) {
-            calculatedPrice = price / 1000; // Example for crops measured in kg
+            calculatedPrice *= 3; // Example multiplier for Upo
         }
 
-        acc[barangay][cropName].totalIncome += volumeSold * calculatedPrice;
+        acc[barangay][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[barangay][cropName].totalArea += areaPlanted;
 
         return acc;
@@ -531,6 +545,14 @@ function benefitPerHectare(data) {
         return [];
     }
 
+    const parsePrice = (price) => {
+        if (typeof price === 'string' && price.includes('-')) {
+            const [min, max] = price.split('-').map(parseFloat);
+            return (min + max) / 2;
+        }
+        return parseFloat(price);
+    };
+
     const monthCropTotals = data.reduce((acc, item) => {
         const { monthPlanted, cropName, season, volumeSold, areaPlanted, price, productionCost } = item;
 
@@ -542,16 +564,15 @@ function benefitPerHectare(data) {
             acc[monthPlanted][cropName] = { season, totalIncome: 0, totalArea: 0, totalProductionCost: 0 };
         }
 
-        let calculatedPrice = price;
+        let calculatedPrice = parsePrice(price);
+        let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
         // Apply specific conversion logic for Upo or any other crop
         if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice = price * 3; // Example for Upo
-        } else if (cropName.toLowerCase().includes('kg')) {
-            calculatedPrice = price / 1000; // Example for crops measured in kg
+            calculatedPrice *= 3; // Example multiplier for Upo
         }
 
-        acc[monthPlanted][cropName].totalIncome += volumeSold * calculatedPrice;
+        acc[monthPlanted][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[monthPlanted][cropName].totalArea += areaPlanted;
         acc[monthPlanted][cropName].totalProductionCost += productionCost;
 
@@ -566,16 +587,25 @@ function benefitPerHectare(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: parseFloat(((totalIncome / totalArea) - (totalProductionCost / totalArea)).toFixed(2))
+            benefitPerHectare: totalArea > 0 ? parseFloat((totalIncome - (totalProductionCost * totalArea)).toFixed(2)) : 0
         }))
     );
 }
+
 
 function benefitPerHectareBarangay(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
     }
+
+    const parsePrice = (price) => {
+        if (typeof price === 'string' && price.includes('-')) {
+            const [min, max] = price.split('-').map(parseFloat);
+            return (min + max) / 2;
+        }
+        return parseFloat(price);
+    };
 
     const barangayCropTotals = data.reduce((acc, item) => {
         const { barangay, cropName, volumeSold, areaPlanted, price, productionCost } = item;
@@ -588,16 +618,15 @@ function benefitPerHectareBarangay(data) {
             acc[barangay][cropName] = { totalIncome: 0, totalArea: 0, totalProductionCost: 0 };
         }
 
-        let calculatedPrice = price;
+        let calculatedPrice = parsePrice(price);
+        let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
         // Apply specific conversion logic for Upo or any other crop
         if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice = price * 3; // Example for Upo
-        } else if (cropName.toLowerCase().includes('kg')) {
-            calculatedPrice = price / 1000; // Example for crops measured in kg
+            calculatedPrice *= 3; // Example multiplier for Upo
         }
 
-        acc[barangay][cropName].totalIncome += volumeSold * calculatedPrice;
+        acc[barangay][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[barangay][cropName].totalArea += areaPlanted;
         acc[barangay][cropName].totalProductionCost += productionCost;
 
@@ -611,13 +640,10 @@ function benefitPerHectareBarangay(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: totalArea > 0 
-                ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) 
-                : 0
+            benefitPerHectare: totalArea > 0 ? parseFloat((totalIncome - (totalProductionCost * totalArea)).toFixed(2)) : 0
         }))
     );
 }
-
 
 function getCropData(production, price, pest, disease, crops, type) {
     if (!Array.isArray(production) || !Array.isArray(price) || !Array.isArray(pest) || !Array.isArray(disease)) {
@@ -633,32 +659,36 @@ function getCropData(production, price, pest, disease, crops, type) {
 
     // Filter production data based on the specified type
     const filteredProduction = production.filter(item => cropTypeMap[item.cropName] === type);
+    const filteredPrice = price.filter(item => cropTypeMap[item.cropName] === type);
+    const filteredPest = pest.filter(item => cropTypeMap[item.cropName] === type);
+    const filteredDisease = disease.filter(item => cropTypeMap[item.cropName] === type);
 
     // Extract related data from other datasets
     const totalPlantedData = countTotalPlanted(filteredProduction);
     const averageVolumeData = averageVolumeProduction(filteredProduction);
-    const averagePriceData = averagePrice(price);
-    const pestOccurrenceData = countPestOccurrence(pest);
-    const diseaseOccurrenceData = countDiseaseOccurrence(disease);
+    const averagePriceData = averagePrice(filteredPrice);
+    const pestOccurrenceData = countPestOccurrence(filteredPest);
+    const diseaseOccurrenceData = countDiseaseOccurrence(filteredDisease);
     const priceIncomeData = priceIncomePerHectare(filteredProduction);
     const benefitData = benefitPerHectare(filteredProduction);
 
     return filteredProduction.map(prodItem => {
-        const { cropName, variety, season, monthYear, volumeProduction } = prodItem;
+        const { cropName, variety, season, monthYear } = prodItem;
 
-        // Find related data from other datasets
-        const plantedData = totalPlantedData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
-        const priceData = averagePriceData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
-        const pestData = pestOccurrenceData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
-        const diseaseData = diseaseOccurrenceData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
-        const incomeData = priceIncomeData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
-        const benefitDataItem = benefitData.find(item => item.cropName === cropName && item.monthYear === monthYear) || {};
+        // Find related data from other datasets, using default values if necessary
+        const plantedData = totalPlantedData.find(item => item.cropName === cropName) || {};
+        const volumeData = averageVolumeData.find(item => item.cropName === cropName) || {};
+        const priceData = averagePriceData.find(item => item.cropName === cropName) || {};
+        const pestData = pestOccurrenceData.find(item => item.cropName === cropName) || {};
+        const diseaseData = diseaseOccurrenceData.find(item => item.cropName === cropName) || {};
+        const incomeData = priceIncomeData.find(item => item.cropName === cropName) || {};
+        const benefitDataItem = benefitData.find(item => item.cropName === cropName) || {};
 
         return {
             cropName,
             variety: variety || '',
-            totalPlanted: plantedData.totalPlanted || 0,          
-            volumeProductionPerHectare: volumeProduction,
+            totalPlanted: plantedData.totalPlanted || 0,
+            volumeProductionPerHectare: volumeData.volumeProduction || 0,
             price: priceData.price || 0,
             pestOccurrence: pestData.pestOccurrence || 0,
             diseaseOccurrence: diseaseData.diseaseOccurrence || 0,
@@ -669,3 +699,4 @@ function getCropData(production, price, pest, disease, crops, type) {
         };
     });
 }
+
