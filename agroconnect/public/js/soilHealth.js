@@ -2,20 +2,21 @@ $(document).ready(function() {
   let vegetablesData, riceData, fruitsData;
   let currentDataType;
 
-  fetch('api/soil_healths')
+  fetch('api/soilhealths')
     .then(response => response.json())
     .then(data => {
-      vegetablesData = data.filter(record => record.type === "Vegetables");
-      riceData = data.filter(record => record.type === "Rice");
-      fruitsData = data.filter(record => record.type === "Fruits");
+      vegetablesData = data.filter(record => record.fieldType === "Vegetables");
+      riceData = data.filter(record => record.fieldType === "Rice");
+      fruitsData = data.filter(record => record.fieldType === "Fruits");
 
-      displayData('vegetables', vegetablesData);
-      displayData('rice', riceData);
-      displayData('fruits', fruitsData);
+      displayData('Vegetables', vegetablesData);
+      displayData('Rice', riceData);
+      displayData('Fruits', fruitsData);
 
       $('.download-btn').click(function() {
         currentDataType = $(this).data('type');
         $('#downloadModal').modal('show');
+        console.log(currentDataType);
       });
 
       $('.download-option').click(function() {
@@ -33,7 +34,7 @@ $(document).ready(function() {
 
   function displayData(type, data) {
     if (data.length === 0) {
-      $(`#${type}-body`).html('<p>Data is not available for now.</p>');
+      $(`#${type}-body`).html('<p class="h3">Data is not available for now.</p>');
       $(`.download-btn[data-type="${type}"]`).hide();
     } else {
       let averages = calculateAverages(data);
@@ -96,19 +97,19 @@ $(document).ready(function() {
     const filename = `${type.toLowerCase()}.${format}`;
     if (format === 'csv') {
       downloadCSV(filename, data);
-    } else if (format === 'excel') {
+    } else if (format === 'xlsx') {
       downloadExcel(filename, data);
     } else if (format === 'pdf') {
       downloadPDF(filename, data);
     }
   }
-
+  
   // Download CSV
   function downloadCSV(filename, data) {
     const csv = [
       ['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating'],
       ...data.map(record => [
-        record.type,
+        record.fieldType,  // Ensure this key matches your data's structure
         record.phosphorusContent,
         record.nitrogenContent,
         record.potassiumContent,
@@ -116,7 +117,7 @@ $(document).ready(function() {
         record.generalRating
       ])
     ].map(row => row.join(',')).join('\n');
-
+  
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -125,34 +126,54 @@ $(document).ready(function() {
     a.click();
     URL.revokeObjectURL(url);
   }
-
-  // Download Excel
-  function downloadExcel(filename, data) {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    XLSX.writeFile(workbook, filename);
-  }
-
-  function downloadPDF(filename, data) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
   
-  doc.autoTable({
-    head: [['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating']],
-    body: data.map(record => [
-      record.type,
-      record.phosphorusContent,
-      record.nitrogenContent,
-      record.potassiumContent,
-      record.pH,
-      record.generalRating
-    ]),
-    startY: 10,  // Starting Y position of the table
-    margin: { top: 10, right: 10, bottom: 10, left: 10 },
-    theme: 'grid',  // Optional: changes the table style to a grid
+// Download Excel
+function downloadExcel(filename, data) {
+  // Map the data to ensure it matches the headers
+  const formattedData = data.map(record => ({
+    Type: record.fieldType,
+    Phosphorus: record.phosphorusContent,
+    Nitrogen: record.nitrogenContent,
+    Potassium: record.potassiumContent,
+    pH: record.pH,
+    'General Rating': record.generalRating
+  }));
+
+  // Convert formatted data to worksheet
+  const worksheet = XLSX.utils.json_to_sheet(formattedData, {
+    header: ['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating']
   });
-  
-  doc.save(filename);
+
+  // Create a new workbook and append the worksheet
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+  // Write the workbook to a file
+  XLSX.writeFile(workbook, filename);
 }
-});
+
+
+  
+  // Download PDF
+  function downloadPDF(filename, data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+  
+    doc.autoTable({
+      head: [['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating']],
+      body: data.map(record => [
+        record.fieldType,  // Ensure this key matches your data's structure
+        record.phosphorusContent,
+        record.nitrogenContent,
+        record.potassiumContent,
+        record.pH,
+        record.generalRating
+      ]),
+      startY: 10,
+      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+      theme: 'grid',
+    });
+  
+    doc.save(filename);
+  }
+});  

@@ -1,13 +1,13 @@
 $(document).ready(function() {
   const apiKey = 'TrO3i54Ru1N0tgNmEUvMZeqWmzPG7KAK';
   const locationKey = '3409731';
-  const storageKey = 'weatherForecast';
-  const storageTimestampKey = 'weatherForecastTimestamp';
+  let lastFetchTimestamp = 0; // Initialize timestamp in memory
+  let cachedWeatherData = null; // Initialize data cache
   const fetchInterval = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
 
   function fetchWeatherData() {
     const url = `https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${apiKey}&details=true&metric=true`;
-    
+  
     $.getJSON(url)
       .done(function(data) {
         // Save data to your API endpoint
@@ -16,22 +16,27 @@ $(document).ready(function() {
           method: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
-            weatherData: data,
+            weather_data: data,
             timestamp: new Date().getTime()
           }),
           success: function(response) {
             console.log('Data successfully saved to the server.');
+  
+            // Cache the data in memory
+            cachedWeatherData = data;
+            lastFetchTimestamp = new Date().getTime(); // Update the timestamp
+  
             displayWeatherData(data);
           },
           error: function(jqXHR, textStatus, errorThrown) {
-            console.error('Error saving data to the server:', textStatus, errorThrown);
+            console.error('Error saving data to the server:', jqXHR, textStatus, errorThrown);
           }
         });
       })
       .fail(function(jqXHR, textStatus, errorThrown) {
         console.error('Error fetching forecast data:', textStatus, errorThrown);
       });
-}
+  }
 
   function setWeatherBackground(weatherCondition) {
     const now = new Date();
@@ -45,36 +50,39 @@ $(document).ready(function() {
     function getDefaultBackground() {
       if (currentHour >= sunriseHour && currentHour < sunsetHour) {
         // Day time
-        return 'url("day.jpeg")'; // Default day image
+        return 'url("../img/weather/day.jpeg")'; // Default day image
       } else {
         // Night time
-        return 'url("night.jpeg")'; // Default night image
+        return 'url("../img/weather/night.jpeg")'; // Default night image
       }
     }
 
-    // Check weather condition
+   // Convert weatherCondition to lowercase for case-insensitive comparison
+    const lowerCaseWeatherCondition = weatherCondition ? weatherCondition.toLowerCase() : '';
+
     switch (true) {
-      case weatherCondition && weatherCondition.includes('Sunny'):
-        backgroundImage = 'url("day.jpeg")'; // Daytime background image for sunny weather
+      case lowerCaseWeatherCondition.includes('sunny'):
+        backgroundImage = 'url("../img/weather/day.jpeg")'; // Daytime background image for sunny weather
         break;
-      case weatherCondition && weatherCondition.includes('Cloudy'):
-        backgroundImage = 'url("cloudy.jpeg")'; // Daytime or nighttime background image for cloudy weather
+      case lowerCaseWeatherCondition.includes('cloudy'):
+        backgroundImage = 'url("../img/weather/cloudy.jpeg")'; // Daytime or nighttime background image for cloudy weather
         break;
-      case weatherCondition && weatherCondition.includes('Rain'):
-      case weatherCondition && weatherCondition.includes('Drizzle'):
-      case weatherCondition && weatherCondition.includes('Shower'):
-        backgroundImage = 'url("rain.jpeg")'; // Daytime or nighttime background image for rainy weather
+      case lowerCaseWeatherCondition.includes('rain') ||
+          lowerCaseWeatherCondition.includes('drizzle') ||
+          lowerCaseWeatherCondition.includes('shower'):
+        backgroundImage = 'url("../img/weather/rain.jpeg")'; // Daytime or nighttime background image for rainy weather
         break;
-      case weatherCondition && weatherCondition.includes('Storm'):
-      case weatherCondition && weatherCondition.includes('Thunderstorm'):
-        backgroundImage = 'url("storm.jpeg")'; // Nighttime background image for stormy weather
+      case lowerCaseWeatherCondition.includes('storm') ||
+          lowerCaseWeatherCondition.includes('thunderstorm'):
+        backgroundImage = 'url("../img/weather/storm.jpeg")'; // Nighttime background image for stormy weather
         break;
       default:
         backgroundImage = getDefaultBackground(); // Default to day or night image based on time
     }
 
+
     // Apply the background image to the parent card
-    $('.container-fluid').css({
+    $('.bg').css({
       'background-image': backgroundImage,
       'background-size': 'cover',
       'background-position': 'center'
@@ -199,22 +207,29 @@ $(document).ready(function() {
   }
 
   function loadWeatherData() {
-    const storedData = localStorage.getItem(storageKey);
-    const storedTimestamp = localStorage.getItem(storageTimestampKey);
     const now = new Date().getTime();
-
-    if (storedData && storedTimestamp) {
-      const age = now - storedTimestamp;
-
-      if (age < fetchInterval) {
-        // Use stored data if it's recent enough
-        const data = JSON.parse(storedData);
-        displayWeatherData(data);
-        return;
-      }
-    }
-
-    // Fetch new data if no recent stored data
+  
+    // Perform a GET request to check if cached data exists and is valid
+    $.getJSON('api/weatherforecasts')
+      .done(function(response) {
+        // Assuming the response has a `timestamp` field and `weather_data`
+        const cachedTimestamp = response.timestamp;
+        const cachedData = response.weather_data;
+  
+        if (cachedTimestamp && (now - cachedTimestamp) < fetchInterval) {
+          // Use cached data if it's recent enough
+          displayWeatherData(cachedData);
+          console.log('Displayed cached weather data.');
+          return;
+        } else {
+          console.log('Cached weather data is not valid or not available.');
+        }
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        console.error('Error fetching cached data from the server:', textStatus, errorThrown);
+      });
+  
+    // Fetch new data if no recent cached data
     fetchWeatherData();
   }
 

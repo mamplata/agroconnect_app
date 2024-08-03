@@ -14,10 +14,11 @@ class WeatherForecastController extends Controller
      */
     public function index()
     {
-        // Get all weather forecasts, ordered by their ID in descending order
-        $forecasts = WeatherForecast::orderBy('id', 'desc')->get();
+        // Retrieve the latest weather forecast record
+        $forecast = WeatherForecast::latest()->first();
 
-        return response()->json($forecasts, 200);
+        // Return a JSON response with the weather forecast data
+        return response()->json($forecast);
     }
 
     /**
@@ -28,22 +29,25 @@ class WeatherForecastController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate incoming request data
-        $validated = $request->validate([
-            'weather_data' => 'required|array',
-            'timestamp' => 'required|integer',
-        ]);
+        try {
+            // Validate incoming request data
+            $validated = $request->validate([
+                'weather_data' => 'required|array',
+                'timestamp' => 'required|integer',
+            ]);
 
-        // If validation passes, create a new weather forecast record
-        $forecast = WeatherForecast::create([
-            'weather_data' => $validated['weather_data'],
-            'timestamp' => $validated['timestamp'],
-        ]);
+            // Create a new weather forecast record
+            $forecast = WeatherForecast::create([
+                'weather_data' => $validated['weather_data'],
+                'timestamp' => $validated['timestamp'],
+            ]);
 
-        // Return a JSON response with the created weather forecast data and status code 201 (Created)
-        return response()->json($forecast, 201);
+            // Return a JSON response with the created weather forecast data and status code 201 (Created)
+            return response()->json($forecast, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal Server Error' . $e->getMessage()], 500);
+        }
     }
-
     /**
      * Display the specified weather forecast.
      *

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('weatherforecasts', function (Blueprint $table) {
+        Schema::create('weather_forecasts', function (Blueprint $table) {
             $table->id('weatherforecastId');
             $table->json('weather_data');
             $table->unsignedBigInteger('timestamp');
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('weatherforecasts');
+        Schema::dropIfExists('weather_forecasts');
     }
 };
