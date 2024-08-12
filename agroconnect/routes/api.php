@@ -114,3 +114,11 @@ Route::post('/weatherforecasts', [WeatherForecastController::class, 'store']);
 Route::get('/weatherforecasts/{id}', [WeatherForecastController::class, 'show']);
 Route::put('/weatherforecasts/{id}', [WeatherForecastController::class, 'update']);
 Route::delete('/weatherforecasts/{id}', [WeatherForecastController::class, 'destroy']);
+
+
+Route::get('/weather-keys', function () {
+    return response()->json([
+        'weather_api_key' => env('VITE_WEATHER_API_KEY'),
+        'weather_location_key' => env('VITE_WEATHER_LOCATION_KEY'),
+    ]);
+});

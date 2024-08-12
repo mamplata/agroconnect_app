@@ -1,40 +1,44 @@
 $(document).ready(function() {
-  let apiKey;
-  let locationKey;
+  const apiKey = 'TrO3i54Ru1N0tgNmEUvMZeqWmzPG7KAK';
+  const locationKey = '3409731';
+  const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+  console.log(WEATHER_API_KEY); // Outputs your API key
   let lastFetchTimestamp = 0; // Initialize timestamp in memory
   let cachedWeatherData = null; // Initialize data cache
   const fetchInterval = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
 
-  async function fetchWeatherData() {
+  function fetchWeatherData() {
     const url = `https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${apiKey}&details=true&metric=true`;
   
-    try {
-      // Fetch weather data
-      const data = await $.getJSON(url);
-      
-      // Save data to your API endpoint
-      await $.ajax({
-        url: 'api/weatherforecasts',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          weather_data: data,
-          timestamp: new Date().getTime()
-        })
+    $.getJSON(url)
+      .done(function(data) {
+        // Save data to your API endpoint
+        $.ajax({
+          url: 'api/weatherforecasts',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            weather_data: data,
+            timestamp: new Date().getTime()
+          }),
+          success: function(response) {
+            console.log('Data successfully saved to the server.');
+  
+            // Cache the data in memory
+            cachedWeatherData = data;
+            lastFetchTimestamp = new Date().getTime(); // Update the timestamp
+  
+            displayWeatherData(data);
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Error saving data to the server:', jqXHR, textStatus, errorThrown);
+          }
+        });
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        console.error('Error fetching forecast data:', textStatus, errorThrown);
       });
-  
-      console.log('Data successfully saved to the server.');
-  
-      // Cache the data in memory
-      cachedWeatherData = data;
-      lastFetchTimestamp = new Date().getTime(); // Update the timestamp
-  
-      displayWeatherData(data);
-    } catch (error) {
-      console.error('Error fetching or saving forecast data:', error);
-    }
   }
-  
 
   function setWeatherBackground(weatherCondition) {
     const now = new Date();
@@ -204,52 +208,32 @@ $(document).ready(function() {
     });
   }
 
-  async function loadWeatherData() {
+  function loadWeatherData() {
     const now = new Date().getTime();
   
-    try {
-      // Perform a GET request to check if cached data exists and is valid
-      const response = await $.getJSON('api/weatherforecasts');
-      const cachedTimestamp = response.timestamp;
-      const cachedData = response.weather_data;
+    // Perform a GET request to check if cached data exists and is valid
+    $.getJSON('api/weatherforecasts')
+      .done(function(response) {
+        // Assuming the response has a `timestamp` field and `weather_data`
+        const cachedTimestamp = response.timestamp;
+        const cachedData = response.weather_data;
   
-      if (cachedTimestamp && (now - cachedTimestamp) < fetchInterval) {
-        // Use cached data if it's recent enough
-        displayWeatherData(cachedData);
-        console.log('Displayed cached weather data.');
-      } else {
-        console.log('Cached weather data is not valid or not available.');
-        // Fetch new data if no recent cached data
-        await fetchWeatherData();
-      }
-    } catch (error) {
-      console.error('Error fetching cached data from the server:', error);
-      // Fetch new data if there was an error fetching the cached data
-      await fetchWeatherData();
-    }
+        if (cachedTimestamp && (now - cachedTimestamp) < fetchInterval) {
+          // Use cached data if it's recent enough
+          displayWeatherData(cachedData);
+          console.log('Displayed cached weather data.');
+          return;
+        } else {
+          console.log('Cached weather data is not valid or not available.');
+        }
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        console.error('Error fetching cached data from the server:', textStatus, errorThrown);
+      });
+  
+    // Fetch new data if no recent cached data
+    fetchWeatherData();
   }
 
-  async function fetchWeatherKeys() {
-    try {
-        const response = await fetch('/api/weather-keys');
-        const data = await response.json();
-        
-        apiKey= data.weather_api_key;
-        locationKey = data.weather_location_key;
-
-        console.log('Weather API Key:', apiKey);
-        console.log('Weather Location Key:', locationKey);
-
-    } catch (error) {
-        console.error('Error fetching weather keys:', error);
-    }
-}
-  
-  $(document).ready(async function() {
-    // Fetch the API keys before fetching weather data
-    await fetchWeatherKeys();
-  
-    // Fetch and display the weather data after keys are available
-    await loadWeatherData();
-  });
+  loadWeatherData();
 });
