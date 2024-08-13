@@ -5,55 +5,73 @@ $(document).ready(function() {
         window.location.hash = '#dashboard';
     }
 
-    // Function to load content from a JavaScript file into main content area
-    function loadContent(url) {
-        $.getScript(url);
+    // Function to load content from a JavaScript module file into main content area
+    async function loadContent(url) {
+        try {
+            // Dynamically import the module
+            const module = await import(url);
+
+            // Assuming your module has a default export or named exports
+            if (module.default) {
+                module.default(); // Call the default export function if it exists
+            }
+        } catch (error) {
+            console.error(`Failed to load module from ${url}:`, error);
+        }
     }
 
     var user = JSON.parse(sessionStorage.getItem('user'));
 
     // Prepend header and sidebar structure to the body
     $('body').prepend(`
-        <div class="container-fluid p-0">
-            <header class="header d-flex justify-content-between align-items-center" style="background-color: #008000;">
-                <div class="header d-flex align-items-center">
-                    <img src="../img/logo.png" alt="Logo" class="header-logo">
-                    <h3 id="appName" class="pl-3">AgroConnect Cabuyao</h3>
-                </div>
-                <div class="pr-4 d-flex align-items-center">
-                    <span class="username font-weight-bold">${user.username}</span>
-                    <span class="user-icon">
-                        <i class="fas fa-user"></i>
-                    </span>
-                </div>
-            </header>
-        </div>
-        <div class="container-fluid sidebar-container pl-0 d-flex justify-content-center">
-            <nav class="sidebar" style="background-color: #2774E9; height: calc(100vh - 60px);"> <!-- 60px is the height of the header -->
-                <div class="sidebar-sticky">
-                    <ul class="nav flex-column mt-4" id="sidebar-links">
-                        <!-- Links will be dynamically added here -->
-                    </ul>
-                    <ul class="nav flex-column logout">
-                        <li class="nav-item mt-auto">
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-sign-out-alt"></i>
-                                Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            <main role="main" id="main-content" class="ml-sm-auto col-lg-10 pr-4 pl-0">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Main Content</h1>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <p>Content area below the header and sidebar.</p>
+       <div class="wrapper">
+            <!-- Header -->
+            <div class="header">
+                <header class="header d-flex justify-content-between align-items-center" style="background-color: #008000;">
+                    <div class="header d-flex align-items-center p-2">
+                        <img src="../img/logo.png" alt="Logo" class="header-logo">
+                        <h3 id="appName" class="pl-3">AgroConnect Cabuyao</h3>
                     </div>
-                </div>
-            </main>
+                    <div class="pr-4 d-flex align-items-center">
+                        <span class="username font-weight-bold">${user.username}</span>
+                        <span class="user-icon">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                </header>
+            </div>
+
+            <!-- Sidebar and Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Sidebar -->
+                <nav class="sidebar">
+                    <div>
+                        <ul class="nav flex-column mt-4" id="sidebar-links">
+                            <!-- Links will be dynamically added here -->
+                        </ul>
+                        <ul class="nav flex-column logout">
+                            <li class="nav-item mt-auto">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- Main Content Area -->
+                <main role="main" id="main-content" class="content ml-sm-auto col-lg-10 pr-4">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Main Content</h1>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>Content area below the header and sidebar.</p>
+                        </div>
+                    </div>
+                </main>
+            </div>
         </div>
     `);
 
@@ -97,58 +115,61 @@ $(document).ready(function() {
             });
         }
     }
-
-    // Load default content based on URL hash
-    function loadDefaultContent() {
+    async function loadDefaultContent() {
         const hash = window.location.hash;
+        let modulePath;
+    
+        // Determine which module to load based on the URL hash
         switch (hash) {
             case '#dashboard':
-                loadContent("components/pages/Dashboard.js");
+                modulePath = '../components/pages/Dashboard.js';
+                await loadContent(modulePath);
                 setActiveLink('#dashboard-link');
                 break;
             case '#manage-users':
-                loadContent("components/pages/ManageUsers.js");
+                modulePath = '../components/pages/ManageUsers.js';
+                await loadContent(modulePath);
                 setActiveLink('#manage-users-link');
                 break;
             case '#maintenance':
-                loadContent("components/pages/Maintenance.js");
+                modulePath = '../components/pages/Maintenance.js';
+                await loadContent(modulePath);
                 setActiveLink('#maintenance-link');
                 break;
             case '#data-entries':
-                loadContent("components/pages/DataEntries.js");
+                modulePath = '../components/pages/DataEntries.js';
+                await loadContent(modulePath);
                 setActiveLink('#data-entries-link');
                 break;
             case '#concerns':
-                loadContent("components/pages/Concerns.js");
+                modulePath = '../components/pages/Concerns.js';
+                await loadContent(modulePath);
                 setActiveLink('#concerns-link');
                 break;
             default:
-                loadContent("components/pages/Dashboard.js");
+                modulePath = '../components/pages/Dashboard.js';
+                await loadContent(modulePath);
                 setActiveLink('#dashboard-link');
                 break;
         }
     }
-
-    // Set active link
+    
+    // Example function to set the active link
     function setActiveLink(selector) {
+        // Remove active class from all links
         $('.nav-link').removeClass('active');
+        // Add active class to the selected link
         $(selector).addClass('active');
     }
-
-    // Handle sidebar link clicks to load corresponding content and update URL
-    $(document).on('click', '.nav-link', function(e) {
-        e.preventDefault();
-        const target = $(this).attr('href');
-        window.location.hash = target;
+    
+    // Call loadDefaultContent when the page loads
+    $(document).ready(function() {
         loadDefaultContent();
-    });
-
-    // Load content based on the current hash
-    loadDefaultContent();
-
-    // Handle hash change events
-    $(window).on('hashchange', function() {
-        loadDefaultContent();
+    
+        // Also handle hash change if user navigates using browser history
+        $(window).on('hashchange', function() {
+            loadDefaultContent();
+        });
     });
 
     // Initialize sidebar based on user role

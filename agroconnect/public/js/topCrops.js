@@ -23,125 +23,187 @@ class TopCrops {
             const topCrops = this.generateTopCrops(cropData);
             this.displayTopCrops(topCrops);
             dataEntry = topCrops;
-            console.log(topCrops);
+            
         } catch (error) {
             console.error('Failed to initialize TopCrops:', error);
         }
     }
 
     generateTopCrops(data) {
-        const calculateMinMax = (data, key) => {
-            const values = data.map(entry => entry[key]);
-            return { min: Math.min(...values), max: Math.max(...values) };
+    const calculateMinMax = (data, key) => {
+        const values = data.map(entry => entry[key]);
+        return { min: Math.min(...values), max: Math.max(...values) };
+    };
+
+    const normalize = (value, min, max) => {
+        if (max === min) return 0; // Avoid division by zero
+        return Math.max(0, (value - min) / (max - min));
+    };
+
+    const calculateCompositeScore = (entry, ranges) => {
+        const indicators = {
+            volumeProduction: entry.volumeProductionPerHectare,
+            income: entry.incomePerHectare,
+            benefit: entry.benefitPerHectare,
+            price: entry.price,
+            pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
+            disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence
         };
 
-        const normalize = (value, min, max) => {
-            if (max === min) return 0; // Avoid division by zero
-            // Normalize and ensure non-negative values
-            return Math.max(0, (value - min) / (max - min));
+        const normalizedIndicators = {
+            volumeProduction: normalize(indicators.volumeProduction, ranges.volumeProduction.min, ranges.volumeProduction.max),
+            income: normalize(indicators.income, ranges.income.min, ranges.income.max),
+            benefit: normalize(indicators.benefit, ranges.benefit.min, ranges.benefit.max),
+            price: normalize(indicators.price, ranges.price.min, ranges.price.max),
+            pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
+            disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min)
         };
 
-        const calculateCompositeScore = (entry, ranges) => {
-            const indicators = {
-                volumeProduction: entry.volumeProductionPerHectare,
-                income: entry.incomePerHectare,
-                benefit: entry.benefitPerHectare,
-                price: entry.price,
-                pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
-                disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence
-            };
+        return (
+            0.2 * normalizedIndicators.volumeProduction +
+            0.2 * normalizedIndicators.income +
+            0.2 * normalizedIndicators.benefit +
+            0.2 * normalizedIndicators.price +
+            0.1 * normalizedIndicators.pest +
+            0.1 * normalizedIndicators.disease
+        );
+    };
 
-            const normalizedIndicators = {
-                volumeProduction: normalize(indicators.volumeProduction, ranges.volumeProduction.min, ranges.volumeProduction.max),
-                income: normalize(indicators.income, ranges.income.min, ranges.income.max),
-                benefit: normalize(indicators.benefit, ranges.benefit.min, ranges.benefit.max),
-                price: normalize(indicators.price, ranges.price.min, ranges.price.max),
-                pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
-                disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min)
-            };
+    const parseMonthYear = (monthYear) => {
+        const [month, year] = monthYear.split(' ');
+        return { month, year };
+    };
 
-            console.log('Indicators:', normalizedIndicators);
-
-            return (
-                0.2 * normalizedIndicators.volumeProduction +
-                0.2 * normalizedIndicators.income +
-                0.2 * normalizedIndicators.benefit +
-                0.2 * normalizedIndicators.price +
-                0.1 * normalizedIndicators.pest +
-                0.1 * normalizedIndicators.disease
-            );
-        };
-
-        const aggregatedData = data.reduce((acc, entry) => {
-            const key = `${entry.cropName} - ${entry.variety}`;
+    const aggregateMonthlyData = (data) => {
+        return data.reduce((acc, entry) => {
+            const { month, year } = parseMonthYear(entry.monthYear);
+            const key = `${entry.cropName} - ${entry.variety} - ${month} ${year}`;
             if (!acc[key]) {
-                acc[key] = {
-                    volumeProductionPerHectare: 0,
-                    incomePerHectare: 0,
-                    benefitPerHectare: 0,
-                    price: 0,
-                    pestOccurrence: 0,
-                    diseaseOccurrence: 0,
-                    totalPlanted: 0,
-                    count: 0
-                };
+                acc[key] = { income: 0, count: 0 };
             }
-            const item = acc[key];
-            item.volumeProductionPerHectare += entry.volumeProductionPerHectare;
-            item.incomePerHectare += entry.incomePerHectare;
-            item.benefitPerHectare += entry.benefitPerHectare;
-            item.price += entry.price;
-            item.pestOccurrence += entry.pestOccurrence;
-            item.diseaseOccurrence += entry.diseaseOccurrence;
-            item.totalPlanted += entry.totalPlanted;
-            item.count += 1;
+            acc[key].income += entry.incomePerHectare;
+            acc[key].count += 1;
             return acc;
         }, {});
+    };
 
-        const averagedData = Object.entries(aggregatedData).map(([key, values]) => ({
-            cropName: key.split(' - ')[0],
-            variety: key.split(' - ')[1],
-            type: $('#typeSelect').val(),
-            volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
-            incomePerHectare: values.incomePerHectare / values.count,
-            benefitPerHectare: values.benefitPerHectare / values.count,
-            price: values.price / values.count,
-            pestOccurrence: values.pestOccurrence / values.count,
-            diseaseOccurrence: values.diseaseOccurrence / values.count,
-            totalPlanted: values.totalPlanted / values.count
-        }));
+    const findPeakAndLowestMonth = (monthlyData) => {
+        const peakAndLowest = {};
+        for (const [key, values] of Object.entries(monthlyData)) {
+            const [cropName, variety, monthYear] = key.split(' - ');
+            const month = monthYear.split(' ')[0];
+            const averageIncome = values.income / values.count;
 
-        const ranges = {
-            volumeProduction: calculateMinMax(averagedData, 'volumeProductionPerHectare'),
-            income: calculateMinMax(averagedData, 'incomePerHectare'),
-            benefit: calculateMinMax(averagedData, 'benefitPerHectare'),
-            price: calculateMinMax(averagedData, 'price'),
-            pest: calculateMinMax(averagedData, 'pestOccurrence'),
-            disease: calculateMinMax(averagedData, 'diseaseOccurrence')
-        };
+            if (!peakAndLowest[`${cropName} - ${variety}`]) {
+                peakAndLowest[`${cropName} - ${variety}`] = {
+                    peak: { month: '', income: -Infinity },
+                    lowest: { month: '', income: Infinity }
+                };
+            }
 
-        const scoredData = averagedData.map(entry => ({
-            ...entry,
-            compositeScore: calculateCompositeScore(entry, ranges)
-        }));
+            if (averageIncome > peakAndLowest[`${cropName} - ${variety}`].peak.income) {
+                peakAndLowest[`${cropName} - ${variety}`].peak = { month, income: averageIncome };
+            }
+            if (averageIncome < peakAndLowest[`${cropName} - ${variety}`].lowest.income) {
+                peakAndLowest[`${cropName} - ${variety}`].lowest = { month, income: averageIncome };
+            }
+        }
+        return peakAndLowest;
+    };
 
-        const rankedData = scoredData.sort((a, b) => b.compositeScore - a.compositeScore);
-
-        return rankedData.map((entry, index) => {
-            const rank = index + 1;
-            const performance = rank === 1 ? "highest" : rank === rankedData.length ? "lowest" : "average";
-
-            return {
-                ...entry,
-                remarks: `Rank ${rank}: This variety (${entry.variety}) of ${entry.cropName} has a total planted area of ${entry.totalPlanted.toFixed(2)} units. ` +
-                         `It averages ${entry.volumeProductionPerHectare.toFixed(2)} for volume production per hectare, ` +
-                         `with an income of ${entry.incomePerHectare.toFixed(2)} per hectare and a benefit of ${entry.benefitPerHectare.toFixed(2)} per hectare. ` +
-                         `The average price is ${entry.price.toFixed(2)}. ` +
-                         `Pest and disease occurrences are ${entry.pestOccurrence.toFixed(2)} and ${entry.diseaseOccurrence.toFixed(2)}, respectively. ` +
-                         `Compared to all other crops and varieties, this variety is ${performance} in terms of overall performance.`
+    const aggregatedData = data.reduce((acc, entry) => {
+        const key = `${entry.cropName} - ${entry.variety}`;
+        if (!acc[key]) {
+            acc[key] = {
+                volumeProductionPerHectare: 0,
+                incomePerHectare: 0,
+                benefitPerHectare: 0,
+                price: 0,
+                pestOccurrence: 0,
+                diseaseOccurrence: 0,
+                totalPlanted: 0,
+                count: 0
             };
-        });
-    }
+        }
+        const item = acc[key];
+        item.volumeProductionPerHectare += entry.volumeProductionPerHectare;
+        item.incomePerHectare += entry.incomePerHectare;
+        item.benefitPerHectare += entry.benefitPerHectare;
+        item.price += entry.price;
+        item.pestOccurrence += entry.pestOccurrence;
+        item.diseaseOccurrence += entry.diseaseOccurrence;
+        item.totalPlanted += entry.totalPlanted;
+        item.count += 1;
+        return acc;
+    }, {});
+
+    const averagedData = Object.entries(aggregatedData).map(([key, values]) => ({
+        cropName: key.split(' - ')[0],
+        variety: key.split(' - ')[1],
+        type: $('#typeSelect').val(),
+        volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
+        incomePerHectare: values.incomePerHectare / values.count,
+        benefitPerHectare: values.benefitPerHectare / values.count,
+        price: values.price / values.count,
+        pestOccurrence: values.pestOccurrence / values.count,
+        diseaseOccurrence: values.diseaseOccurrence / values.count,
+        totalPlanted: values.totalPlanted / values.count
+    }));
+
+    const monthlyData = aggregateMonthlyData(data);
+    const peakAndLowest = findPeakAndLowestMonth(monthlyData);
+
+    const ranges = {
+        volumeProduction: calculateMinMax(averagedData, 'volumeProductionPerHectare'),
+        income: calculateMinMax(averagedData, 'incomePerHectare'),
+        benefit: calculateMinMax(averagedData, 'benefitPerHectare'),
+        price: calculateMinMax(averagedData, 'price'),
+        pest: calculateMinMax(averagedData, 'pestOccurrence'),
+        disease: calculateMinMax(averagedData, 'diseaseOccurrence')
+    };
+
+    const scoredData = averagedData.map(entry => ({
+        ...entry,
+        compositeScore: calculateCompositeScore(entry, ranges),
+        peakMonth: peakAndLowest[`${entry.cropName} - ${entry.variety}`]?.peak.month || 'N/A',
+        lowestMonth: peakAndLowest[`${entry.cropName} - ${entry.variety}`]?.lowest.month || 'N/A'
+    }));
+
+    const rankedData = scoredData.sort((a, b) => b.compositeScore - a.compositeScore);
+
+    // Define performance thresholds
+    const numEntries = rankedData.length;
+    const topThreshold = rankedData[Math.floor(numEntries * 0.1)]?.compositeScore || -Infinity;
+    const highThreshold = rankedData[Math.floor(numEntries * 0.3)]?.compositeScore || -Infinity;
+    const lowThreshold = rankedData[Math.floor(numEntries * 0.7)]?.compositeScore || Infinity;
+    const bottomThreshold = rankedData[Math.floor(numEntries * 0.9)]?.compositeScore || Infinity;
+
+    return rankedData.map((entry, index) => {
+        const rank = index + 1;
+        let performance;
+        
+        if (entry.compositeScore >= topThreshold) {
+            performance = "high";
+        } else if (entry.compositeScore >= highThreshold) {
+            performance = "above average";
+        } else if (entry.compositeScore >= lowThreshold) {
+            performance = "average";
+        } else {
+            performance = "poor";
+        }
+
+        return {
+            ...entry,
+            remarks: `Rank ${rank}: This variety (${entry.variety}) of ${entry.cropName} has a total planted area of <strong>${entry.totalPlanted.toFixed(2)}</strong> units. ` +
+                `It achieves an impressive average income of <strong>${entry.incomePerHectare.toFixed(2)}</strong> per hectare, ` +
+                `with a volume production rate of <strong>${entry.volumeProductionPerHectare.toFixed(2)}</strong> per hectare and a benefit of <strong>${entry.benefitPerHectare.toFixed(2)}</strong> per hectare. ` +
+                `The average price for this variety is <strong>${entry.price.toFixed(2)}</strong>. ` +
+                `Pest and disease occurrences are <strong>${entry.pestOccurrence.toFixed(2)}</strong> and <strong>${entry.diseaseOccurrence.toFixed(2)}</strong>, respectively. ` +
+                `The peak income month is <strong>${entry.peakMonth}</strong>, while the lowest income month is <strong>${entry.lowestMonth}</strong>. ` +
+                `Compared to other crops and varieties, this variety demonstrates <strong>${performance}</strong> performance in terms of income generation.`
+        };
+    });
+}
 
     displayTopCrops(data) {
         const tableBody = $('#cropsTable tbody');
@@ -231,12 +293,14 @@ function escapeCSVValue(value) {
 }
 
 function downloadCSV(filename, data) {
-    const keys = Object.keys(data[0]).filter(key => key !== 'remarks');
+    // Determine which headers to include by excluding headers containing 'Rank'
+    const keys = Object.keys(data[0]).filter(key => !key.toLowerCase().includes('rank') && key !== 'remarks');
     const headers = keys.map(formatHeader);
 
     const csv = [
         headers.join(','),
-        ...data.map(row => keys.map(key => escapeCSVValue(row[key])).join(','))
+        ...data
+            .map(row => keys.map(key => escapeCSVValue(row[key])).join(','))
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -250,11 +314,18 @@ function downloadCSV(filename, data) {
     URL.revokeObjectURL(url);
 }
 
+
 function downloadExcel(filename, data) {
-    // Filter out 'remarks' key from each row
+    // Determine which headers to include by excluding headers containing 'Rank'
+    const headersToInclude = Object.keys(data[0]).filter(key => !key.toLowerCase().includes('rank') && key !== 'remarks');
+
+    // Filter data to remove 'Rank' headers and 'remarks'
     const filteredData = data.map(row => {
-        const { remarks, ...rest } = row;
-        return rest;
+        const filteredRow = {};
+        headersToInclude.forEach(key => {
+            filteredRow[key] = row[key];
+        });
+        return filteredRow;
     });
 
     // Create worksheet and workbook
@@ -277,9 +348,18 @@ function downloadPDF(filename, data) {
     // Create the table using only the specified columns
     doc.autoTable({
         head: [headers],
-        body: data.map(row => columns.map(key => row[key])),
+        body: data.map(row => 
+            columns.map(key => key === 'remarks' ? extractTextFromHTML(row[key]) : row[key])
+        ),
         theme: 'striped'
     });
 
     doc.save(filename);
+}
+
+// Function to extract plain text from HTML
+function extractTextFromHTML(html) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
 }

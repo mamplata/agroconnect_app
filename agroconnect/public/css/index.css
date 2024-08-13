@@ -140,4 +140,12 @@ h2 {
     color: #fff;
     font-weight: 600;
 }
-
+/* Customize the background color of the selected items */
+.custom-select {
+    padding-left: 20px;
+    background-color: #B1BA4D;
+    border-radius: 5px;
+    text-align: center;
+    color: #fff;
+    font-weight: 600;
+}

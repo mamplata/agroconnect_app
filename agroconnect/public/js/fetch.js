@@ -1,3 +1,4 @@
+
 async function getCrop(type = '') {
     try {
         const response = await $.ajax({
@@ -5,14 +6,31 @@ async function getCrop(type = '') {
             type: 'GET',
             dataType: 'json'
         });
-        console.log(response);
-        // Filter data based on type if provided
         return response.filter(crop => !type || crop.type.toLowerCase() === type.toLowerCase());
     } catch (error) {
         console.error('An error occurred while fetching the crop data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
     }
 }
+
+function getProductions() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: 'api/productions', // Adjust URL as necessary
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+            
+                                                       resolve(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Failed to fetch production data:', textStatus, errorThrown);
+                reject([]);
+            }
+        });
+    });
+}
+
 
 async function getBarangay() {
     try {
@@ -21,11 +39,101 @@ async function getBarangay() {
             type: 'GET',
             dataType: 'json'
         });
-
         return response;
     } catch (error) {
         console.error('An error occurred while fetching barangay data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
+    }
+}
+
+async function getFarmer() {
+    try {
+        const response = await $.ajax({
+            url: 'api/farmers', // Replace with your API endpoint
+            type: 'GET',
+            dataType: 'json'
+        });
+        return response;
+    } catch (error) {
+        console.error('An error occurred while fetching barangay data:', error);
+        throw error;
+    }
+}
+
+async function getRecord() {
+    try {
+        const response = await $.ajax({
+            url: 'api/records', // Replace with your API endpoint
+            type: 'GET',
+            dataType: 'json'
+        });
+        return response;
+    } catch (error) {
+        console.error('An error occurred while fetching barangay data:', error);
+        throw error;
+    }
+}
+
+async function getSoilHealth() {
+    try {
+        const response = await $.ajax({
+            url: 'api/soilhealths', // Replace with your API endpoint
+            type: 'GET',
+            dataType: 'json'
+        });
+        return response;
+    } catch (error) {
+        console.error('An error occurred while fetching barangay data:', error);
+        throw error;
+    }
+}
+
+async function getUsers() {
+    try {
+        const response = await $.ajax({
+            url: 'api/users', // Replace with your API endpoint
+            type: 'GET',
+            dataType: 'json'
+        });
+        return response;
+    } catch (error) {
+        console.error('An error occurred while fetching barangay data:', error);
+        throw error;
+    }
+}
+
+async function getConcerns() {
+    try {
+        const response = await $.ajax({
+            url: 'api/concerns', // Replace with your API endpoint
+            type: 'GET',
+            dataType: 'json'
+        });
+        return response;
+    } catch (error) {
+        console.error('An error occurred while fetching barangay data:', error);
+        throw error;
+    }
+}
+
+async function getDataEntries() {
+    try {
+        // Fetch data asynchronously
+        let [production, price, pest, disease, soilHealth] = await Promise.all([
+            getProductions(),
+            getPrice(),
+            getPest(), 
+            getDisease(),
+            getSoilHealth()
+        ]);
+
+        // Calculate the sum of lengths of all data entries
+        let totalLength = production.length + price.length + pest.length + disease.length + soilHealth.length;
+
+        return totalLength;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
     }
 }
 
@@ -37,65 +145,53 @@ async function getProduction(cropName = '', season) {
             type: 'GET',
             dataType: 'json'
         });
-
-        // Convert cropName and season to lowercase for case-insensitive comparison, if defined
         const lowerCaseCropName = cropName ? cropName.toLowerCase() : '';
         const lowerCaseSeason = season ? season.toLowerCase() : '';
-
-        // Filter the data based on cropName and season (case-insensitive)
         return response.filter(item => 
             (lowerCaseCropName === '' || item.cropName.toLowerCase() === lowerCaseCropName) &&
             item.season.toLowerCase() === lowerCaseSeason
         );
     } catch (error) {
         console.error('An error occurred while fetching the production data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
     }
 }
 
-async function getPrice(cropName = '', season) {
+async function getPrice(cropName = '', season = '') {
     try {
         const response = await $.ajax({
             url: 'api/prices', // Update this path to the location of your price.json
             type: 'GET',
             dataType: 'json'
         });
-
-        // Convert cropName and season to lowercase for case-insensitive comparison, if defined
         const lowerCaseCropName = cropName ? cropName.toLowerCase() : '';
         const lowerCaseSeason = season ? season.toLowerCase() : '';
-
-        // Filter the data based on cropName and season (case-insensitive)
         return response.filter(item => 
             (lowerCaseCropName === '' || item.cropName.toLowerCase() === lowerCaseCropName) &&
-            item.season.toLowerCase() === lowerCaseSeason
+            (lowerCaseSeason === '' || item.season.toLowerCase() === lowerCaseSeason)
         );
     } catch (error) {
         console.error('An error occurred while fetching the price data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
     }
 }
 
-async function getPest(cropName = '', season) {
+async function getPest(cropName = '', season = '') {
     try {
         const response = await $.ajax({
             url: 'api/pests', // Update this path to the location of your pest.json
             type: 'GET',
             dataType: 'json'
         });
-
-        // Convert cropName and season to lowercase for case-insensitive comparison, if defined
         const lowerCaseCropName = cropName ? cropName.toLowerCase() : '';
         const lowerCaseSeason = season ? season.toLowerCase() : '';
-
-        // Filter the data based on cropName and season (case-insensitive)
         return response.filter(item => 
             (lowerCaseCropName === '' || item.cropName.toLowerCase() === lowerCaseCropName) &&
-            item.season.toLowerCase() === lowerCaseSeason
+            (lowerCaseSeason === '' || item.season.toLowerCase() === lowerCaseSeason)
         );
     } catch (error) {
         console.error('An error occurred while fetching the pest data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
     }
 }
 
@@ -106,18 +202,16 @@ async function getDisease(cropName = '', season) {
             type: 'GET',
             dataType: 'json'
         });
-
-        // Convert cropName and season to lowercase for case-insensitive comparison, if defined
         const lowerCaseCropName = cropName ? cropName.toLowerCase() : '';
         const lowerCaseSeason = season ? season.toLowerCase() : '';
-
-        // Filter the data based on cropName and season (case-insensitive)
         return response.filter(item => 
             (lowerCaseCropName === '' || item.cropName.toLowerCase() === lowerCaseCropName) &&
-            item.season.toLowerCase() === lowerCaseSeason
+            (lowerCaseSeason === '' || item.season.toLowerCase() === lowerCaseSeason)
         );
     } catch (error) {
         console.error('An error occurred while fetching the disease data:', error);
-        throw error; // Re-throw the error if you want to handle it outside
+        throw error;
     }
 }
+
+export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns };

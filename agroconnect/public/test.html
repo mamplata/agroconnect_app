@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Select with Checkboxes and Limit</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.0/css/bootstrap-multiselect.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/1.1.0/js/bootstrap-multiselect.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-4">
+        <h2>Multiple Select with Checkboxes and Limit</h2>
+        <form>
+            <div class="form-group">
+                <label for="mySelect">Select options:</label>
+                <select id="mySelect" class="form-control" multiple="multiple">
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                    <option value="4">Option 4</option>
+                    <option value="5">Option 5</option>
+                </select>
+            </div>
+            <button type="button" id="getSelectedValues" class="btn btn-primary">Get Selected Values</button>
+            <p id="selectedValues"></p>
+        </form>
+    </div>
+
+
+    <script>
+        $(document).ready(function() {
+            // Initialize the multiselect
+            $('#mySelect').multiselect({
+                includeSelectAllOption: true,
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                onChange: function(option, checked, select) {
+                    // Limit to 3 selections
+                    var selectedOptions = $('#mySelect').val();
+                    if (selectedOptions.length > 3) {
+                        alert('You can only select up to 3 options.');
+                        $(option).prop('selected', false); // Deselect the option
+                        $('#mySelect').multiselect('refresh'); // Refresh the multiselect to update UI
+                    }
+                }
+            });
+
+            // Get selected values when button is clicked
+            $('#getSelectedValues').click(function() {
+                var selectedValues = $('#mySelect').val();
+                $('#selectedValues').text('Selected values: ' + selectedValues.join(', '));
+            });
+        });
+    </script>
+
+</body>
+</html>

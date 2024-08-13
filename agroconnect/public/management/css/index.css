@@ -6,23 +6,48 @@
 }
 
 body, html {
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
 }
 
 body {
     background-color: #F5F5F5;
+    
 }
 
-/* Custom styles */
+.wrapper {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+.content-wrapper {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden; /* Ensure that only content scrolls */
+}
+.sidebar {
+    background-color: #2774E9;
+    padding: 15px;
+    flex-shrink: 0; /* Prevent the sidebar from shrinking */
+}
+.content {
+    flex-grow: 1;
+    overflow-y: auto; /* Make the content area scrollable */
+    padding: 20px;
+}
 .header {
-    background-color: #008000; /* Dark green background color */
-    color: white; /* Text color */
-    padding: 5px 10px; /* Padding around content */
+    background-color: #008000;
+    color: white;
+    text-align: center;
 }
+
 .header-logo {
+    z-index: 1;
     height: 60px; /* Adjust logo height */
-    margin-left: 10px;
+    margin-left: 20px;
 }
+
 .username {
     margin-right: 10px; /* Space between username and user icon */
 }
@@ -50,24 +75,6 @@ body {
     height: 100%;
 }
 
-.sidebar-container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-}
-
-.sidebar {
-    height: 100%;
-    color: white; /* Text color */
-    padding-top: 30px; /* Adjust top padding as needed */
-    overflow-y: auto; /* Enable vertical scrolling if needed */
-}
-
-.sidebar-sticky {
-    position: sticky;
-    top: 0;
-}
-
 .nav-link {
     color: white; /* Link text color */
 }
@@ -77,7 +84,7 @@ body {
 }
 
 .logout {
-    margin-top: 30vh;
+    margin-top: 20vh;
     padding-left: 5px;
 }
 

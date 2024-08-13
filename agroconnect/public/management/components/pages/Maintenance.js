@@ -42,15 +42,26 @@ $(document).ready(function() {
             </div>
         `);
 
+        // Retrieve stored values
+        var fromDashboard = sessionStorage.getItem('fromDashboard') === 'true'; // Convert back to boolean
+        var optionValue = sessionStorage.getItem('optionValue');
+        if(fromDashboard) {
+            console.log(optionValue);
+            $('#maintenance-option').val(optionValue);
+            initializeMaintenanceMenu(optionValue);
+            sessionStorage.removeItem('fromDashboard');
+            sessionStorage.removeItem('optionValue');
+        } else {       
+            // Initialize default maintenance option view
+            var defaultOption = $('#maintenance-option').val();
+            initializeMaintenanceMenu(defaultOption);
+        }
+
         // Handle change in maintenance option select
         $('#maintenance-option').change(function() {
             var selectedOption = $(this).val();
             initializeMaintenanceMenu(selectedOption);
         });
-
-        // Initialize default maintenance option view
-        var defaultOption = $('#maintenance-option').val();
-        initializeMaintenanceMenu(defaultOption);
     }
 
     // Initialize maintenance view when document is ready

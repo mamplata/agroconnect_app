@@ -1,4 +1,4 @@
-concerns = [];
+let concerns = [];
 
 // Function to fetch concerns from the server and store in `concerns`
 function fetchContents() {
