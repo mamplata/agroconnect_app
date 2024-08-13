@@ -115,7 +115,7 @@ class SeasonalTrends {
                 x: {
                     title: {
                         display: true,
-                        text: 'Month'
+                        text: 'Year'
                     },
                     ticks: {
                         maxRotation: 0,
@@ -385,11 +385,11 @@ $(document).ready(async function() {
     updateCropOptions().then(() => handleCategoryChange());
     $('#crop').multiselect({
     includeSelectAllOption: false,
-    enableFiltering: true,
+    enableFiltering: false,
     enableCaseInsensitiveFiltering: true,
     buttonWidth: '100%',
     onChange: function(option, checked, select) {
-            // Limit to 3 selections
+            // Limit to 5 selections
             var selectedOptions = $('#crop').val();
             if (selectedOptions.length > 5) {
                 alert('You can only select up to 5 options.');
@@ -511,12 +511,19 @@ function interpretData(data, key) {
         }
     }
 
+    const uniqueYears = Array.from(new Set(data.map(entry => entry.monthYear.split(' ')[1]))).sort((a, b) => a - b);
+
+    // Calculate year range
+    const yearRange = uniqueYears.length === 1
+        ? uniqueYears[0]
+        : `${Math.min(...uniqueYears)}-${Math.max(...uniqueYears)}`;
+
     // Construct interpretation
-    let interpretation = '';
+    let interpretation = `From ${yearRange},`;
     if (performanceScores.length === 1) {
         const singleCrop = performanceScores[0].cropName;
         const singleCropData = results[singleCrop];
-        interpretation += `The only crop in the dataset is ${singleCrop} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${singleCropData.average.toFixed(2)} units per hectare.`;
+        interpretation += ` The only crop is ${singleCrop} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${singleCropData.average.toFixed(2)} units per hectare.`;
         if (groupedData[singleCrop].years.length > 1) {
             interpretation += ` The overall growth rate was ${singleCropData.growthRateOverall}%.`;
         }
@@ -525,7 +532,7 @@ function interpretData(data, key) {
             interpretation += ` Based on these, the performance can be described as ${singleCropData.performance}.`;
         }
     } else if (allSamePerformance) {
-        interpretation += `All crops have the same performance score, so no distinct highest or lowest performers can be identified. However, the growth rates are as follows:\n`;
+        interpretation += ` All crops have the same performance score, so no distinct highest or lowest performers can be identified. However, the growth rates are as follows:\n`;
         performanceScores.forEach(({ cropName, performanceScore }) => {
             const cropData = results[cropName];
             interpretation += `\n- ${cropName}: Average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${cropData.average.toFixed(2)} units per hectare, overall growth rate of ${cropData.growthRateOverall}%.`; 
@@ -540,7 +547,7 @@ function interpretData(data, key) {
         });
     } else {
         if (highestCrops.length > 0) {
-            interpretation += `From ${groupedData[highestCrops[0]].years[0]} to ${groupedData[highestCrops[0]].years[groupedData[highestCrops[0]].years.length - 1]}, the highest performing crop${highestCrops.length > 1 ? 's' : ''} was/were ${highestCrops.join(', ')} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${results[highestCrops[0]].average.toFixed(2)} units per hectare.`;
+            interpretation += ` The highest performing crop${highestCrops.length > 1 ? 's' : ''} was/were ${highestCrops.join(', ')} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${results[highestCrops[0]].average.toFixed(2)} units per hectare.`;
 
             if (groupedData[highestCrops[0]].years.length > 1) {
                 interpretation += ` The overall growth rate was ${results[highestCrops[0]].growthRateOverall}%.`;
@@ -648,30 +655,49 @@ function downloadExcel(filename, data) {
 }
 
 function downloadPDF(filename) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    // Add content from seasonalTrendChart
-    html2canvas(document.getElementById('seasonalTrendChart')).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 10, 10, 190, 80); // Add seasonalTrendChart to PDF
-
-        // Add some space before the next section
-        let currentY = 100; // Initial y-coordinate after the first image
-
-        // Add content from interpretation
-        const interpretation = document.getElementById('interpretation').innerText;
-        const interpretationLines = doc.splitTextToSize(interpretation, 190);
-        doc.text(interpretationLines, 10, currentY); // Add interpretation text to PDF
-
-        // Adjust y-coordinate for the next section based on the interpretation text height
-        currentY += interpretationLines.length * 8;
-        // Add content from totalPerYearChart
-        html2canvas(document.getElementById('totalPerYearChart')).then(canvas => {
+    // Create a temporary container for the content
+    const container = document.createElement('div');
+    container.style.padding = '10px'; // Optional padding for better formatting
+    
+    // Function to capture and add a chart to the container
+    function addChartToPDF(chartId, callback) {
+        html2canvas(document.getElementById(chartId), {
+            scale: 3, // Increase scale for better resolution
+            useCORS: true // Handle CORS issues if needed
+        }).then(canvas => {
             const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 10, currentY, 190, 80); // Add totalPerYearChart to PDF
+            const img = document.createElement('img');
+            img.src = imgData;
+            img.style.width = '100%'; // Ensure it scales properly
+            img.style.height = 'auto';
+            container.appendChild(img);
+            container.appendChild(document.createElement('br')); // Add space between sections
+            callback();
+        });
+    }
 
-            doc.save(filename); // Save the PDF
+    // Add the charts and text to the container
+    addChartToPDF('seasonalTrendChart', () => {
+        // Add interpretation text
+        const interpretation = document.getElementById('interpretation').innerText;
+        const interpretationElem = document.createElement('p');
+        interpretationElem.innerText = interpretation;
+        container.appendChild(interpretationElem);
+        container.appendChild(document.createElement('br')); // Add space between sections
+
+        // Add the second chart
+        addChartToPDF('totalPerYearChart', () => {
+            // Configure options for html2pdf
+            const opt = {
+                margin: [10, 10, 10, 10], // margins: top, right, bottom, left
+                filename: filename,
+                image: { type: 'png', quality: 1 }, // Image quality set to high
+                html2canvas: { scale: 5 }, // Ensure high resolution
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Convert the container content to PDF and save
+            html2pdf().from(container).set(opt).save();
         });
     });
 }
