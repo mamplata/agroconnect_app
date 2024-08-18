@@ -275,3 +275,5 @@ function getKeyBySubstring(obj, substr) {
   }
   return null;
 }
+
+export { Production, getProduction, productions, initializeMethodsProduction, processProductionData };

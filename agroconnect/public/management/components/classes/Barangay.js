@@ -97,7 +97,7 @@ function getBarangay() {
     method: 'GET',
     success: function(response) {
         // Assuming response is an array of barangays 
-        barangay = response;
+        let barangay = response;
 
         barangays = barangay;
         console.log(barangays);
@@ -134,7 +134,8 @@ async function getCoordinates(locationName) {
 }
 
 function searchBarangay(barangayName) {
-  const foundBarangays = barangays.filter(barangay => barangay.barangayName.includes(barangayName));
+  const foundBarangays = barangays.filter(barangay => 
+    barangay.barangayName.toLowerCase().includes(barangayName.toLowerCase()));
   return foundBarangays;
 }
 
@@ -344,4 +345,4 @@ $('#barangayTableBody').on('click', 'tr', function() {
 });
 }
 
-
+export { Barangay, getBarangay, searchBarangay, barangays, initializeMethodsBarangay };

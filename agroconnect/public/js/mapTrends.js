@@ -1,3 +1,6 @@
+import { getCrop, getProduction, getPest, getDisease, getProductions, getBarangay, getYearRange} from './fetch.js';
+import * as stats from './statistics.js';
+
 let barangays = [];
 let globalMap = null;
 let downloadData;
@@ -6,7 +9,7 @@ let currentType;
 // Fetch initial barangay data
 async function initializeBarangays() {
     try {
-        barangays = await getBarangay(); // Fetch and initialize barangay data
+        barangays = await getBarangay();
     } catch (error) {
         console.error('Failed to initialize barangays:', error);
     }
@@ -136,22 +139,48 @@ function interpret(data, key, text) {
   `);
 }
 
-// Update crop options based on type
+async function getUniqueCropNames() {
+  let season = $('#season').val();
+  try {
+      // Fetch production data
+      const productions = await getProductions();
+      
+      // Filter productions based on the specified season
+      const filteredProductions = productions.filter(p => p.season.toLowerCase() === season.toLowerCase());
+      
+      // Extract unique crop names from the filtered data
+      const uniqueCropNames = [...new Set(filteredProductions.map(p => p.cropName.toLowerCase()))];
+      
+      return uniqueCropNames;
+  } catch (error) {
+      console.error('Failed to fetch production data:', error);
+      return [];
+  }
+}
+
+
 async function updateCropOptions() {
-    const type = $('#type').val().toLowerCase();
-    let options = '';
+  const type = $('#type').val().toLowerCase();
+  let options = '';
 
-    try {
-        const crops = await getCrop(type);
-        options = crops.length > 0
-            ? crops.map(crop => `<option value="${crop.cropName}">${crop.cropName}</option>`).join('')
-            : '<option value="">No crops available</option>';
-    } catch (error) {
-        console.error('Failed to update crop options:', error);
-        options = '<option value="">Error loading crops</option>';
-    }
+  try {
+      const crops = await getCrop(type);
+      const uniqueCropNames = await getUniqueCropNames();
 
-    $('#crop').html(options);
+      if (crops.length > 0) {
+          const filteredCrops = crops.filter(crop => uniqueCropNames.includes(crop.cropName.toLowerCase()));
+          options = filteredCrops.length > 0 
+              ? filteredCrops.map(crop => `<option value="${crop.cropName.toLowerCase()}">${crop.cropName}</option>`).join('')
+              : '<option value="">No crops available</option>';
+      } else {
+          options = '<option value="">No crops available</option>';
+      }
+  } catch (error) {
+      console.error('Failed to update crop options:', error);
+      options = '<option value="">Error loading crops</option>';
+  }
+
+  $('#crop').html(options);
 }
 
 // Handle category change and display results
@@ -162,54 +191,49 @@ async function handleCategoryChange() {
     const category = $('#category').val();
 
     let categoryText, dataset = [], data = [], key, yearRange, text;
-
+    yearRange = await getYearRange();
     switch (category) {
         case 'total_planted':
             key = "totalPlanted";
-            data = await getProduction(crop, season);
-            yearRange = getYearRange(data);
+            data = await getProduction(crop, season);  
+            console.log(data);     
             categoryText = `Total Planted Per Barangay (${yearRange})`;
-            dataset = countTotalPlantedBarangay(data);
+            dataset = stats.countTotalPlantedBarangay(data);
             text = "total planted";
             break;
         case 'production_volume':
             key = "volumeProduction";
             data = await getProduction(crop, season);
-            yearRange = getYearRange(data);
             categoryText = `Production Volume Per Barangay (${yearRange})`;
-            dataset = averageVolumeProductionBarangay(data);
+            dataset = stats.averageVolumeProductionBarangay(data);
             text = "production volume per hectare";
             break;
         case 'pest_occurrence':
             key = "pestOccurrence";
             data = await getPest(crop, season);
-            yearRange = getYearRange(data);
             categoryText = `Pest Occurrence Per Barangay (${yearRange})`;
-            dataset = countPestOccurrenceBarangay(data);
+            dataset = stats.countPestOccurrenceBarangay(data);
             text = "pest occurrence";
             break;
         case 'disease_occurrence':
             key = "diseaseOccurrence";
             data = await getDisease(crop, season);
-            yearRange = getYearRange(data);
             categoryText = `Disease Occurrence Per Barangay (${yearRange})`;
-            dataset = countDiseaseOccurrenceBarangay(data);
+            dataset = stats.countDiseaseOccurrenceBarangay(data);
             text = "disease occurrence";
             break;
         case 'price_income_per_hectare':
             key = "incomePerHectare";
             data = await getProduction(crop, season);
-            yearRange = getYearRange(data);
             categoryText = `Price Income per Hectare Per Barangay (${yearRange})`;
-            dataset = priceIncomePerHectareBarangay(data);
+            dataset = stats.priceIncomePerHectareBarangay(data);
             text = "price income per hectare";
             break;
         case 'benefit_per_hectare':
             key = "benefitPerHectare";
             data = await getProduction(crop, season);
-            yearRange = getYearRange(data);
             categoryText = `Benefit per Hectare Per Barangay (${yearRange})`;
-            dataset = benefitPerHectareBarangay(data);
+            dataset = stats.benefitPerHectareBarangay(data);
             text = "benefit per hectare";
             break;
         default:
@@ -256,8 +280,21 @@ function getLatLon(coordinate) {
     return { lat, lon };
 }
 
+// Function to determine the rate based on zScore
+function getRate(zScore) {
+  if (zScore > 1.5) return 'High'; 
+  if (zScore >= 0.5) return 'Moderate'; 
+  return 'Low'; 
+}
+
 async function download(format, type, data) {
     const filename = `${type.toLowerCase()}.${format}`;
+    // Extract barangay and rate
+    let pdfData = data.map(item => ({
+      barangay: item.barangay,
+      rate: getRate(item.zScore)
+    }));
+
     if (format === 'csv') {
       downloadCSV(filename, data);
     } else if (format === 'xlsx') {
@@ -276,7 +313,7 @@ async function download(format, type, data) {
 
   // Delay to ensure all popups are closed before starting the download
   setTimeout(() => {
-    downloadPDF(filename);
+    downloadPDF(filename, pdfData);
   }, 1000); // Adjust the delay as needed
 });
 
@@ -332,70 +369,105 @@ function downloadExcel(filename, data) {
     XLSX.writeFile(wb, filename);
 }
 
-function downloadPDF(filename) {
+function downloadPDF(filename, data) {
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
+  const margin = 10; // Margin from the page edges
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 10; // Margin from the page edges
+  let currentY = margin + 20;
 
   // Helper function to capture a section as an image
   function captureSection(selector) {
     return html2canvas(document.querySelector(selector), {
       background: 'transparent',
-      useCORS: true
-    }).then(canvas => canvas.toDataURL());
+      useCORS: true,
+      scale: 2 // Increase scale for better image quality
+    }).then(canvas => canvas.toDataURL('image/png'));
   }
 
-  // Capture and add title text (bold and larger)
-  const titleText = document.querySelector('#title').innerText;
-  pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'bold'); // Set font to bold
-  pdf.text(titleText, pageWidth / 2, margin + 12, { align: 'center' });
-  pdf.setFont('helvetica', 'normal'); // Reset font to normal
+  // Helper function to add an image to the PDF
+  function addImageToPDF(imgData, x, y, width, height) {
+    pdf.addImage(imgData, 'PNG', x, y, width, height, undefined, 'NONE'); // 'NONE' for no compression
+  }
 
-  // Capture and add legend card image (centered)
-  captureSection('.legend-card').then(imgData => {
-    const imgWidth = 50; // Adjust width as needed
-    const imgHeight = 10; // Adjust height as needed
-    const imgX = (pageWidth - imgWidth) / 2; // Center horizontally
-    pdf.addImage(imgData, 'PNG', imgX, margin + 18, imgWidth, imgHeight); // Adjust dimensions and position
-  }).then(() => {
-    // Capture and add map image
-    return html2canvas(document.getElementById('map'), {
-      background: 'transparent',
-      useCORS: true,
-      onclone: function (clonedDoc) {
-        var clonedMap = clonedDoc.getElementById('map');
-        clonedMap.style.position = 'relative';
-        clonedMap.style.zIndex = '10';
-      }
-    }).then(canvas => {
-      var imgData = canvas.toDataURL();
-      pdf.addImage(imgData, 'PNG', margin, margin + 30, 190, 180); // Adjust dimensions and position
+  // Function to add the title text to the PDF
+  function addTitle() {
+    const titleText = document.querySelector('#title').innerText;
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(titleText, pageWidth / 2, margin + 12, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+  }
+
+  // Function to add the legend card to the PDF
+  function addLegendCard() {
+    return captureSection('.legend-card').then(imgData => {
+      const scaledWidth = 180 / 3; // Scaled down width
+      const scaledHeight = 40 / 3; // Scaled down height
+      const legendX = (pageWidth - scaledWidth) / 2; // Center horizontally
+      addImageToPDF(imgData, legendX, currentY, scaledWidth, scaledHeight);
+      currentY += scaledHeight + 10; // Update Y position for the next section
     });
-  }).then(() => {
-    // Capture and add interpretation text (smaller font size)
-    const interpretationText = document.querySelector('#interpretation').innerText;
-    let textMargin = margin + 220; // Starting position for interpretation text
-    const lineHeight = 8; // Smaller line height for wrapped text
-    const textWidth = pageWidth - 2 * margin; // Width available for text
+  }
+
+  // Function to add the map image to the PDF
+  function addMap() {
+    return captureSection('#map').then(imgData => {
+      const imgWidth = 180;
+      const imgHeight = 130;
+      const mapX = (pageWidth - imgWidth) / 2; // Center horizontally
+      addImageToPDF(imgData, mapX, currentY, imgWidth, imgHeight);
+      currentY += imgHeight + 10; // Update Y position for the next section
+    });
+  }
+
+  // Function to add the interpretation text to the PDF
+  function addInterpretationText() {
+    const interpretationText = document.querySelector('#interpretation').innerText.trim();
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    const textWidth = pageWidth - 2 * margin;
     const splitText = pdf.splitTextToSize(interpretationText, textWidth);
 
-    // Add text with appropriate handling for page overflow
-    splitText.forEach((line, index) => {
-      const yPosition = textMargin + index * lineHeight;
-      if (yPosition > pageHeight - margin) {
+    splitText.forEach(line => {
+      const lineWidth = pdf.getTextWidth(line);
+      const textX = (pageWidth - lineWidth) / 2; // Center horizontally
+      if (currentY > pageHeight - margin) {
         pdf.addPage(); // Add a new page if needed
-        textMargin = margin; // Reset text margin for the new page
-        pdf.setFontSize(10); // Ensure font size is consistent on new pages
+        currentY = margin; // Reset text margin for the new page
       }
-      pdf.text(line, margin, yPosition);
+      pdf.text(line, textX, currentY);
+      currentY += 10; // Line height
     });
-  }).finally(() => {
-    // Save the PDF after all sections are added
-    pdf.save(filename);
-  }).catch(err => {
+
+    currentY += 70; // Extra space after the text
+  }
+
+  // Function to add the table data to the PDF using autoTable
+  function addTable() {
+    const keys = Object.keys(data[0]).filter(key => key !== 'remarks');
+    const rows = data.map(item => keys.map(key => item[key]));
+
+    pdf.autoTable({
+      head: [['Barangay (Area)', 'Rating']],
+      body: rows,
+      startY: currentY,
+      margin: { left: margin, right: margin },
+      theme: 'grid'
+    });
+  }
+
+  // Chain all the functions together to generate the PDF
+  try {
+    addTitle(); // Add title first
+    addLegendCard() // Add legend card
+      .then(addMap) // Add map image after legend
+      .then(addInterpretationText) // Add interpretation text
+      .then(addTable) // Add table data
+      .finally(() => pdf.save(filename)) // Save the PDF
+      .catch(err => console.error('Error generating PDF:', err));
+  } catch (err) {
     console.error('Error generating PDF:', err);
-  });
+  }
 }

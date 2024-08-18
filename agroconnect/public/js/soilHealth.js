@@ -7,11 +7,11 @@ $(document).ready(function() {
     .then(data => {
       vegetablesData = data.filter(record => record.fieldType === "Vegetables");
       riceData = data.filter(record => record.fieldType === "Rice");
-      fruitsData = data.filter(record => record.fieldType === "Fruits");
+      fruitsData = data.filter(record => record.fieldType === "Fruit Trees");
 
-      displayData('Vegetables', vegetablesData);
-      displayData('Rice', riceData);
-      displayData('Fruits', fruitsData);
+      displayData('vegetables', vegetablesData);
+      displayData('rice', riceData);
+      displayData('fruits', fruitsData);
 
       $('.download-btn').click(function() {
         currentDataType = $(this).data('type');
@@ -33,6 +33,7 @@ $(document).ready(function() {
     .catch(error => console.error('Error fetching data:', error));
 
   function displayData(type, data) {
+    console.log(data);
     if (data.length === 0) {
       $(`#${type}-body`).html('<p class="h3">Data is not available for now.</p>');
       $(`.download-btn[data-type="${type}"]`).hide();

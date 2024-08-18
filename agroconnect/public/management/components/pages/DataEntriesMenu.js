@@ -1,6 +1,9 @@
-// MaintenanceMenu.js
+import { initializeMethodsPest } from '../classes/Pest.js';
+import { initializeMethodsDisease } from '../classes/Disease.js';
+import { initializeMethodsProduction } from '../classes/Production.js';
+import { initializeMethodsSoilHealth } from '../classes/SoilHealth.js';
+import { initializeMethodsPrice } from '../classes/Price.js';
 
-// Function to initialize the maintenance menu view
 function initializeDataEntriesMenu(option) {
     // Clear previous content
     $('#maintenance-content').empty();
@@ -240,3 +243,5 @@ function initializeSoilHealthsView() {
     },
   });
 }
+
+export { initializeDataEntriesMenu };

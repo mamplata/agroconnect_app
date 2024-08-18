@@ -13,6 +13,31 @@ async function getCrop(type = '') {
     }
 }
 
+// Function to determine year range from data
+async function getYearRange() {
+    try {
+        let data = await getProductions();
+        if (data.length === 0) return 'N/A';
+
+        // Extract years from monthYear
+        let years = data.map(record => {
+            let yearMatch = record.monthPlanted.match(/\d{4}$/);
+            return yearMatch ? parseInt(yearMatch[0], 10) : null;
+        }).filter(year => year !== null);
+
+        if (years.length === 0) return 'N/A';
+
+        let minYear = Math.min(...years);
+        let maxYear = Math.max(...years);
+
+        // Return year range as a string
+        return minYear === maxYear ? `${minYear}` : `${minYear} to ${maxYear}`;
+    } catch (error) {
+        console.error('Error fetching or processing production data:', error);
+        return 'N/A';
+    }
+}
+
 function getProductions() {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -214,4 +239,4 @@ async function getDisease(cropName = '', season) {
     }
 }
 
-export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns };
+export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns, getYearRange };

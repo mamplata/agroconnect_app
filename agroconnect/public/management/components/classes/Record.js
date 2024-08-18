@@ -1,3 +1,9 @@
+import { processDiseaseData } from '../classes/Disease.js';
+import { processPestData } from '../classes/Pest.js';
+import { processPriceData } from '../classes/Price.js';
+import { processProductionData } from '../classes/Production.js';
+import { processSoilHealthData } from '../classes/SoilHealth.js';
+
 // Record.js
 let records = [];
 
@@ -403,6 +409,7 @@ function initializeMethodsRecord(dataType) {
     function getSearchTerms(dataType) {
       let terms;
       let terms2;
+      let checkFormat;
       let methodName;
       let methodName2;
       switch (dataType) {
@@ -656,3 +663,5 @@ $('#recordTableBody').on('click', 'tr', function() {
 
 });
 }
+
+export { Record, getRecord, searchRecord, records, initializeMethodsRecord, confirmDownload };

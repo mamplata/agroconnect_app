@@ -232,9 +232,12 @@ $(document).ready(function() {
   async function fetchWeatherKeys() {
     try {
         const response = await fetch('/api/weather-keys');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         
-        apiKey= data.weather_api_key;
+        apiKey = data.weather_api_key;
         locationKey = data.weather_location_key;
 
         console.log('Weather API Key:', apiKey);
@@ -244,12 +247,16 @@ $(document).ready(function() {
         console.error('Error fetching weather keys:', error);
     }
 }
-  
+
   $(document).ready(async function() {
-    // Fetch the API keys before fetching weather data
-    await fetchWeatherKeys();
-  
-    // Fetch and display the weather data after keys are available
-    await loadWeatherData();
+      // Fetch the API keys before fetching weather data
+      await fetchWeatherKeys();
+    
+      // Fetch and display the weather data after keys are available
+      if (apiKey && locationKey) {
+          await loadWeatherData();
+      } else {
+          console.error('Weather API Key or Location Key is missing.');
+      }
   });
 });

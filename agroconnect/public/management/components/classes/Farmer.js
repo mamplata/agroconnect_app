@@ -100,7 +100,7 @@ function getFarmer() {
     method: 'GET',
     success: function(response) {
         // Assuming response is an array of farmers 
-        farmer = response;
+        let farmer = response;
 
         farmers = farmer;
         console.log(farmers);
@@ -146,7 +146,8 @@ function getBarangayNames() {
 }
 
 function searchFarmer(farmerName) {
-  const foundFarmers = farmers.filter(farmer => farmer.farmerName.includes(farmerName));
+  const foundFarmers = farmers.filter(farmer => 
+    farmer.farmerName.toLowerCase().includes(farmerName.toLowerCase()));
   return foundFarmers;
 }
 
@@ -372,3 +373,5 @@ $('#farmerTableBody').on('click', 'tr', function() {
 
 });
 }
+
+export { Farmer, getFarmer, searchFarmer, farmers, barangayArray, initializeMethodsFarmer, getBarangayId, getBarangayNames };

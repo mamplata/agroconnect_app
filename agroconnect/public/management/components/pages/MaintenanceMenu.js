@@ -1,4 +1,8 @@
 // MaintenanceMenu.js
+import { initializeMethodsCrop } from '../classes/Crop.js';
+import { initializeMethodsBarangay } from '../classes/Barangay.js';
+import { initializeMethodsFarmer, getBarangayNames } from '../classes/Farmer.js';
+import { initializeMethodsRecord } from '../classes/Record.js';
 
 // Function to initialize the maintenance menu view
 function initializeMaintenanceMenu(option) {
@@ -575,3 +579,5 @@ function initializeSoilHealthView() {
   createDeleteModal();
   createEditModal();
 }
+
+export { initializeMaintenanceMenu };

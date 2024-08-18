@@ -181,11 +181,11 @@ class SeasonalTrends {
                             const year = uniqueYears[index];
                             const total = totalsPerYear[index].reduce((a, b) => a + b, 0);
                             return [
-                                `${keys[0]} per Year: ${total}`,
+                                `${keys[0]} per Year: ${total.toFixed(2)}`,
                                 ...keys.slice(1).map(key => {
                                     const yearlyData = dataset.filter(entry => entry.monthYear.endsWith(year));
                                     const totalPerKey = yearlyData.reduce((acc, entry) => acc + (entry[key] || 0), 0);
-                                    return `${key} per Year: ${totalPerKey}`;
+                                    return `${key} per Year: ${totalPerKey.toFixed(2)}`;
                                 })
                             ];
                         }
@@ -237,7 +237,7 @@ class SeasonalTrends {
             chartConfigs.barChartConfig
         );
         
-        $('#interpretation').text(interpretation);
+        $('#interpretation').html(interpretation);
     }
 }
 
@@ -245,9 +245,17 @@ let downloadData;
 let currentType;
 
 async function getUniqueCropNames() {
+    let season = $('#season').val();
     try {
+        // Fetch production data
         const productions = await getProductions();
-        const uniqueCropNames = [...new Set(productions.map(p => p.cropName.toLowerCase()))];
+        
+        // Filter productions based on the specified season
+        const filteredProductions = productions.filter(p => p.season.toLowerCase() === season.toLowerCase());
+        
+        // Extract unique crop names from the filtered data
+        const uniqueCropNames = [...new Set(filteredProductions.map(p => p.cropName.toLowerCase()))];
+        
         return uniqueCropNames;
     } catch (error) {
         console.error('Failed to fetch production data:', error);
@@ -258,34 +266,26 @@ async function getUniqueCropNames() {
 // Function to update crop options based on type
 async function updateCropOptions() {
     const type = $('#type').val().toLowerCase();
-    
+    let options = '';
+
     try {
-        // Fetch crops based on the selected type
         const crops = await getCrop(type);
         const uniqueCropNames = await getUniqueCropNames();
-        let options;
 
-        // Prepare the options for the multiselect
         if (crops.length > 0) {
             const filteredCrops = crops.filter(crop => uniqueCropNames.includes(crop.cropName.toLowerCase()));
-            console.log('Filtered crops:', filteredCrops); // Debug: Log filtered crops
             options = filteredCrops.length > 0 
                 ? filteredCrops.map(crop => `<option value="${crop.cropName.toLowerCase()}">${crop.cropName}</option>`).join('')
                 : '<option value="">No crops available</option>';
         } else {
             options = '<option value="">No crops available</option>';
         }
-
-        // Update the <select> element
-        $('#crop').html(options);
-
-        // Rebuild the Bootstrap Multiselect to reflect changes
-        $('#crop').multiselect('rebuild');
     } catch (error) {
         console.error('Failed to update crop options:', error);
-        $('#crop').html('<option value="">Error loading crops</option>');
-        $('#crop').multiselect('rebuild');
+        options = '<option value="">Error loading crops</option>';
     }
+
+    $('#crop').html(options);
 }
 
 // Function to handle category change and display results
@@ -324,6 +324,7 @@ async function handleCategoryChange() {
                 key = ["volumeProduction", "totalVolume", "totalArea"];
                 data = await getProduction(crop, season);
                 dataset = dataset.concat(stats.averageVolumeProduction(data));
+                console.log(dataset);
                 break;
             case 'price':
                 categoryText = 'Price';
@@ -348,6 +349,7 @@ async function handleCategoryChange() {
                 key = ["incomePerHectare", "totalArea", "totalIncome"];
                 data = await getProduction(crop, season);
                 dataset = dataset.concat(stats.priceIncomePerHectare(data));
+                console.log(dataset);
                 break;
             case 'benefit_per_hectare':
                 categoryText = 'Benefit per Hectare';
@@ -381,50 +383,27 @@ async function handleCategoryChange() {
 
 // Document ready function
 $(document).ready(async function() {
-      
-    updateCropOptions().then(() => handleCategoryChange());
-    $('#crop').multiselect({
-    includeSelectAllOption: false,
-    enableFiltering: false,
-    enableCaseInsensitiveFiltering: true,
-    buttonWidth: '100%',
-    onChange: function(option, checked, select) {
-            // Limit to 5 selections
-            var selectedOptions = $('#crop').val();
-            if (selectedOptions.length > 5) {
-                alert('You can only select up to 5 options.');
-                $(option).prop('selected', false); // Deselect the option
-                $('#crop').multiselect('refresh'); // Refresh the multiselect to update UI
-            }
-        }
-    });
+    updateCropOptions().then(() =>  handleCategoryChange());
 
     // Attach event listeners for changes
     $('#type').on('change', function() {
         updateCropOptions().then(() => handleCategoryChange());
-        $('#crop').prop('selectedIndex', -1);       
     });
-    
     $('#category, #crop, #season').on('change', function() {
         handleCategoryChange();
     });
 });
 
 function interpretData(data, key) {
-    const results = {};
-    const groupedData = {};
+    const cropData = { total: 0, yearlyData: {}, years: [] };
+    const cropName = data[0]?.cropName || 'Unknown Crop';
 
-    // Group data by cropName
+    // Group data by year and calculate total
     data.forEach((item) => {
-        const { cropName, monthYear } = item;
+        const { monthYear } = item;
         const value = item[key];
         const year = new Date(monthYear).getFullYear();
 
-        if (!groupedData[cropName]) {
-            groupedData[cropName] = { total: 0, yearlyData: {}, years: [] };
-        }
-
-        const cropData = groupedData[cropName];
         cropData.total += value;
 
         if (!cropData.yearlyData[year]) {
@@ -436,143 +415,117 @@ function interpretData(data, key) {
         }
     });
 
-    // Process each crop
-    for (const cropName in groupedData) {
-        const cropData = groupedData[cropName];
-        const { total, yearlyData, years } = cropData;
-        years.sort((a, b) => a - b);
-        const yearlyAverages = stats.calculateYearlyAverages(yearlyData);
+    cropData.years.sort((a, b) => a - b);
+    const yearlyAverages = stats.calculateYearlyAverages(cropData.yearlyData);
 
-        // Calculate growth rates
-        const growthRates = [];
-        if (years.length >= 2) {
-            for (let i = 1; i < years.length; i++) {
-                const previousYearAvg = yearlyAverages[i - 1];
-                const currentYearAvg = yearlyAverages[i];
-                const growthRate = Math.round(((currentYearAvg - previousYearAvg) / previousYearAvg) * 100);
-                growthRates.push(growthRate);
-            }
-            const growthRateOverall = Math.round(((yearlyAverages[yearlyAverages.length - 1] - yearlyAverages[0]) / yearlyAverages[0]) * 100);
-            results[cropName] = {
-                average: total / data.length,
-                growthRateOverall,
-                growthRateLatestYear: growthRates[growthRates.length - 1] || 0,
-                zScores: [],
-                performance: '',
-            };
-
-            // Calculate Z-scores for growth rates and interpret performance
-            if (growthRates.length > 0) {
-                const { growthRateZScores, meanGrowthRateZScore } = stats.calculateZScoresForGrowthRates(yearlyAverages, growthRates);
-                results[cropName].zScores = growthRateZScores;
-                results[cropName].performance = stats.interpretPerformance(meanGrowthRateZScore);
-            }
-        } else {
-            results[cropName] = {
-                average: total / data.length,
-                growthRateOverall: 0,
-                growthRateLatestYear: 0,
-                zScores: [],
-                performance: 'Insufficient data',
-            };
+    // Calculate growth rates
+    const growthRates = [];
+    if (cropData.years.length >= 2) {
+        for (let i = 1; i < cropData.years.length; i++) {
+            const previousYearAvg = yearlyAverages[i - 1];
+            const currentYearAvg = yearlyAverages[i];
+            const growthRate = Math.round(((currentYearAvg - previousYearAvg) / previousYearAvg) * 100);
+            growthRates.push(growthRate);
         }
     }
+    const growthRateOverall = cropData.years.length >= 2
+        ? Math.round(((yearlyAverages[yearlyAverages.length - 1] - yearlyAverages[0]) / yearlyAverages[0]) * 100)
+        : 0;
 
-    // Find highest and lowest performing crops
-    const performanceScores = [];
-    let highestCrops = [];
-    let lowestCrops = [];
-    let highestPerformance = -Infinity;
-    let lowestPerformance = Infinity;
-    let allSamePerformance = true;
+    const result = {
+        average: cropData.total / data.length,
+        growthRateOverall,
+        growthRateLatestYear: growthRates[growthRates.length - 1] || 0,
+        zScores: [],
+        performance: '',
+    };
 
-    for (const cropName in results) {
-        const { average, growthRateOverall } = results[cropName];
-        const performanceScore = stats.interpretPerformanceScore(growthRateOverall); // Implement this function to quantify performance
-        performanceScores.push({ cropName, performanceScore });
-
-        if (performanceScore > highestPerformance) {
-            highestPerformance = performanceScore;
-            highestCrops = [cropName];
-        } else if (performanceScore === highestPerformance) {
-            highestCrops.push(cropName);
-        }
-
-        if (performanceScore < lowestPerformance) {
-            lowestPerformance = performanceScore;
-            lowestCrops = [cropName];
-        } else if (performanceScore === lowestPerformance) {
-            lowestCrops.push(cropName);
-        }
-
-        // Check if performance scores are not the same
-        if (performanceScore !== highestPerformance) {
-            allSamePerformance = false;
-        }
+    // Calculate Z-scores for growth rates and interpret performance
+    if (growthRates.length > 0) {
+        const { growthRateZScores, meanGrowthRateZScore } = stats.calculateZScoresForGrowthRates(yearlyAverages, growthRates);
+        result.zScores = growthRateZScores;
+        result.performance = stats.interpretPerformance(meanGrowthRateZScore);
+    } else {
+        result.performance = 'Insufficient data';
     }
 
+    // Calculate average value by month based on the specified key
+    const averageByMonth = (data, key) => {
+        const aggregates = data.reduce((acc, entry) => {
+            const [month] = entry.monthYear.split(' ');
+            const keyName = `${entry.cropName} - ${month}`;
+            if (!acc[keyName]) {
+                acc[keyName] = {
+                    value: 0,
+                    count: 0
+                };
+            }
+            acc[keyName].value += entry[key];
+            acc[keyName].count += 1;
+            return acc;
+        }, {});
+
+        return Object.entries(aggregates).map(([keyName, values]) => {
+            const [cropName, month] = keyName.split(' - ');
+            return {
+                cropName,
+                month,
+                averageValue: values.value / values.count
+            };
+        });
+    };
+
+    // Find the best month range for the crop
+    const peakMonthRange = bestMonthRange(cropName, averageByMonth(data, key));
+
+    // Construct interpretation
     const uniqueYears = Array.from(new Set(data.map(entry => entry.monthYear.split(' ')[1]))).sort((a, b) => a - b);
-
-    // Calculate year range
     const yearRange = uniqueYears.length === 1
         ? uniqueYears[0]
         : `${Math.min(...uniqueYears)}-${Math.max(...uniqueYears)}`;
 
-    // Construct interpretation
-    let interpretation = `From ${yearRange},`;
-    if (performanceScores.length === 1) {
-        const singleCrop = performanceScores[0].cropName;
-        const singleCropData = results[singleCrop];
-        interpretation += ` The only crop is ${singleCrop} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${singleCropData.average.toFixed(2)} units per hectare.`;
-        if (groupedData[singleCrop].years.length > 1) {
-            interpretation += ` The overall growth rate was ${singleCropData.growthRateOverall}%.`;
-        }
-        if (groupedData[singleCrop].years.length > 2) {
-            interpretation += ` The latest year saw a Year-on-Year growth rate of ${singleCropData.growthRateLatestYear}%.`;
-            interpretation += ` Based on these, the performance can be described as ${singleCropData.performance}.`;
-        }
-    } else if (allSamePerformance) {
-        interpretation += ` All crops have the same performance score, so no distinct highest or lowest performers can be identified. However, the growth rates are as follows:\n`;
-        performanceScores.forEach(({ cropName, performanceScore }) => {
-            const cropData = results[cropName];
-            interpretation += `\n- ${cropName}: Average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${cropData.average.toFixed(2)} units per hectare, overall growth rate of ${cropData.growthRateOverall}%.`; 
-                           
-             
-            if (cropData.zScores.length > 0 && !cropData.zScores.includes(NaN)) {
-    interpretation += ` Latest year growth rate of ${cropData.growthRateLatestYear}%, and performance described as ${cropData.performance}.`;
-    
-}
+    let interpretation = `From ${yearRange}, the average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} for <strong>${cropName}</strong> was ${result.average.toFixed(2)} units per hectare.`;
 
-          
-        });
-    } else {
-        if (highestCrops.length > 0) {
-            interpretation += ` The highest performing crop${highestCrops.length > 1 ? 's' : ''} was/were ${highestCrops.join(', ')} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${results[highestCrops[0]].average.toFixed(2)} units per hectare.`;
-
-            if (groupedData[highestCrops[0]].years.length > 1) {
-                interpretation += ` The overall growth rate was ${results[highestCrops[0]].growthRateOverall}%.`;
-            }
-            if (groupedData[highestCrops[0]].years.length > 2) {
-                interpretation += ` The latest year saw a Year-on-Year growth rate of ${results[highestCrops[0]].growthRateLatestYear}%.`;
-                interpretation += ` Based on these, the performance can be described as ${results[highestCrops[0]].performance}.`;
-            }
-        }
-
-        if (lowestCrops.length > 0) {
-            interpretation += `\n\nThe lowest performing crop${lowestCrops.length > 1 ? 's' : ''} was/were ${lowestCrops.join(', ')} with an average ${key.replace(/([A-Z])/g, ' $1').toLowerCase()} of ${results[lowestCrops[0]].average.toFixed(2)} units per hectare.`;
-
-            if (groupedData[lowestCrops[0]].years.length > 1) {
-                interpretation += ` The overall growth rate was ${results[lowestCrops[0]].growthRateOverall}%.`;
-            }
-            if (groupedData[lowestCrops[0]].years.length > 2) {
-                interpretation += ` The latest year saw a Year-on-Year growth rate of ${results[lowestCrops[0]].growthRateLatestYear}%.`;
-                interpretation += ` Based on these, the performance can be described as ${results[lowestCrops[0]].performance}.`;
-            }
-        }
+    if (result.growthRateLatestYear !== 0 && result.performance !== 'Insufficient data') {
+        interpretation += ` Over the period, the crop experienced an overall growth rate of ${result.growthRateOverall}%, with a growth rate of ${result.growthRateLatestYear}% in the most recent year, indicating a performance level of ${result.performance}.`;
     }
+
+    if (peakMonthRange !== 'No data') {
+        interpretation += ` The <strong>${cropName}</strong> appears to peak in the <strong>${peakMonthRange}</strong>.`;
+    }
+
+    interpretation += `</p>`;
 
     return interpretation;
 }
+
+// Find the best month range for each crop
+const bestMonthRange = (cropName, averageByMonth) => {
+    const monthlyData = averageByMonth.filter(item => item.cropName === cropName);
+    if (monthlyData.length === 0) return 'No data';
+
+    // Group by months into ranges
+    const monthRanges = [
+        { range: 'Jan-Mar', months: ['January', 'February', 'March'] },
+        { range: 'Apr-Jun', months: ['April', 'May', 'June'] },
+        { range: 'Jul-Sep', months: ['July', 'August', 'September'] },
+        { range: 'Oct-Dec', months: ['October', 'November', 'December'] }
+    ];
+
+    const averageRange = monthRanges.map(range => {
+        const rangeData = monthlyData.filter(item => range.months.includes(item.month));
+        const average = rangeData.reduce((sum, item) => sum + item.averageValue, 0) / rangeData.length;
+        return { range: range.range, average };
+    });
+
+    // Find the best range
+    const bestRange = averageRange.reduce((best, current) => {
+        return current.average > best.average ? current : best;
+    }, { average: -Infinity });
+
+    return bestRange.range;
+};
+
 
 $(document).ready(function() {
     $('.download-btn').click(function() {
@@ -655,49 +608,60 @@ function downloadExcel(filename, data) {
 }
 
 function downloadPDF(filename) {
-    // Create a temporary container for the content
-    const container = document.createElement('div');
-    container.style.padding = '10px'; // Optional padding for better formatting
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const margin = 10;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Function to add an image to the PDF
+    const addImageToPDF = (canvas, x, y, width, height) => {
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', x, y, width, height);
+    };
+
+    // Function to add text to the PDF
+    const addTextToPDF = (text, x, y) => {
+        const textWidth = pageWidth - 2 * margin;
+        const splitText = doc.splitTextToSize(text, textWidth);
     
-    // Function to capture and add a chart to the container
-    function addChartToPDF(chartId, callback) {
-        html2canvas(document.getElementById(chartId), {
-            scale: 3, // Increase scale for better resolution
-            useCORS: true // Handle CORS issues if needed
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const img = document.createElement('img');
-            img.src = imgData;
-            img.style.width = '100%'; // Ensure it scales properly
-            img.style.height = 'auto';
-            container.appendChild(img);
-            container.appendChild(document.createElement('br')); // Add space between sections
-            callback();
+        splitText.forEach(line => {
+            const lineWidth = doc.getTextWidth(line);
+            const textX = (pageWidth - lineWidth) / 2; // Center horizontally
+            if (y > pageHeight - margin) {
+                doc.addPage(); // Add a new page if needed
+                y = margin; // Reset text margin for the new page
+            }
+            doc.text(line, textX, y);
+            y += 10; // Line height
         });
-    }
+    
+        return y; // Return updated y-coordinate
+    };
 
-    // Add the charts and text to the container
-    addChartToPDF('seasonalTrendChart', () => {
-        // Add interpretation text
-        const interpretation = document.getElementById('interpretation').innerText;
-        const interpretationElem = document.createElement('p');
-        interpretationElem.innerText = interpretation;
-        container.appendChild(interpretationElem);
-        container.appendChild(document.createElement('br')); // Add space between sections
+    // Add content from seasonalTrendChart
+    html2canvas(document.getElementById('seasonalTrendChart'), {
+        scale: 2,
+        useCORS: true
+    }).then(canvas => {
+        addImageToPDF(canvas, 10, 10, 190, 80); // Add seasonalTrendChart to PDF
 
-        // Add the second chart
-        addChartToPDF('totalPerYearChart', () => {
-            // Configure options for html2pdf
-            const opt = {
-                margin: [10, 10, 10, 10], // margins: top, right, bottom, left
-                filename: filename,
-                image: { type: 'png', quality: 1 }, // Image quality set to high
-                html2canvas: { scale: 5 }, // Ensure high resolution
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+        let currentY = 100; // Initial y-coordinate after the first image
 
-            // Convert the container content to PDF and save
-            html2pdf().from(container).set(opt).save();
+        const interpretationText = document.querySelector('#interpretation').innerText.trim();
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+
+        currentY = addTextToPDF(interpretationText, 10, currentY); // Add interpretation text
+
+        // Add content from totalPerYearChart
+        html2canvas(document.getElementById('totalPerYearChart'), {
+            scale: 2,
+            useCORS: true
+        }).then(canvas => {
+            addImageToPDF(canvas, 10, currentY, 190, 80); // Add totalPerYearChart to PDF
+
+            doc.save(filename); // Save the PDF
         });
     });
 }

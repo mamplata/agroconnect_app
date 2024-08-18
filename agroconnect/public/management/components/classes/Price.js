@@ -268,3 +268,5 @@ function getKeyBySubstring(obj, substr) {
   }
   return null;
 }
+
+export { Price, getPrices, prices, initializeMethodsPrice, processPriceData };

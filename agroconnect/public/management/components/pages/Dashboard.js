@@ -328,14 +328,22 @@ export default function initDashboard() {
 
 
   async function getUniqueCropNames() {
-      try {
-          const productions = await getProductions();
-          const uniqueCropNames = [...new Set(productions.map(p => p.cropName.toLowerCase()))];
-          return uniqueCropNames;
-      } catch (error) {
-          console.error('Failed to fetch production data:', error);
-          return [];
-      }
+    let season = $('#season').val();
+    try {
+        // Fetch production data
+        const productions = await getProductions();
+        
+        // Filter productions based on the specified season
+        const filteredProductions = productions.filter(p => p.season.toLowerCase() === season.toLowerCase());
+        
+        // Extract unique crop names from the filtered data
+        const uniqueCropNames = [...new Set(filteredProductions.map(p => p.cropName.toLowerCase()))];
+        
+        return uniqueCropNames;
+    } catch (error) {
+        console.error('Failed to fetch production data:', error);
+        return [];
+    }
   }
 
   async function updateCropOptions() {
@@ -348,7 +356,6 @@ export default function initDashboard() {
 
           if (crops.length > 0) {
               const filteredCrops = crops.filter(crop => uniqueCropNames.includes(crop.cropName.toLowerCase()));
-              console.log('Filtered crops:', filteredCrops); // Debug: Log filtered crops
               options = filteredCrops.length > 0 
                   ? filteredCrops.map(crop => `<option value="${crop.cropName.toLowerCase()}">${crop.cropName}</option>`).join('')
                   : '<option value="">No crops available</option>';

@@ -288,3 +288,5 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
     return null;
   }
   
+
+  export { SoilHealth, getSoilHealth, soilHealths, initializeMethodsSoilHealth, processSoilHealthData };

@@ -254,3 +254,4 @@ async function processDiseaseData(workbook, cellMappings, id, season, monthYear)
     return null;
   }
   
+  export { Disease, getDiseases, diseases, initializeMethodsDisease, processDiseaseData };

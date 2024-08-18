@@ -14,9 +14,9 @@ function sendConcern() {
   }
   
   function showPreview() {
-    var imageSrc = document.getElementById('modal-image').src;
-    if (imageSrc !== '') {
-      $('#imageModal').modal('show'); // Show the modal if there is a valid image src
+    var imageAlt = document.getElementById('modal-image').alt;
+    if (imageAlt !== '') {
+      $('#imageModal').modal('show');
     } else {
       alert('Please select an image to preview.');
     }

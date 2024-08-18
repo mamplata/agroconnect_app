@@ -99,7 +99,7 @@ function getUser() {
     method: 'GET',
     success: function(response) {
         // Assuming response is an array of users [{firstName, lastName, username, role}, ...]
-        user = response;
+        let user = response;
 
         users = user;
         console.log(users);
@@ -117,5 +117,4 @@ function searchUser(username) {
   return foundUsers;
 }
 
-
-
+export { User, getUser, searchUser, users };

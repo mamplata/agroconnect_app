@@ -101,7 +101,7 @@ function getCrop() {
     method: 'GET',
     success: function(response) {
         // Assuming response is an array of crops 
-        crop = response;
+        let crop = response;
 
         crops = crop;
         console.log(crops);
@@ -116,7 +116,9 @@ getCrop();
 
 
 function searchCrop(cropName) {
-  const foundCrops = crops.filter(crop => crop.cropName.includes(cropName));
+  const foundCrops = crops.filter(crop => 
+    crop.cropName.toLowerCase().includes(cropName.toLowerCase())
+  );
   return foundCrops;
 }
 
@@ -137,7 +139,7 @@ function initializeMethodsCrop() {
       var endIndex = startIndex + pageSize;
       if (cropName) {
         // Display a single crop if cropName is provided
-          const foundcrops = searchcrop(cropName);
+          const foundcrops = searchCrop(cropName);
           if (foundcrops.length > 0) {
             foundcrops.forEach(crop => {
               $('#cropTableBody').append(`
@@ -182,7 +184,7 @@ function initializeMethodsCrop() {
 
     $('#search').change(function() {
       let cropName = $('#search').val();
-      displaycrops(cropName);
+      displayCrops(cropName);
     });
 
     // Pagination: Previous button click handler
@@ -316,4 +318,4 @@ $('#cropTableBody').on('click', 'tr', function() {
 });
 }
 
-
+export { Crop, getCrop, searchCrop, initializeMethodsCrop, crops};

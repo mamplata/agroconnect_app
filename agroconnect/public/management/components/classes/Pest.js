@@ -255,3 +255,4 @@ async function processPestData(workbook, cellMappings, id, season, monthYear) {
     return null;
   }
   
+  export { Pest, getPests, pests, initializeMethodsPest, processPestData };
