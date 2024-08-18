@@ -182,7 +182,7 @@ function initializeMethodsCrop() {
     // Display initial crops
     displayCrops();
 
-    $('#search').change(function() {
+    $('#search').on('input', function() {
       let cropName = $('#search').val();
       displayCrops(cropName);
     });

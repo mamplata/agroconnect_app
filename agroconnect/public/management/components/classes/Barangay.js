@@ -197,7 +197,7 @@ function initializeMethodsBarangay() {
     // Display initial barangays
     displayBarangays();
 
-    $('#search').change(function() {
+    $('#search').on('input', function() {
       let barangayName = $('#search').val();
       displaybarangays(barangayName);
     });

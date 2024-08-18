@@ -233,7 +233,7 @@ function initializeMethodsFarmer() {
     // Display initial farmers
     displayFarmers();
 
-    $('#search').change(function() {
+    $('#search').on('input', function() {
       let farmerName = $('#search').val();
       displayfarmers(farmerName);
     });

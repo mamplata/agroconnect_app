@@ -112,9 +112,17 @@ function getUser() {
 
 getUser();
 
-function searchUser(username) {
-  const foundUsers = users.filter(user => user.username.includes(username));
+function searchUser(searchTerm) {
+  const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
+  
+  const foundUsers = users.filter(user => {
+    return Object.values(user).some(value => 
+      value && value.toString().toLowerCase().includes(lowerCaseSearchTerm)
+    );
+  });
+
   return foundUsers;
 }
+
 
 export { User, getUser, searchUser, users };

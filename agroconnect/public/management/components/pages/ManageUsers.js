@@ -123,9 +123,9 @@ export default function initDashboard() {
       // Display initial users
       displayUsers();
 
-      $('#search').change(function() {
-        let username = $('#search').val();
-        displayUsers(username);
+      $('#search').on('input', function() {
+        let searchTerm = $(this).val();
+        displayUsers(searchTerm);
       });
 
       // Pagination: Previous button click handler

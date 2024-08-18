@@ -273,7 +273,7 @@ function initializeMethodsRecord(dataType) {
     // Display initial records
     displayRecords();
 
-    $('#search').change(function() {
+    $('#search').on('input', function() {
       let recordName = $('#search').val();
       displayrecords(recordName);
     });

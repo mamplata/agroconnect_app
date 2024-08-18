@@ -36,7 +36,7 @@ export default function initDashboard() {
     return concerns.find(item => item.concernId === concernId) || {};
   }
 
-  function adminConcern() {
+  window.adminConcern = function(event)  {
     $(document).ready(function() {
       // Initial content
       $('#main-content').html(`
@@ -143,23 +143,26 @@ export default function initDashboard() {
           <button class="delete-button" onclick="deleteConcern(${item.concernId})">Delete</button>
         </div>
       </div>
-    `);
-  }
 
-  function deleteConcern(concernId) {
-    if (confirm('Are you sure you want to delete this concern?')) {
-      $.ajax({
-        url: `/api/concerns/${concernId}`,  // Laravel API endpoint with ID
-        method: 'DELETE',
-        success: function() {
-          alert('Concern deleted successfully.');
-          adminConcern(); // Refresh the list after deletion
-        },
-        error: function(xhr) {
-          console.error('Error deleting content:', xhr);
+      <script>
+        function deleteConcern(concernId) {
+          if (confirm('Are you sure you want to delete this concern?')) {
+            $.ajax({
+              url: '/api/concerns/${concernId}',  // Laravel API endpoint with ID
+              method: 'DELETE',
+              success: function() {
+                alert('Concern deleted successfully.');
+                adminConcern(); // Refresh the list after deletion
+              },
+              error: function(xhr) {
+                console.error('Error deleting content:', xhr);
+              }
+            });
+          }
         }
-      });
-    }
+        
+      </script>
+    `);
   }
 
 
@@ -320,8 +323,27 @@ export default function initDashboard() {
             </div>
           </div>
         </div>
-      `);
+        <script>
+              function showPreview() {
+                var imageSrc = document.getElementById('modal-image').alt;
+                if (imageSrc !== '') {
+                  $('#imageModal').modal('show'); // Show the modal if there is a valid image src
+                } else {
+                  alert('Please select an image to preview.');
+                }
+              }
 
+              function previewImage(event) {
+                var reader = new FileReader();
+                reader.onload = function() {
+                  var output = document.getElementById('modal-image');
+                  output.src = reader.result;
+                  output.alt = 'Image Preview';
+                };
+                reader.readAsDataURL(event.target.files[0]);
+              }
+        </script>
+      `);
       $(document).ready(function() {
         // Handle the click event on the close button
         $('#btnCloseModal').on('click', function() {
@@ -382,25 +404,6 @@ export default function initDashboard() {
         displayContent();
       });
     });
-  }
-
-  function previewImage(event) {
-    var reader = new FileReader();
-    reader.onload = function() {
-      var output = document.getElementById('modal-image');
-      output.src = reader.result;
-      output.alt = 'Image Preview';
-    };
-    reader.readAsDataURL(event.target.files[0]);
-  }
-
-  function showPreview() {
-    var imageSrc = document.getElementById('modal-image').alt;
-    if (imageSrc !== '') {
-      $('#imageModal').modal('show'); // Show the modal if there is a valid image src
-    } else {
-      alert('Please select an image to preview.');
-    }
   }
 
   $(document).ready(function() {
