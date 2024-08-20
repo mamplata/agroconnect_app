@@ -150,3 +150,13 @@ h2 {
     color: #fff;
     font-weight: 600;
 }
+
+.active {
+    color: #000;
+    background-color: #B1BA4D;
+    border-radius: 1em;
+    padding: 1em;
+    box-sizing: border-box;
+    line-height: 0.5em;
+    vertical-align: middle;
+}

@@ -19,5 +19,20 @@ $(document).ready(function() {
                     </nav>      
             </header>
         </div>
+        <script>
+            $(document).ready(function() {
+                var currentPath = window.location.pathname;
+
+                $('nav a').each(function() {
+                    var linkPath = $(this).attr('href');
+
+                    // Check if the current path matches the link's href
+                    if (currentPath === linkPath) {
+                    $(this).addClass('active');
+                    $(this).attr('aria-current', 'page');
+                    }
+                });
+            });
+        </script>
     `);
 });
