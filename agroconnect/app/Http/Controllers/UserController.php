@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -90,27 +91,51 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        // Validate request input
+        $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
+        // Find the user by email
+        $user = User::where('username', $request->username)->first();
 
-            return response()->json([
-                'user' => $user,
-                'message' => 'Login successful!'
-            ], 200);
-        } else {
-            return response()->json(['message' => 'Invalid credentials!'], 401);
+        // Check if user exists and password is correct
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'username' => ['The provided credentials are incorrect.'],
+            ]);
         }
+
+        // Create a new token
+        $token = $user->createToken('Personal Access Token', [], now()->addDays(7))->plainTextToken;
+
+        // Set a cookie to store the token
+        $cookie = cookie('auth_token', $token, time() + (30 * 24 * 60 * 60), null, null, false, true); // HttpOnly = true
+
+        // Return the user and token information with the cookie
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ])->cookie($cookie);
     }
 
-    public function logout()
+
+    /**
+     * Log out the user.
+     */
+    public function logout(Request $request)
     {
-        Auth::logout();
-        return response()->json(['message' => 'Logout successful'], 200);
+        // Revoke the token that was used to authenticate the current request
+        $request->user()->currentAccessToken()->delete();
+
+        // Create a cookie that expires in the past to clear it
+        $cookie = cookie('auth_token', '', -1); // Set an expiration date in the past
+
+        return response()->json([
+            'message' => 'Successfully logged out',
+            'success' => true // Indicate success
+        ])->withCookie($cookie);
     }
 
     public function adminChangePassword(Request $request, User $user)

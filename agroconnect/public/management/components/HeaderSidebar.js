@@ -1,5 +1,75 @@
 $(document).ready(function() {
 
+    function requestCsrfCookie() {
+        return $.ajax({
+            url: '/api/csrf-cookie',
+            type: 'GET',
+            xhrFields: {
+                withCredentials: true // Ensure cookies are sent with the request
+            }
+        });
+    }
+
+    // Function to get CSRF token from a meta tag
+    function getCsrfToken() {
+        return $('meta[name="csrf-token"]').attr('content');
+    }
+    
+
+     // Function to check token validity
+     function checkToken() {
+        return $.ajax({
+            url: '/api/check-token',
+            type: 'GET',
+            xhrFields: {
+                withCredentials: true, // Ensure cookies are sent with the request
+            },
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken() // Include CSRF token if required
+            }
+        }).done(function(response) {
+            console.log('Response:', response.message);
+            userId = response.userId;
+            getUserName(); // Fetch the user name
+        }).fail(function(xhr) {
+            const errorResponse = xhr.responseJSON;
+            console.error('Error:', errorResponse.message);
+            if (errorResponse.token) {
+                console.error('Token:', errorResponse.token);
+            }
+            window.location.href = '/index.html';
+        });
+    }
+
+    requestCsrfCookie().done(function() {
+        return checkToken();
+    });
+
+      // Function to get username based on userId
+      function getUserName() {
+        $.ajax({
+            url: '/api/users/' + userId, // Fetch user by ID
+            type: 'GET',
+            xhrFields: {
+                withCredentials: true, // Ensure cookies are sent with the request
+            },
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken() // Include CSRF token if required
+            },
+            success: function(response) {
+                console.log('User:', response.user);
+                $('#username').text(response.user.name); // Set username to HTML element
+            },
+            error: function(xhr) {
+                const errorResponse = xhr.responseJSON;
+                console.error('Error:', errorResponse.message);
+                if (errorResponse.token) {
+                    console.error('Token:', errorResponse.token);
+                }
+            }
+        });
+    }
+
     // Set default hash to #dashboard if no hash is present
     if (!window.location.hash) {
         window.location.hash = '#dashboard';
@@ -180,19 +250,28 @@ $(document).ready(function() {
     // Initialize sidebar based on user role
     initializeSidebar();
 
-    // Example logout link handling
-    $('.logout a').click(function(e) {
-        e.preventDefault();
-        // Ask for confirmation before logging out
-        if (confirm("Are you sure you want to log out?")) {
-            // Clear session storage
-            sessionStorage.removeItem('isLoggedIn');
-            sessionStorage.removeItem('user');
-            // Redirect to login page
-            window.location.href = '/management/login';
-        } else {
-            // Optionally handle cancellation of logout
-            alert("Logout canceled!");
-        }
+       // Logout button click event
+       $('.logout a').on('click', function() {
+        $.ajax({
+            url: '/api/logout', // Route to handle logout
+            type: 'POST',
+            xhrFields: {
+                withCredentials: true, // Ensure cookies are sent with the request
+            },
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken() // Include CSRF token if required
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('You have been logged out.');
+                    window.location.href = '/index.html'; // Redirect to login page
+                } else {
+                    alert('Logout failed: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('Logout failed: ' + xhr.responseJSON.message);
+            }
+        });
     });
 });
