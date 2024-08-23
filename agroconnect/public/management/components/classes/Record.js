@@ -170,10 +170,11 @@ $.ajax({
             const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // MIME type for Excel files
             const link = `data:${mimeType};base64,${base64String}`;
 
-            // Create an anchor tag with the download link
-            const anchorTag = `<a class="text-primary text-decoration-underline" onclick="confirmDownload('${link}', '${record.name}.xlsx')">${record.name} ${record.monthYear}</a>`;
+            // Create a button with the download link
+            const button = `<button class="btn btn-sm btn-green" onclick="confirmDownload('${link}', '${record.name}.xlsx')">Download</button>`;
 
-            record.downloadLink = anchorTag;
+            record.downloadButton = button;
+            record.nameString = record.name; // Add name as a normal string
 
             records.push(record);
         });
@@ -191,7 +192,7 @@ $.ajax({
 }
 
 window.confirmDownload = async function(link, filename) {
-  const res = await Dialog.showInputDialog('Download File', 'Are you sure you want to download this file?');
+  const res = await Dialog.confirmDialog('Download File', 'Are you sure you want to download this file?');
   if (res.operation === Dialog.OK) {
     const a = document.createElement('a');
     a.href = link;
@@ -240,8 +241,9 @@ function initializeMethodsRecord(dataType) {
                   $('#recordTableBody').append(`
                       <tr data-index=${record.recordId}>
                           <td style="display: none;">${record.recordId}</td>
-                          <td>${record.downloadLink}</td>
                           <td>${record.fileSize}</td>
+                          <td>${record.nameString}</td>
+                          <td>${record.downloadButton}</td>
                       </tr>
                   `);
               });
@@ -249,7 +251,7 @@ function initializeMethodsRecord(dataType) {
               // Handle case where recordName is not provided
               $('#recordTableBody').append(`
                   <tr>
-                      <td colspan="3">Record not found!</td>
+                      <td colspan="4">Record not found!</td>
                   </tr>
               `);
           }
@@ -263,8 +265,11 @@ function initializeMethodsRecord(dataType) {
               $('#recordTableBody').append(`
                   <tr data-index=${record.recordId}>
                       <td style="display: none;">${record.recordId}</td>
-                      <td>${record.downloadLink}</td>
-                      <td>${record.fileSize}</td>
+                      <td>${record.nameString}</td>
+                      <td>
+                        ${record.fileSize} 
+                        <span style="margin-left: 1em;">${record.downloadButton}</span>
+                      </td>
                   </tr>
               `);
           }

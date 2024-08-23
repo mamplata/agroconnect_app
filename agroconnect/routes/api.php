@@ -126,3 +126,5 @@ Route::get('/weather-keys', function () {
 
 Route::get('/downloads/count', [DownloadController::class, 'countDownloads']);
 Route::post('/downloads/add', [DownloadController::class, 'addDownload']);
+
+Route::post('/admin/change-password/{user}', [UserController::class, 'adminChangePassword']);

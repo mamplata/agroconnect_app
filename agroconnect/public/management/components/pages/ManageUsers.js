@@ -1,4 +1,5 @@
 import { User, getUser, searchUser, users } from '../classes/User.js';
+import Dialog from '../helpers/Dialog.js';
 export default function initDashboard() {
 
   $(document).ready(function() {
@@ -48,6 +49,7 @@ export default function initDashboard() {
                   <th scope="col">Last Name</th>
                   <th scope="col">Username</th>
                   <th scope="col">Role</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody id="userTableBody">
@@ -86,8 +88,8 @@ export default function initDashboard() {
                     <td style="display: none;">${user.userId}</td>
                     <td>${user.firstName}</td>
                     <td>${user.lastName}</td>
-                    <td>${user.username}</td>
-                    <td>${user.role}</td>
+                    <td>${user.username}</td>                 
+                    <td><button class="btn btn-sm btn-green">Change Password</button></td>
                   </tr>
                 `);
               });
@@ -113,11 +115,32 @@ export default function initDashboard() {
                 <td>${user.lastName}</td>
                 <td>${user.username}</td>
                 <td>${user.role}</td>
+                <td><button class="btn btn-sm btn-green" onclick="changePassword(${user.userId})">Change Password</button></td>
               </tr>
             `);
           }
         }
       }
+
+      window.changePassword = async function(userId) {
+        const res = await Dialog.changePasswordDialog('Change Password', 'Input new password:');
+        if (res.operation === Dialog.OK) {
+            // Send an AJAX request to change the password
+            $.ajax({
+                url: `api/admin/change-password/${userId}`,
+                type: 'POST',
+                data: {
+                    new_password: res.newPassword,
+                },
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr) {
+                    alert('Password change failed: ' + xhr.responseJSON.message);
+                }
+            });
+        }
+      };
       
 
       // Display initial users

@@ -24,7 +24,7 @@ class UserController extends Controller
             'firstName' => 'required|string',
             'lastName' => 'required|string',
             'username' => 'required|unique:users,username',
-            'password' => 'required',
+            'password' => 'required|min:8',
             'role' => 'required',
         ]);
 
@@ -111,5 +111,19 @@ class UserController extends Controller
     {
         Auth::logout();
         return response()->json(['message' => 'Logout successful'], 200);
+    }
+
+    public function adminChangePassword(Request $request, User $user)
+    {
+        // Validate the request
+        $request->validate([
+            'new_password' => 'required|min:8',
+        ]);
+
+        // Update the user's password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password change successfully'], 200);
     }
 }
