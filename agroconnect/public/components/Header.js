@@ -1,4 +1,8 @@
 $(document).ready(function() {
+
+    $('head').prepend(`
+        <link rel="icon" href="../img/logo.png" type="image/png">   
+    `);
     
     // Prepend header structure with navigation links to the body
     $('.header-container').prepend(`
@@ -21,13 +25,9 @@ $(document).ready(function() {
         </div>
         <script>
             $(document).ready(function() {
-                var currentPath = window.location.pathname;
-
-                $('nav a').each(function() {
-                    var linkPath = $(this).attr('href');
-
-                    // Check if the current path matches the link's href
-                    if (currentPath === linkPath) {
+                var path = window.location.pathname;
+                $('.nav a').each(function() {
+                    if (this.pathname === path) {
                     $(this).addClass('active');
                     $(this).attr('aria-current', 'page');
                     }

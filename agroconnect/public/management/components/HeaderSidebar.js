@@ -22,6 +22,11 @@ $(document).ready(function() {
 
     var user = JSON.parse(sessionStorage.getItem('user'));
 
+    
+    $('head').prepend(`
+        <link rel="icon" href="../../../img/logo.png" type="image/png">   
+    `);
+
     // Prepend header and sidebar structure to the body
     $('body').prepend(`
        <div class="wrapper">

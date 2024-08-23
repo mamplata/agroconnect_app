@@ -1,4 +1,4 @@
-import { getCrop, getProduction, getPest, getDisease, getProductions, getBarangay, getYearRange} from './fetch.js';
+import { getCrop, getProduction, getPest, getDisease, getProductions, getBarangay, getYearRange, addDownload} from './fetch.js';
 import * as stats from './statistics.js';
 
 let barangays = [];
@@ -351,6 +351,7 @@ function downloadCSV(filename, data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    addDownload(filename, 'CSV');
 }
 
 function downloadExcel(filename, data) {
@@ -367,6 +368,7 @@ function downloadExcel(filename, data) {
 
     // Write workbook to file
     XLSX.writeFile(wb, filename);
+    addDownload(filename, 'XLSX');
 }
 
 function downloadPDF(filename, data) {
@@ -470,4 +472,6 @@ function downloadPDF(filename, data) {
   } catch (err) {
     console.error('Error generating PDF:', err);
   }
+
+  addDownload(filename, 'PDF');
 }

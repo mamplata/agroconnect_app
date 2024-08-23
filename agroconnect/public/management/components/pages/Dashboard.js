@@ -1,4 +1,4 @@
-import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, getFarmer, getDataEntries, getRecord, getUsers, getBarangay, getConcerns} from '../../../js/fetch.js';
+import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, getFarmer, getDataEntries, getRecord, getUsers, getBarangay, getConcerns, getDownloadCount} from '../../../js/fetch.js';
 import { countTotalPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, benefitPerHectare, getCropData } from '../../../js/statistics.js';
 
 export default function initDashboard() {
@@ -269,13 +269,14 @@ export default function initDashboard() {
   async function initializeDashboard() {
     try {
         // Fetch data asynchronously
-        let [farmers, records, users, barangays, concerns, dataEntries] = await Promise.all([
+        let [farmers, records, users, barangays, concerns, dataEntries, download] = await Promise.all([
             getFarmer(),
             getRecord(),
             getUsers(),
             getBarangay(),
             getConcerns(),
-            getDataEntries()
+            getDataEntries(),
+            getDownloadCount()
         ]);
 
         // Initialize with real data or dummy data where applicable
@@ -285,7 +286,7 @@ export default function initDashboard() {
             barangays: barangays.length,
             records: records.length,
             dataEntries: dataEntries,
-            downloads: 300, // Keep a dummy value for now
+            downloads: download,
             concerns: concerns.length
         };
 

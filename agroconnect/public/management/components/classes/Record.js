@@ -3,6 +3,8 @@ import { processPestData } from '../classes/Pest.js';
 import { processPriceData } from '../classes/Price.js';
 import { processProductionData } from '../classes/Production.js';
 import { processSoilHealthData } from '../classes/SoilHealth.js';
+import Dialog from '../helpers/Dialog.js';
+
 
 // Record.js
 let records = [];
@@ -149,7 +151,7 @@ function getRecord(dataType) {
 $.ajax({
   url: `/api/records/${dataType}`, // Endpoint to fetch records
   method: 'GET',
-  success: function(response) {
+  success: async function(response) {
       console.log('Response:', response);
       
       // Assuming response is an array of records
@@ -188,16 +190,16 @@ $.ajax({
 });
 }
 
-  // Function to confirm download
-  function confirmDownload(link, filename) {
-    const confirmed = confirm('Are you sure you want to download this file?');
-    if (confirmed) {
-      const a = document.createElement('a');
-      a.href = link;
-      a.download = filename;
-      a.click();
-    }
+window.confirmDownload = async function(link, filename) {
+  const res = await Dialog.showInputDialog('Download File', 'Are you sure you want to download this file?');
+  if (res.operation === Dialog.OK) {
+    const a = document.createElement('a');
+    a.href = link;
+    a.download = filename;
+    a.click();
   }
+};
+
 
 function searchRecord(recordName) {
   const foundRecords = records.filter(record => record.recordName.includes(recordName));
@@ -664,4 +666,4 @@ $('#recordTableBody').on('click', 'tr', function() {
 });
 }
 
-export { Record, getRecord, searchRecord, records, initializeMethodsRecord, confirmDownload };
+export { Record, getRecord, searchRecord, records, initializeMethodsRecord };

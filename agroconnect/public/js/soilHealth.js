@@ -1,3 +1,5 @@
+import { addDownload } from './fetch.js';
+
 $(document).ready(function() {
   let vegetablesData, riceData, fruitsData;
   let currentDataType;
@@ -126,6 +128,7 @@ $(document).ready(function() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    addDownload(filename, 'CSV');
   }
   
 // Download Excel
@@ -151,6 +154,7 @@ function downloadExcel(filename, data) {
 
   // Write the workbook to a file
   XLSX.writeFile(workbook, filename);
+  addDownload(filename, 'XLSX');
 }
 
 
@@ -177,4 +181,5 @@ function downloadExcel(filename, data) {
   
     doc.save(filename);
   }
+  addDownload(filename, 'PDF');
 });  

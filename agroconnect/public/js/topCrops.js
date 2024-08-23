@@ -1,4 +1,4 @@
-import { getCrop, getProduction, getPrice, getPest, getDisease} from './fetch.js';
+import { getCrop, getProduction, getPrice, getPest, getDisease, addDownload} from './fetch.js';
 import * as stats from './statistics.js';
 
 let crops = [];
@@ -396,6 +396,7 @@ function downloadCSV(filename, data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    addDownload(filename, 'CSV');
 }
 
 
@@ -419,6 +420,7 @@ function downloadExcel(filename, data) {
 
     // Write workbook to file
     XLSX.writeFile(wb, filename);
+    addDownload(filename, 'XLSX');
 }
 
 function downloadPDF(filename, data) {
@@ -439,6 +441,7 @@ function downloadPDF(filename, data) {
     });
 
     doc.save(filename);
+    addDownload(filename, 'PDF');
 }
 
 // Function to extract plain text from HTML

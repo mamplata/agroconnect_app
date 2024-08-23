@@ -56,6 +56,23 @@ function getProductions() {
     });
 }
 
+function getDownloadCount() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: 'api/downloads/count', // Adjust the URL as necessary
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                resolve(data.download_count); // Resolve the download count
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Failed to fetch download count:', textStatus, errorThrown);
+                reject(0); // Reject with 0 or handle as necessary
+            }
+        });
+    });
+}
+
 
 async function getBarangay() {
     try {
@@ -239,4 +256,27 @@ async function getDisease(cropName = '', season) {
     }
 }
 
-export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns, getYearRange };
+function addDownload(name, type) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: 'api/downloads/add', // Adjust the URL as necessary
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                name: name,
+                type: type,
+            },
+            success: function(data) {
+                resolve(data); // Resolve with the server response (e.g., success message)
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Failed to add download:', textStatus, errorThrown);
+                reject(jqXHR.responseJSON || 'An error occurred'); // Reject with error message
+            }
+        });
+    });
+}
+
+export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, 
+    getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns, 
+    getYearRange, getDownloadCount, addDownload };

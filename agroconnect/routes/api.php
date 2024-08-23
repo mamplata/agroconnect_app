@@ -14,6 +14,7 @@ use App\Http\Controllers\SoilHealthController;
 use App\Http\Controllers\ConcernController;
 use App\Http\Controllers\WeatherForecastController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DownloadController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -121,3 +122,7 @@ Route::get('/weather-keys', function () {
         'weather_location_key' => config('weather.location_key'),
     ]);
 });
+
+
+Route::get('/downloads/count', [DownloadController::class, 'countDownloads']);
+Route::post('/downloads/add', [DownloadController::class, 'addDownload']);

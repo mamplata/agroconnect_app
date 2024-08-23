@@ -1,4 +1,4 @@
-import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions} from './fetch.js';
+import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, addDownload} from './fetch.js';
 import * as stats from './statistics.js';
 
 let colorIndex = 0;
@@ -27,7 +27,7 @@ class SeasonalTrends {
     constructor(season, type, crops, category) {
         this.season = season;
         this.type = type;
-        this.crops = crops; // This is now an array of crop names
+        this.crops = crops; 
         this.category = category;        
     }
 
@@ -292,14 +292,11 @@ async function updateCropOptions() {
 async function handleCategoryChange() {
     const season = $('#season').val();
     const type = $('#type').val();
-    const crops = $('#crop').val(); // This will be an array of selected crops
+    const crop = $('#crop').val(); // This will be a single selected crop
     const category = $('#category').val();
 
-    // Convert crops to array if it's not already
-    const cropArray = Array.isArray(crops) ? crops : crops.split(',');    
-
     // Check if any crop is selected
-    if (!cropArray || cropArray.length === 0) {
+    if (!crop) {
         $('#available').hide();
         $('#unavailable').hide();
         $('#selectFirst').show();
@@ -310,63 +307,61 @@ async function handleCategoryChange() {
     let dataset = [];
     let key = [];
 
-    for (const crop of cropArray) {
-        let data = [];
-        switch (category) {
-            case 'total_planted':
-                categoryText = 'Total Planted';
-                key = ["totalPlanted"];
-                data = await getProduction(crop, season);
-                dataset = dataset.concat(stats.countTotalPlanted(data));
-                break;
-            case 'production_volume':
-                categoryText = 'Production Volume Per Hectare';
-                key = ["volumeProduction", "totalVolume", "totalArea"];
-                data = await getProduction(crop, season);
-                dataset = dataset.concat(stats.averageVolumeProduction(data));
-                console.log(dataset);
-                break;
-            case 'price':
-                categoryText = 'Price';
-                key = ["price"];
-                data = await getPrice(crop, season);
-                dataset = dataset.concat(stats.averagePrice(data));
-                break;
-            case 'pest_occurrence':
-                categoryText = 'Pest Occurrence';
-                key = ["pestOccurrence"];
-                data = await getPest(crop, season);
-                dataset = dataset.concat(stats.countPestOccurrence(data));
-                break;
-            case 'disease_occurrence':
-                categoryText = 'Disease Occurrence';
-                key = ["diseaseOccurrence"];
-                data = await getDisease(crop, season);
-                dataset = dataset.concat(stats.countDiseaseOccurrence(data));
-                break;
-            case 'price_income_per_hectare':
-                categoryText = 'Price Income per Hectare';
-                key = ["incomePerHectare", "totalArea", "totalIncome"];
-                data = await getProduction(crop, season);
-                dataset = dataset.concat(stats.priceIncomePerHectare(data));
-                console.log(dataset);
-                break;
-            case 'benefit_per_hectare':
-                categoryText = 'Benefit per Hectare';
-                key = ["benefitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
-                data = await getProduction(crop, season);
-                dataset = dataset.concat(stats.benefitPerHectare(data));
-                break;
-            default:
-                categoryText = 'Category not recognized';
-        }
-    }    
+    let data = [];
+    switch (category) {
+        case 'total_planted':
+            categoryText = 'Total Planted';
+            key = ["totalPlanted"];
+            data = await getProduction(crop, season);
+            dataset = stats.countTotalPlanted(data);
+            break;
+        case 'production_volume':
+            categoryText = 'Production Volume Per Hectare';
+            key = ["volumeProduction", "totalVolume", "totalArea"];
+            data = await getProduction(crop, season);
+            dataset = stats.averageVolumeProduction(data);
+            console.log(dataset);
+            break;
+        case 'price':
+            categoryText = 'Price';
+            key = ["price"];
+            data = await getPrice(crop, season);
+            dataset = stats.averagePrice(data);
+            break;
+        case 'pest_occurrence':
+            categoryText = 'Pest Occurrence';
+            key = ["pestOccurrence"];
+            data = await getPest(crop, season);
+            dataset = stats.countPestOccurrence(data);
+            break;
+        case 'disease_occurrence':
+            categoryText = 'Disease Occurrence';
+            key = ["diseaseOccurrence"];
+            data = await getDisease(crop, season);
+            dataset = stats.countDiseaseOccurrence(data);
+            break;
+        case 'price_income_per_hectare':
+            categoryText = 'Price Income per Hectare';
+            key = ["incomePerHectare", "totalArea", "totalIncome"];
+            data = await getProduction(crop, season);
+            dataset = stats.priceIncomePerHectare(data);
+            console.log(dataset);
+            break;
+        case 'benefit_per_hectare':
+            categoryText = 'Benefit per Hectare';
+            key = ["benefitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
+            data = await getProduction(crop, season);
+            dataset = stats.benefitPerHectare(data);
+            break;
+        default:
+            categoryText = 'Category not recognized';
+    }
 
     if (dataset.length !== 0) {
         $('#unavailable').hide();
         $('#selectFirst').hide();
         $('#available').show();
-        const st = new SeasonalTrends(season, type, cropArray, categoryText);
+        const st = new SeasonalTrends(season, type, crop, categoryText);
         const interpretation = interpretData(dataset, key[0]);
         
         const charts = st.generateTrends(dataset, categoryText, key);
@@ -377,9 +372,9 @@ async function handleCategoryChange() {
         $('#available').hide();
         $('#selectFirst').hide();
         $('#unavailable').show();
-    }   
-                
+    }
 }
+
 
 // Document ready function
 $(document).ready(async function() {
@@ -583,6 +578,7 @@ function downloadCSV(filename, data) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  addDownload(filename, 'CSV');
 }
 
 function downloadExcel(filename, data) {
@@ -605,6 +601,7 @@ function downloadExcel(filename, data) {
 
   // Write the workbook and trigger the download
   XLSX.writeFile(workbook, filename);
+  addDownload(filename, 'XLSX');
 }
 
 function downloadPDF(filename) {
@@ -664,4 +661,6 @@ function downloadPDF(filename) {
             doc.save(filename); // Save the PDF
         });
     });
+
+    addDownload(filename, 'PDF');
 }
