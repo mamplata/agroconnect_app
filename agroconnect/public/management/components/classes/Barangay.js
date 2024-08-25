@@ -35,7 +35,7 @@ class Barangay {
   updateBarangay(updatedBarangay) {
     const existingBarangay = barangays.find(b => b.barangayName === updatedBarangay.barangayName);
 
-    if (existingBarangay && Barangay.barangayId !== updatedBarangay.barangayId) {
+    if (existingBarangay && existingBarangay.barangayId !== updatedBarangay.barangayId) {
       alert('Barangay already exists');
       return;
     }
@@ -312,7 +312,7 @@ function initializeMethodsBarangay() {
     $('#confirmDeleteBtn').click(function() {
       // Close the modal
       $('#deleteModal').modal('hide');
-        barangayToDelete = new Barangay();
+        let barangayToDelete = new Barangay();
         barangayToDelete.removeBarangay(barangay.barangayId);
         getBarangay();
         displayBarangays();

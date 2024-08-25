@@ -4,7 +4,7 @@ import { processPriceData } from '../classes/Price.js';
 import { processProductionData } from '../classes/Production.js';
 import { processSoilHealthData } from '../classes/SoilHealth.js';
 import Dialog from '../helpers/Dialog.js';
-
+import { user } from '../HeaderSidebar.js';
 
 // Record.js
 let records = [];
@@ -151,44 +151,50 @@ function getRecord(dataType) {
 $.ajax({
   url: `/api/records/${dataType}`, // Endpoint to fetch records
   method: 'GET',
+  xhrFields: {
+    withCredentials: true // Ensure cookies are sent with the request
+  },
   success: async function(response) {
-      console.log('Response:', response);
-      
-      // Assuming response is an array of records
-      if (Array.isArray(response) && response.length > 0) {
-        const recordsArray = response; // Store the array of records in recordsArray
-        records = [];
-        // Example: Accessing and logging properties of each record
-        recordsArray.forEach(record => {
+    console.log('Response:', response);
 
-            // Calculate and log the file size of the base64-encoded fileRecord
-            let fileSize = getFormattedBase64FileSize(record.fileRecord);
-            record.fileSize = fileSize; 
+    if (Array.isArray(response) && response.length > 0) {
+      const recordsArray = response; // Store the array of records in recordsArray
+      records = [];
 
-            // Convert the base64-encoded fileRecord to a downloadable link
-            const base64String = record.fileRecord;
-            const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // MIME type for Excel files
-            const link = `data:${mimeType};base64,${base64String}`;
+      // Example: Accessing and logging properties of each record
+      recordsArray.forEach(record => {
+        // Calculate and log the file size of the base64-encoded fileRecord
+        let fileSize = getFormattedBase64FileSize(record.fileRecord);
+        record.fileSize = fileSize;
 
-            // Create a button with the download link
-            const button = `<button class="btn btn-sm btn-green" onclick="confirmDownload('${link}', '${record.name}.xlsx')">Download</button>`;
+        // Convert the base64-encoded fileRecord to a downloadable link
+        const base64String = record.fileRecord;
+        const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // MIME type for Excel files
+        const link = `data:${mimeType};base64,${base64String}`;
 
-            record.downloadButton = button;
-            record.nameString = record.name; // Add name as a normal string
+        // Create a button with the download link
+        const button = `<button class="btn btn-sm btn-green" onclick="confirmDownload('${link}', '${record.name}.xlsx')">Download</button>`;
 
-            records.push(record);
-        });
-        
-      } else {
-        console.log('Expected an array of records, but received:', response);
-        records = [];
-        console.log('Response:', records);
-      }
+        record.downloadButton = button;
+        record.nameString = record.name; // Add name as a normal string
+
+        records.push(record);
+      });
+
+      // Optionally, update the UI with the new records
+      // Example: $('#recordsTable').html(generateTableHtml(records));
+
+    } else {
+      console.log('Expected an array of records, but received:', response);
+      records = [];
+      console.log('Response:', records);
+    }
   },
   error: function(xhr, status, error) {
-      console.error('Error fetching records:', error);
+    console.error('Error fetching records:', error);
   }
 });
+
 }
 
 window.confirmDownload = async function(link, filename) {
@@ -222,9 +228,7 @@ function initializeMethodsRecord(dataType) {
       await new Promise(resolve => setTimeout(resolve, 1000));
   
       $('#recordTableBody').empty();
-  
-      // Retrieve and parse user info from sessionStorage
-      const user = JSON.parse(sessionStorage.getItem('user'));
+  ;
       const userId = user ? user.userId : null;
       const userRole = user ? user.role : 'admin';
       var startIndex = (currentPage - 1) * pageSize;
@@ -322,10 +326,8 @@ function initializeMethodsRecord(dataType) {
     
     $('#submitBtn').click(async function(event) {
       event.preventDefault();
-    
-      let users = JSON.parse(sessionStorage.getItem('user'));
       var recordId = Number($('#recordId').val());
-      var userId = users.userId;
+      var userId = user.userId;
       var name = $('#name').val();
       var month = $('#monthPicker select').val(); // input is inside #monthPicker
       var year = $('#yearPicker input').val(); // input is inside #yearPicker
@@ -638,7 +640,7 @@ function initializeMethodsRecord(dataType) {
     $('#confirmDeleteBtn').click(function() {
       // Close the modal
       $('#deleteModal').modal('hide');
-        recordToDelete = new Record();
+        let recordToDelete = new Record();
         recordToDelete.removeRecord(record.recordId);
         getRecord(dataType);
         displayRecords();

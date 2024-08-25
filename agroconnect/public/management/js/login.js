@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
     function getCsrfToken() {
         return $('meta[name="csrf-token"]').attr('content');
     }
@@ -13,9 +14,10 @@ $(document).ready(function() {
         });
     }
 
+
     function checkToken() {
         return $.ajax({
-            url: '/api/check-token',
+            url: '/api/check-user',
             type: 'GET',
             xhrFields: {
                 withCredentials: true
@@ -50,8 +52,8 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': getCsrfToken()
             },
             success: function(response) {
-                if (response.role) {
-                    redirectBasedOnRole(response.role); // Redirect based on role
+                if (response.user) {
+                    redirectBasedOnRole(response.user.role);
                 } else {
                     $('#loginResult').html('<div class="alert alert-danger">Login failed!</div>');
                 }
@@ -67,9 +69,13 @@ $(document).ready(function() {
     requestCsrfCookie().done(function() {
         checkToken().done(function(response) {
             if (response.message !== 'Invalid Token') {
-                var role = response.role; // Assuming the token check response contains user data
+                // Access the role from the user object in the response
+                var role = response.user.role; // 'role' is now part of the 'user' object
                 if (role) {
-                    redirectBasedOnRole(role); // Redirect if user is valid and logged in
+                    // Pass the role to the redirect function
+                    redirectBasedOnRole(role);
+                } else {
+                    console.log('No cookie session found.');
                 }
             }
         });

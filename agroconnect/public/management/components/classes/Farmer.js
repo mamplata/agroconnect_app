@@ -9,7 +9,8 @@ class Farmer {
     this.farmerName = farmerName;
     this.fieldArea = fieldArea;
     this.fieldType = fieldType;
-    this.phoneNumber = phoneNumber;
+    this.phoneNumber = phoneNumber !== null ? String(phoneNumber) : ' ';
+
   }
 
   createFarmer(farmer) {
@@ -18,27 +19,25 @@ class Farmer {
       alert('Farmer already exists');
       return;
     }
-
-    fetch('/api/farmers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(farmer),
-    })
-      .then(response => response.json())
-      .then(data => {
+  
+    $.ajax({
+      url: '/api/farmers',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(farmer),
+      success: function(data) {
         console.log('Success:', data);
-      })
-      .catch(error => {
+      },
+      error: function(error) {
         console.error('Error:', error);
-      });
+      }
+    });
   }
-
+  
   updateFarmer(updatedFarmer) {
     const existingFarmer = farmers.find(b => b.farmerName === updatedFarmer.farmerName);
 
-    if (existingFarmer && Farmer.farmerId !== updatedFarmer.farmerId) {
+    if (existingFarmer && existingFarmer.farmerId !== updatedFarmer.farmerId) {
       alert('Farmer already exists');
       return;
     }
@@ -196,7 +195,7 @@ function initializeMethodsFarmer() {
                   <td>${farmer.farmerName}</td>
                   <td>${farmer.fieldArea}</td>
                   <td>${farmer.fieldType}</td>
-                  <td>${farmer.phoneNumber}</td>
+                  <td>${farmer.phoneNumber !== null ? farmer.phoneNumber : ''}</td>
                 </tr>
               `);
             });
@@ -222,7 +221,8 @@ function initializeMethodsFarmer() {
                 <td>${farmer.farmerName}</td>
                 <td>${farmer.fieldArea}</td>
                 <td>${farmer.fieldType}</td>
-                <td>${farmer.phoneNumber}</td>
+                <td>${farmer.phoneNumber !== null ? farmer.phoneNumber : 'NA'}</td>
+                </tr>
             </tr>
           `);
         }
@@ -263,7 +263,7 @@ function initializeMethodsFarmer() {
       var farmerName = $('#farmerName').val();
       var fieldArea = parseInt($('#fieldArea').val(), 10);
       var fieldType= $('#fieldType').val();
-      var fieldType= $('#phoneNumber').val();
+      var phoneNumber= $('#phoneNumber').val();
       var barangayId = parseInt($('#barangay-option').val(), 10);
       if (selectedRow !== null) {
 
@@ -341,7 +341,7 @@ function initializeMethodsFarmer() {
     $('#confirmDeleteBtn').click(function() {
       // Close the modal
       $('#deleteModal').modal('hide');
-        farmerToDelete = new Farmer();
+        let farmerToDelete = new Farmer();
         farmerToDelete.removeFarmer(farmer.farmerId);
         getFarmer();
         displayFarmers();

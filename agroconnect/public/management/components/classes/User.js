@@ -7,7 +7,7 @@ class User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.username = username;
-    this.role = 'agriculturist';
+    this.role = role;
     this.password = password;
   }
 

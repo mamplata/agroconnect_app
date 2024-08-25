@@ -12,6 +12,24 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/home.css">
 </head>
+<script>
+  // Get the current URL
+  var currentUrl = window.location.href;
+
+  // Normalize the URL by removing all trailing slashes
+  var normalizedUrl = currentUrl.replace(/\/+$/, '');
+
+  // Remove '/index.html' if it exists and normalize further
+  var baseUrl = normalizedUrl.replace(/\/index\.html$/, '');
+
+  // Redirect if necessary
+  if (currentUrl.endsWith('/index.html')) {
+      window.location.href = baseUrl + '/';
+  } else if (!normalizedUrl.endsWith('/')) {
+      window.location.href = normalizedUrl + '/';
+  }
+</script>
+
 <body>
   <div class="header-container">
     <!-- Your header content or component -->

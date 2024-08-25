@@ -1,3 +1,5 @@
+import { user } from '../HeaderSidebar.js';
+
 export default function initDashboard() {
   let concerns = [];
 
@@ -374,8 +376,6 @@ export default function initDashboard() {
         });
       
         function sendContent(title, content, attachmentData = ' ') {
-          // Retrieve user information from sessionStorage
-          const user = JSON.parse(sessionStorage.getItem('user'));
           const userId = user ? user.userId : null; // Ensure userId is obtained safely
           $.ajax({
             url: '/api/concerns',  // Laravel API endpoint
@@ -407,10 +407,9 @@ export default function initDashboard() {
   }
 
   $(document).ready(function() {
-    let userConcern = JSON.parse(sessionStorage.getItem('user'));
-    if (userConcern.role === 'admin') {
+    if (user.role === 'admin') {
       adminConcern();
-    } else if (userConcern.role === 'agriculturist') {
+    } else if (user.role === 'agriculturist') {
       agriculturistConcern();
     }
   });

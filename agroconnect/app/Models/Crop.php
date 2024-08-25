@@ -12,7 +12,7 @@ class Crop extends Model
     protected $primaryKey = 'cropId';
     protected $fillable = [
         'cropName',
-        'priceweight',
+        'priceWeight',
         'type',
     ];
 }

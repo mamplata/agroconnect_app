@@ -32,7 +32,7 @@ class FarmerController extends Controller
             'farmerName' => $request->input('farmerName'),
             'fieldArea' => $request->input('fieldArea'),
             'fieldType' => $request->input('fieldType'),
-            'phoneNumber' => $request->input('fieldType'),
+            'phoneNumber' => $request->input('phoneNumber'),
         ]);
 
         // Save the farmer record to the database

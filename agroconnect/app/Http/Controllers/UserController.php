@@ -97,7 +97,7 @@ class UserController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Find the user by email
+        // Find the user by username
         $user = User::where('username', $request->username)->first();
 
         // Check if user exists and password is correct
@@ -110,8 +110,8 @@ class UserController extends Controller
         // Create a new token
         $token = $user->createToken('Personal Access Token', [], now()->addDays(7))->plainTextToken;
 
-        // Set a cookie to store the token
-        $cookie = cookie('auth_token', $token, time() + (30 * 24 * 60 * 60), null, null, false, true); // HttpOnly = true
+        // Set a session cookie to store the token (no expiration set, so it will expire when the browser is closed)
+        $cookie = cookie('auth_token', $token, 0, null, null, false, true); // HttpOnly = true
 
         // Return the user and token information with the cookie
         return response()->json([

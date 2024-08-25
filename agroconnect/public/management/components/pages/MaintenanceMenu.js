@@ -97,6 +97,7 @@ function initializeCropView() {
    </div>
  `);
   $(document).ready(function() {
+      $('#pcToKg').hide();
       $('#priceWeight').change(function() {
           if ($(this).val() === 'pc') {
               $('#pcToKg').show();

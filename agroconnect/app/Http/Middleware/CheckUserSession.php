@@ -5,9 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\User;
 
-class CheckTokenExpiration
+class CheckUserSession
 {
     /**
      * Handle an incoming request.
@@ -16,6 +16,11 @@ class CheckTokenExpiration
     {
         // Retrieve the token from the cookie
         $token = $request->cookie('auth_token');
+
+        if (!$token) {
+            // Token is missing
+            return response()->json(['message' => 'No Token Provided'], 401);
+        }
 
         // Extract the actual token part after '|'
         $tokenParts = explode('|', $token, 2);
@@ -31,17 +36,19 @@ class CheckTokenExpiration
 
         if (!$tokenRecord) {
             // Token not found in the database
-            return response()->json(['message' => 'Invalid Token'], 200);
+            return response()->json(['message' => 'Invalid Token'], 401);
         }
 
+        // Retrieve the user using the tokenable_id
+        $user = User::find($tokenRecord->tokenable_id);
 
-        if ($tokenRecord->expires_at && Carbon::now()->gt($tokenRecord->expires_at)) {
-            // Token is expired
-            DB::table('personal_access_tokens')->where('id', $tokenRecord->id)->delete();
-            return response()->json(['message' => 'Token expired'], 401);
+        if (!$user) {
+            // User not found
+            return response()->json(['message' => 'User not found'], 404);
         }
 
-        $request->attributes->set('userId', $tokenRecord->tokenable_id);
+        // Set the user in the request attributes for further use
+        $request->attributes->set('user', $user);
 
         // Proceed to the next middleware or request handler
         return $next($request);

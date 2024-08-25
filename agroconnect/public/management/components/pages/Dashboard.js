@@ -1,12 +1,10 @@
 import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, getFarmer, getDataEntries, getRecord, getUsers, getBarangay, getConcerns, getDownloadCount} from '../../../js/fetch.js';
 import { countTotalPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, benefitPerHectare, getCropData } from '../../../js/statistics.js';
+import { user } from '../HeaderSidebar.js';
 
 export default function initDashboard() {
   
   $(document).ready(function() {
-    // Retrieve user role from sessionStorage
-    var user = JSON.parse(sessionStorage.getItem('user'));
-    var role = user ? user.role : 'agriculturist'; 
   
     // Generate the dashboard HTML with styles included
     var dashboardHtml = `
@@ -81,7 +79,7 @@ export default function initDashboard() {
       </div>
       <div class="row d-flex justify-content-center">`;
 
-      if (role === 'admin') {
+      if (user.role === 'admin') {
         dashboardHtml += `
         <div class="col-md-3">
             <div class="card card-box" data-link="#manage-users">
@@ -121,7 +119,7 @@ export default function initDashboard() {
       `;
 
     // Append new cards for Data Entries, Downloads, and Concerns only if user is admin
-    if (role === 'admin') {
+    if (user.role === 'admin') {
       dashboardHtml += ` 
           <div class="col-md-3">
             <div class="card card-box" data-link="#data-entries">
@@ -299,7 +297,7 @@ export default function initDashboard() {
         $('#downloads-count').text(dashboardData.downloads);
         $('#concerns-count').text(dashboardData.concerns);
 
-       if (role === 'admin') {
+       if (user.role === 'admin') {
           $('.card-box').click(function() {
             // Check if the card has the no-link class
             if (!$(this).hasClass('no-link')) {

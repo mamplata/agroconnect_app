@@ -1,11 +1,10 @@
 import { initializeMaintenanceMenu } from './MaintenanceMenu.js';
-
+import { user } from '../HeaderSidebar.js'
 
 export default function initDashboard() {
     $(document).ready(function() {
         // Function to initialize the maintenance view
         function initializeMaintenanceView() {
-            var user = JSON.parse(sessionStorage.getItem('user'));
             var optionsHtml;
 
             if (user.role === 'admin') {

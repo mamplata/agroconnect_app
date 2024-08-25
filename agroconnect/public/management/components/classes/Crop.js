@@ -16,31 +16,27 @@ class Crop {
       return;
     }
 
-    fetch('/api/crops', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(crop),
-    })
-      .then(response => response.json())
-      .then(data => {
+    console.log(crop.priceWeight);
+  
+    $.ajax({
+      url: '/api/crops',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(crop),
+      success: function(data) {
         console.log('Success:', data);
-      })
-      .catch(error => {
+      },
+      error: function(error) {
         console.error('Error:', error);
-      });
+      }
+    });
   }
+  
 
   updateCrop(updatedCrop) {
-    const existingCrop = crops.find(c => c.cropName === crop.cropName);
-    if (existingCrop) {
-      alert('Crop with the same name already exists');
-      return;
-    }
-
+    const existingCrop = crops.find(c => c.cropName === updatedCrop.cropName);
     if (existingCrop && existingCrop.cropId !== updatedCrop.cropId) {
-      alert('Crop already exists');
+      alert('Crop with the same name already exists');
       return;
     }
 
@@ -211,6 +207,10 @@ function initializeMethodsCrop() {
       var cropId = Number($('#cropId').val());
       var cropName = $('#cropName').val();
       var priceWeight = $('#priceWeight').val();
+      if (priceWeight === 'pc') {
+        var pcToKg = $('#pcToKg').val();
+        priceWeight = `pc/(about ${pcToKg}kg)`;
+      }
       var type = $('#type').val();
       if (selectedRow !== null) {
         let crop = new Crop(cropId, cropName, priceWeight, type);
@@ -253,7 +253,14 @@ function initializeMethodsCrop() {
           $('#cancelBtn').show();
           $('#cropId').val(crop.cropId);
           $('#cropName').val(crop.cropName);
-          $('#priceWeight').val(crop.priceWeight);
+          // Split the string at the '/' and take the first part
+          var extractedValue = crop.priceWeight.split('/')[0].trim();
+          $('#priceWeight').val(extractedValue);
+          if (extractedValue === 'pc') {
+            $('#pcToKg').show();
+        } else {
+            $('#pcToKg').hide();
+        }
           $('#type').val(crop.type);
           $('#submitBtn').text('Update Crop');
         });
@@ -285,7 +292,7 @@ function initializeMethodsCrop() {
     $('#confirmDeleteBtn').click(function() {
       // Close the modal
       $('#deleteModal').modal('hide');
-        cropToDelete = new Crop();
+        let cropToDelete = new Crop();
         cropToDelete.removeCrop(crop.cropId);
         getCrop();
         displayCrops();

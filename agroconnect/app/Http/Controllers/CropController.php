@@ -22,7 +22,6 @@ class CropController extends Controller
             'cropName' => 'required|string',
             'priceWeight' => 'required|string',
             'type' => 'required|string',
-            'priceValue' => 'required|string',
         ]);
 
         // Accessing input data using $request->input('fieldName')

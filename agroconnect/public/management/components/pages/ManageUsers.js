@@ -190,7 +190,7 @@ export default function initDashboard() {
           $('#password').attr('required', 'required');
           resetFields();
         } else {
-          let user = new User(0, firstName, lastName, username, role, password);
+          let user = new User(0, firstName, lastName, username, 'agriculturist', password);
           user.createUser(user);
         }
 
