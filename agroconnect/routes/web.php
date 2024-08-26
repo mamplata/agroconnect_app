@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\TrimTrailingSlashes;
 
 Route::get('/', function () {
     return file_get_contents(public_path('index.html'));
@@ -30,3 +31,9 @@ Route::get('/weather-forecast', function () {
 Route::get('/contact-us', function () {
     return file_get_contents(public_path('components/pages/contact.html'));
 })->name('contact-us');
+
+Route::middleware([TrimTrailingSlashes::class])->group(function () {
+    Route::get('/greet/me', function () {
+        return view('greet');
+    });
+});

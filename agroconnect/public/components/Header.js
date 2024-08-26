@@ -1,13 +1,5 @@
 $(document).ready(function() {
 
-    // Check if the URL does not end with a slash, redirect to one with a slash
-    if (window.location.href.endsWith('/')) {
-        // Get the current URL
-        var currentUrl = window.location.href;
-        var normalizedUrl = currentUrl.replace(/\/+$/, '');
-        window.location.href = normalizedUrl;
-    }
-
     $('head').prepend(`
         <link rel="icon" href="../img/logo.png" type="image/png">   
     `);
