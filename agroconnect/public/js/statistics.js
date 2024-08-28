@@ -557,7 +557,7 @@ function benefitPerHectare(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: totalArea > 0 ? parseFloat((totalIncome - (totalProductionCost * totalArea)).toFixed(2)) : 0
+            benefitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 // Adjusted formula
         }))
     );
 }
@@ -610,7 +610,7 @@ function benefitPerHectareBarangay(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: totalArea > 0 ? parseFloat((totalIncome - (totalProductionCost * totalArea)).toFixed(2)) : 0
+            benefitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 
         }))
     );
 }

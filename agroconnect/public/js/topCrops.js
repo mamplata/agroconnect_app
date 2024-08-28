@@ -162,8 +162,8 @@ class TopCrops {
         const calculateGrowthRateOverTime = (monthlyData) => {
             if (monthlyData.length < 2) return 0; // Not enough data to calculate growth rate
     
-            let initial = monthlyData[0].volumeProductionPerHectare;
-            let final = monthlyData[monthlyData.length - 1].volumeProductionPerHectare;
+            let initial = monthlyData[0].incomePerHectare;
+            let final = monthlyData[monthlyData.length - 1].incomePerHectare;
             return (final - initial) / initial;
         };
     
@@ -278,8 +278,8 @@ class TopCrops {
                 `</br> Average price: <strong>₱${parseFloat(entry.price).toLocaleString()}</strong>` +
                 `</br> Average income: <strong>₱${parseFloat(entry.incomePerHectare).toLocaleString()} per hectare/ha</strong>` +
                 `</br> Average profit: <strong>₱${parseFloat(entry.benefitPerHectare).toLocaleString()} per hectare/ha</strong>` +
-                `</br> Pest occurence: <strong>${entry.pestOccurrence} (${calculateOccurrencePercentage(entry.pestOccurrence, entry.totalPlanted).toFixed(2)}%)</strong>` +
-                `</br> Disease occurence: <strong>${entry.diseaseOccurrence} (${calculateOccurrencePercentage(entry.diseaseOccurrence, entry.totalPlanted).toFixed(2)}%)</strong><p>`
+                `</br> Pest occurrence: <strong>${entry.pestOccurrence} (${calculateOccurrencePercentage(entry.pestOccurrence, entry.totalPlanted).toFixed(2)}%)</strong>` +
+                `</br> Disease occurrence: <strong>${entry.diseaseOccurrence} (${calculateOccurrencePercentage(entry.diseaseOccurrence, entry.totalPlanted).toFixed(2)}%)</strong><p>`
                 
         };
     });
@@ -403,17 +403,62 @@ function escapeCSVValue(value) {
 }
 
 function downloadCSV(filename, data) {
-    // Determine which headers to include by excluding headers containing 'Rank'
-    const keys = Object.keys(data[0]).filter(key => !key.toLowerCase().includes('rank') && key !== 'remarks');
-    const headers = keys.map(formatHeader);
+    // Define the header mapping
+    const headerMap = {
+        cropName: 'Crop Name',
+        variety: 'Variety',
+        type: 'Type',
+        volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
+        incomePerHectare: 'Average Income / ha ',
+        benefitPerHectare: 'Average Profit / ha',
+        price: 'Price (kg)',
+        pestOccurrence: 'Pest Observed',
+        diseaseOccurrence: 'Disease Observed',
+        totalPlanted: 'Total Planted'
+    };
 
-    const csv = [
+    // Define the order of headers
+    const headersToInclude = [
+        'cropName',
+        'variety',
+        'type',
+        'volumeProductionPerHectare',
+        'incomePerHectare',
+        'benefitPerHectare',
+        'price',
+        'pestOccurrence',
+        'diseaseOccurrence',
+        'totalPlanted'
+    ];
+
+    // Map headers to the desired names
+    const headers = headersToInclude.map(key => headerMap[key]);
+
+    // Helper function to escape CSV values
+    function escapeCSVValue(value) {
+        if (value === undefined || value === null) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
+
+    // Filter data to match the new headers and format values
+    const csvRows = [
         headers.join(','),
-        ...data
-            .map(row => keys.map(key => escapeCSVValue(row[key])).join(','))
+        ...data.map(row => 
+            headersToInclude.map(key => {
+                const value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
+                if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+                    return value !== '' ? `₱${parseFloat(value).toFixed(2)}` : '';
+                }
+                return escapeCSVValue(value);
+            }).join(',')
+        )
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Create a Blob and trigger download
+    const blob = new Blob([csvRows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -422,32 +467,138 @@ function downloadCSV(filename, data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    // Optional: Log download action
     addDownload(filename, 'CSV');
 }
 
-
 function downloadExcel(filename, data) {
-    // Determine which headers to include by excluding headers containing 'Rank'
-    const headersToInclude = Object.keys(data[0]).filter(key => !key.toLowerCase().includes('rank') && key !== 'remarks');
+    // Define the header mapping
+    const headerMap = {
+        cropName: 'Crop Name',
+        variety: 'Variety',
+        type: 'Type',
+        volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
+        incomePerHectare: 'Average Income / ha ',
+        benefitPerHectare: 'Average Profit / ha',
+        price: 'Price (kg)',
+        pestOccurrence: 'Pest Observed',
+        diseaseOccurrence: 'Disease Observed',
+        totalPlanted: 'Total Planted'
+    };
 
-    // Filter data to remove 'Rank' headers and 'remarks'
+    // Define the order of headers
+    const headersToInclude = [
+        'cropName',
+        'variety',
+        'type',
+        'volumeProductionPerHectare',
+        'incomePerHectare',
+        'benefitPerHectare',
+        'price',
+        'pestOccurrence',
+        'diseaseOccurrence',
+        'totalPlanted'
+    ];
+
+    // Map headers to the desired names
+    const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+    // Filter data to match the new headers
     const filteredData = data.map(row => {
         const filteredRow = {};
         headersToInclude.forEach(key => {
-            filteredRow[key] = row[key];
+            filteredRow[headerMap[key]] = row[key];
         });
         return filteredRow;
     });
 
-    // Create worksheet and workbook
-    const ws = XLSX.utils.json_to_sheet(filteredData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    // Create a new workbook and add a worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
 
-    // Write workbook to file
-    XLSX.writeFile(wb, filename);
-    addDownload(filename, 'XLSX');
+    // Add filtered data to the worksheet
+    worksheet.addRow(mappedHeaders);
+    filteredData.forEach(row => {
+        worksheet.addRow(headersToInclude.map(header => {
+            const value = row[headerMap[header]];
+            // Format specific columns with peso sign
+            if (header === 'incomePerHectare' || header === 'benefitPerHectare' || header === 'price') {
+                return value ? `₱${parseFloat(value).toFixed(2)}` : '';
+            }
+            return value;
+        }));
+    });
+
+    // Define header and data style
+    const headerStyle = {
+        font: {
+            name: "Calibri",
+            size: 12,
+            bold: true,
+            color: { argb: "FFFFFFFF" } // White color
+        },
+        fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: "B1BA4D" } // Green fill color
+        },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    const dataStyle = {
+        font: {
+            name: "Calibri",
+            size: 11
+        },
+        alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    // Apply style to header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+        cell.style = headerStyle;
+    });
+    headerRow.height = 20; // Set header row height
+
+    // Apply style to data rows
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+        if (rowNumber > 1) { // Skip header row
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = dataStyle;
+            });
+        }
+    });
+
+    // Set column widths with padding to prevent overflow
+    worksheet.columns = mappedHeaders.map(header => ({
+        width: Math.max(header.length, 10) + 5 // Ensure minimum width
+    }));
+
+    // Write workbook to browser
+    workbook.xlsx.writeBuffer().then(function(buffer) {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
 }
+
 
 function downloadPDF(filename, data) {
     const { jsPDF } = window.jspdf;
@@ -470,9 +621,18 @@ function downloadPDF(filename, data) {
     addDownload(filename, 'PDF');
 }
 
-// Function to extract plain text from HTML
 function extractTextFromHTML(html) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    return tempDiv.textContent || tempDiv.innerText || '';
+
+    // Extract the plain text
+    let text = tempDiv.textContent || tempDiv.innerText || '';
+
+    // Remove unnecessary whitespace and normalize special characters
+    text = text.replace(/&nbsp;/g, ' ') // Convert non-breaking spaces to regular spaces
+               .replace(/[^\w\s.,-]/g, '') // Remove special characters except common symbols
+               .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+               .trim(); // Remove leading and trailing spaces
+
+    return text;
 }

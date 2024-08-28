@@ -3,72 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chart.js to PDF</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <title>Create Excel File with Formulas on Separate Sheet</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include the exceljs library -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.2.1/dist/exceljs.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        canvas {
-            max-width: 100%;
+            margin: 20px;
         }
         button {
-            margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div id="chart-container">
-        <canvas id="myChart" width="600" height="400"></canvas>
-        <button id="download">Download as PDF</button>
-    </div>
+    <button id="generateExcel">Generate Excel File</button>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Create the Chart.js chart
-            const ctx = document.getElementById('myChart').getContext('2d');
-            const myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                    datasets: [{
-                        label: 'Monthly Sales',
-                        data: [10, 20, 15, 25, 30, 20],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+        $(document).ready(function() {
+            $('#generateExcel').on('click', async function() {
+                // Create a new workbook
+                const workbook = new ExcelJS.Workbook();
 
-            // Function to generate PDF
-            document.getElementById('download').addEventListener('click', function() {
-                const element = document.getElementById('myChart');
-                const opt = {
-                    margin: 1,
-                    filename: 'chart.pdf',
-                    image: { type: 'png', quality: 1 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                // Create Sheet1 with sample data
+                const sheet1 = workbook.addWorksheet('Sheet1');
+                const data = [
+                    ["Value 1", "Value 2"], // Header row
+                    [10, 20],  // Data row 1
+                    [30, 40],  // Data row 2
+                    [50, 60]   // Data row 3
+                ];
+
+                // Apply data to Sheet1
+                data.forEach((row, rowIndex) => {
+                    row.forEach((cell, colIndex) => {
+                        sheet1.getCell(rowIndex + 1, colIndex + 1).value = cell;
+                    });
+                });
+
+                // Create Sheet2 with calculated totals using formulas
+                const sheet2 = workbook.addWorksheet('Sheet2');
+                sheet2.addRow(["Value 1", "Value 2", "Total"]); // Header row
+
+                // Add data to Sheet2
+                data.slice(1).forEach((row, rowIndex) => {
+                    sheet2.addRow([...row, { formula: `SUM(Sheet1!A${rowIndex + 2}:B${rowIndex + 2})` }]);
+                });
+
+                // Define header style for both sheets
+                const headerStyle = {
+                    font: {
+                        name: "Calibri",
+                        size: 12,
+                        bold: true,
+                        color: { argb: "FFFFAA00" } // Yellow color
+                    },
+                    fill: {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: "FF4F81BD" } // Blue fill
+                    },
+                    alignment: { horizontal: "center" }
                 };
-                html2pdf().from(element).set(opt).save();
+
+                // Apply header style to Sheet1 headers
+                sheet1.getRow(1).eachCell(cell => {
+                    cell.style = headerStyle;
+                });
+
+                // Apply header style to Sheet2 headers
+                sheet2.getRow(1).eachCell(cell => {
+                    cell.style = headerStyle;
+                });
+
+                // Set column widths for both sheets
+                sheet1.columns = [
+                    { width: 20 },
+                    { width: 20 }
+                ];
+
+                sheet2.columns = [
+                    { width: 20 },
+                    { width: 20 },
+                    { width: 20 }
+                ];
+
+                // Write workbook to browser
+                workbook.xlsx.writeBuffer().then(function(buffer) {
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'ExcelWithFormulas.xlsx';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
             });
         });
     </script>

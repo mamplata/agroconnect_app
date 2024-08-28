@@ -328,12 +328,12 @@ function initializeMethodsRecord(dataType) {
       event.preventDefault();
       var recordId = Number($('#recordId').val());
       var userId = user.userId;
-      var name = $('#name').val();
       var month = $('#monthPicker select').val(); // input is inside #monthPicker
       var year = $('#yearPicker input').val(); // input is inside #yearPicker
       var season = getSeason(month);
       var type = dataType;
       var monthYear = `${month} ${year}`;
+      var name = `${dataType.charAt(0).toUpperCase() + dataType.slice(1).toLowerCase()} ${monthYear}`;
     
       var fileInput = document.getElementById('fileRecord');
       var file = fileInput.files[0];
@@ -594,7 +594,6 @@ function initializeMethodsRecord(dataType) {
           $('#editModal').modal('hide');
           $('#cancelBtn').show();
           $('#recordId').val(record.recordId);
-          $('#name').val(record.name);
           // Assuming record.monthYear is like 'July 2024'
           var monthYear = record.monthYear;
 

@@ -4,6 +4,41 @@ import { initializeMethodsBarangay } from '../classes/Barangay.js';
 import { initializeMethodsFarmer, getBarangayNames } from '../classes/Farmer.js';
 import { initializeMethodsRecord } from '../classes/Record.js';
 
+function loadMonthYear() {
+    $(document).ready(function() {
+      // Get the current year
+      var currentYear = new Date().getFullYear();
+      
+      // Initialize the select element
+      var $yearSelect = $('#yearSelect');
+      
+      // Loop to add options from the current year to 10 years ago
+      for (var year = currentYear; year >= currentYear - 10; year--) {
+          $yearSelect.append($('<option>', {
+              value: year,
+              text: year
+          }));
+      }
+  });
+  $(document).ready(function() {
+    // Array of month names to match with the options in the select element
+    var months = [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Get the current month as a number (0-11)
+    var currentMonthIndex = new Date().getMonth();
+
+    // Get the current month name from the array
+    var currentMonthName = months[currentMonthIndex];
+
+    // Set the current month as selected in the select element
+    $('#monthPicker select').val(currentMonthName);
+  });
+}
+
+
 // Function to initialize the maintenance menu view
 function initializeMaintenanceMenu(option) {
     // Clear previous content
@@ -267,9 +302,6 @@ function initializeSupplyMarketView() {
             <input type="hidden" class="form-control" id="recordId" name="recordId">
             <input type="hidden" class="form-control" id="userId" name="userId">
             <div class="mb-3">
-              <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
-            </div>
-            <div class="mb-3">
               <div class="input-group" id="monthPicker" style="width: 100%;">
                   <select class="form-control" required>
                       <option value="" disabled selected>Month</option>
@@ -293,7 +325,9 @@ function initializeSupplyMarketView() {
           </div>
           <div class="mb-3">
               <div class="input-group" id="yearPicker" style="width: 100%;">
-                  <input type="text" class="form-control" placeholder="Year" required>
+                  <select id="yearSelect" class="form-control" required>
+                      <!-- Options will be added by jQuery -->
+                  </select>
                   <span class="input-group-append">
                       <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                   </span>
@@ -344,6 +378,7 @@ function initializeSupplyMarketView() {
     initializeMethodsRecord('production');
     createDeleteModal();
     createEditModal();
+    loadMonthYear();
 }
 
 // Function to initialize Crop Price Monitoring view
@@ -355,9 +390,6 @@ function initializePriceMonitoringView() {
             <form id="recordForm" enctype="multipart/form-data">
               <input type="hidden" class="form-control" id="recordId" name="recordId">
               <input type="hidden" class="form-control" id="userId" name="userId">
-              <div class="mb-3">
-                <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
-              </div>
               <div class="mb-3">
                 <div class="input-group" id="monthPicker" style="width: 100%;">
                     <select class="form-control" required>
@@ -382,7 +414,9 @@ function initializePriceMonitoringView() {
             </div>
             <div class="mb-3">
                 <div class="input-group" id="yearPicker" style="width: 100%;">
-                    <input type="text" class="form-control" placeholder="Year" required>
+                    <select id="yearSelect" class="form-control" required>
+                        <!-- Options will be added by jQuery -->
+                    </select>
                     <span class="input-group-append">
                         <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                     </span>
@@ -433,6 +467,8 @@ function initializePriceMonitoringView() {
       initializeMethodsRecord('price');
       createDeleteModal();
       createEditModal();
+      loadMonthYear();
+    
 }
 
 // Function to initialize Pest and Disease Reports view
@@ -444,9 +480,6 @@ function initializePestReportsView() {
           <form id="recordForm" enctype="multipart/form-data">
             <input type="hidden" class="form-control" id="recordId" name="recordId">
             <input type="hidden" class="form-control" id="userId" name="userId">
-            <div class="mb-3">
-              <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
-            </div>
             <div class="mb-3">
               <div class="input-group" id="monthPicker" style="width: 100%;">
                   <select class="form-control" required>
@@ -471,7 +504,9 @@ function initializePestReportsView() {
           </div>
           <div class="mb-3">
               <div class="input-group" id="yearPicker" style="width: 100%;">
-                  <input type="text" class="form-control" placeholder="Year" required>
+                  <select id="yearSelect" class="form-control" required>
+                      <!-- Options will be added by jQuery -->
+                  </select>
                   <span class="input-group-append">
                       <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                   </span>
@@ -522,6 +557,8 @@ function initializePestReportsView() {
     initializeMethodsRecord('pestDisease');
     createDeleteModal();
     createEditModal();
+    loadMonthYear();
+  
 }
 
 // Function to initialize Soil Health Records view
@@ -532,9 +569,6 @@ function initializeSoilHealthView() {
         <form id="recordForm" enctype="multipart/form-data">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
-          <div class="mb-3">
-            <input placeholder="Name" type="text" class="form-control" id="name" name="name" required>
-          </div>
           <div class="mb-3">
             <div class="input-group" id="monthPicker" style="width: 100%;">
                 <select class="form-control" required>
@@ -557,14 +591,16 @@ function initializeSoilHealthView() {
                 </span>
             </div>
         </div>
-        <div class="mb-3">
-            <div class="input-group" id="yearPicker" style="width: 100%;">
-                <input type="text" class="form-control" placeholder="Year" required>
-                <span class="input-group-append">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                </span>
-            </div>
-        </div>
+         <div class="mb-3">
+              <div class="input-group" id="yearPicker" style="width: 100%;">
+                  <select id="yearSelect" class="form-control" required>
+                      <!-- Options will be added by jQuery -->
+                  </select>
+                  <span class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
+              </div>
+          </div>
           <div  class="mb-3">
             <label id="lblUpload">
               Upload File:
@@ -610,6 +646,8 @@ function initializeSoilHealthView() {
   initializeMethodsRecord('soilHealth');
   createDeleteModal();
   createEditModal();
+  loadMonthYear();
+
 }
 
 export { initializeMaintenanceMenu };
