@@ -2,22 +2,26 @@
 let crops = [];
 
 class Crop {
-  constructor(cropId, cropName, priceWeight, type) {
+  constructor(cropId, cropName, priceWeight, type, variety, cropImg, description) {
     this.cropId = cropId;
     this.cropName = cropName;
     this.priceWeight = priceWeight;
     this.type = type;
+    this.variety = variety;
+    this.cropImg = cropImg;
+    this.description = description;
   }
 
   createCrop(crop) {
-    const existingCrop = crops.find(c => c.cropName === crop.cropName);
+    // Check for duplicates based on both cropName and variety
+    const existingCrop = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
     if (existingCrop) {
-      alert('Crop with the same name already exists');
+      alert('Crop with the same name and variety already exists');
       return;
     }
 
     console.log(crop.priceWeight);
-  
+
     $.ajax({
       url: '/api/crops',
       type: 'POST',
@@ -31,17 +35,18 @@ class Crop {
       }
     });
   }
-  
 
   updateCrop(updatedCrop) {
-    const existingCrop = crops.find(c => c.cropName === updatedCrop.cropName);
-    if (existingCrop && existingCrop.cropId !== updatedCrop.cropId) {
-      alert('Crop with the same name already exists');
+    // Check for duplicates based on both cropName and variety, excluding the current crop
+    const existingCrop = crops.find(c => c.cropName === updatedCrop.cropName && c.variety === updatedCrop.variety && c.cropId !== updatedCrop.cropId);
+    if (existingCrop) {
+      alert('Crop with the same name and variety already exists');
       return;
     }
 
+    // Update the crop in the local crops array
     crops = crops.map(crop =>
-        crop.cropId === updatedCrop.cropId ? { ...crop, ...updatedCrop } : crops
+      crop.cropId === updatedCrop.cropId ? { ...crop, ...updatedCrop } : crop
     );
 
     fetch(`/api/crops/${updatedCrop.cropId}`, {
@@ -69,7 +74,7 @@ class Crop {
     })
       .then(response => {
         if (response.status === 204) {
-          crops = crops.filter(crop => crop.cropId !== crop);
+          crops = crops.filter(crop => crop.cropId !== cropId);
           console.log(`Crop with ID ${cropId} deleted.`);
         } else if (response.status === 404) {
           console.error(`Crop with ID ${cropId} not found.`);
@@ -82,6 +87,7 @@ class Crop {
       });
   }
 }
+
 
 function getCrop() {
   // Fetch crops from Laravel backend
@@ -125,54 +131,61 @@ function initializeMethodsCrop() {
     var crop = null;
 
     async function displayCrops(cropName = null) {
-
       // Simulate a delay of 1 second
       await new Promise(resolve => setTimeout(resolve, 1000));
-
+  
+      // Clear the table body
       $('#cropTableBody').empty();
-    
+      
       var startIndex = (currentPage - 1) * pageSize;
       var endIndex = startIndex + pageSize;
+  
       if (cropName) {
-        // Display a single crop if cropName is provided
+          // Display a single crop if cropName is provided
           const foundcrops = searchCrop(cropName);
           if (foundcrops.length > 0) {
-            foundcrops.forEach(crop => {
-              $('#cropTableBody').append(`
-                <tr data-index=${crop.cropId}>
-                  <td style="display: none;">${crop.cropId}</td>
-                  <td>${crop.cropName}</td>
-                  <td>${crop.type}</td>
-                  <td>${crop.priceWeight}</td>
-                </tr>
-              `);
-            });
+              foundcrops.forEach(crop => {
+                  $('#cropTableBody').append(`
+                      <tr data-index=${crop.cropId}>
+                          <td style="display: none;">${crop.cropId}</td>
+                          <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
+                          <td>${crop.description}</td>
+                          <td>${crop.cropName}</td>
+                          <td>${crop.variety}</td>
+                          <td>${crop.type}</td>
+                          <td>${crop.priceWeight}</td>
+                      </tr>
+                  `);
+              });
           } else {
-            // Handle case where cropName is not provided
-            $('#cropTableBody').append(`
-              <tr>
-                <td colspan="4">crop not found!</td>
-              </tr>
-            `)
+              // Handle case where cropName is not found
+              $('#cropTableBody').append(`
+                  <tr>
+                      <td colspan="7">Crop not found!</td>
+                  </tr>
+              `);
           }
       } else {
-        // Display paginated crops if no cropName is provided
-        for (var i = startIndex; i < endIndex; i++) {
-          if (i >= crops.length) {
-            break;
+          // Display paginated crops if no cropName is provided
+          for (var i = startIndex; i < endIndex; i++) {
+              if (i >= crops.length) {
+                  break;
+              }
+              var crop = crops[i];
+              $('#cropTableBody').append(`
+                  <tr data-index=${crop.cropId}>
+                      <td style="display: none;">${crop.cropId}</td>
+                      <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
+                      <td>${crop.description}</td>
+                      <td>${crop.cropName}</td>
+                      <td>${crop.type}</td>
+                      <td>${crop.variety}</td>
+                      <td>${crop.priceWeight}</td>
+                  </tr>
+              `);
           }
-          var crop = crops[i];
-          $('#cropTableBody').append(`
-            <tr data-index=${crop.cropId}>
-              <td style="display: none;">${crop.cropId}</td>
-                <td>${crop.cropName}</td>
-                <td>${crop.type}</td>
-                <td>${crop.priceWeight}</td>
-            </tr>
-          `);
-        }
       }
-    }
+  }  
     
 
     // Display initial crops
@@ -200,39 +213,76 @@ function initializeMethodsCrop() {
       }
     });
 
-    // Form submission handler (Add or Update crop)
-    $('#submitBtn').click(function(event) {
-      event.preventDefault();
+// Form submission handler (Add or Update crop)
+$('#submitBtn').click(function(event) {
+  event.preventDefault();
 
-      var cropId = Number($('#cropId').val());
-      var cropName = $('#cropName').val();
-      var priceWeight = $('#priceWeight').val();
-      if (priceWeight === 'pc') {
-        var pcToKg = $('#pcToKg').val();
-        priceWeight = `pc/(about ${pcToKg}kg)`;
-      }
-      var type = $('#type').val();
+  var cropId = Number($('#cropId').val());
+  var cropName = $('#cropName').val();
+  var priceWeight = $('#priceWeight').val();
+  if (priceWeight === 'pc') {
+      var pcToKg = $('#pcToKg').val();
+      priceWeight = `pc/(about ${pcToKg}kg)`;
+  }
+  var type = $('#type').val();
+  var variety = $('#variety').val();
+  var description = $('#description').val();
+
+  // Get the file input element and the selected file
+  var cropImgFile = document.getElementById('cropImg').files[0];
+  var cropImgBase64 = null;  // Initialize as null
+
+  if (cropImgFile) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+          cropImgBase64 = reader.result; // This is the base64 string
+
+          // Create the Crop object with the base64 image string
+          let crop = new Crop(cropId, cropName, priceWeight, type, variety, cropImgBase64, description);
+
+          if (selectedRow !== null) {
+              crop.updateCrop(crop);
+              selectedRow = null;
+              $('#submitBtn').text('Add crop');
+              $('#cancelBtn').hide(); 
+          } else {
+              crop.createCrop(crop);
+          }
+
+          getCrop();
+          displayCrops();
+
+          // Clear form fields after submission
+          $('#cropForm')[0].reset();
+          $('#cropTableBody tr').removeClass('selected-row');
+      };
+
+      // Read the image file as a data URL (base64)
+      reader.readAsDataURL(cropImgFile);
+  } else {
+      // Handle form submission without a new image
+      // Use null for image when no new image is provided during update
       if (selectedRow !== null) {
-        let crop = new Crop(cropId, cropName, priceWeight, type);
-        crop.updateCrop(crop);
-        getCrop();
-        displayCrops();
-        selectedRow = null;
-        $('#submitBtn').text('Add crop');
-        $('#cancelBtn').hide(); 
-        resetFields();
+          let crop = new Crop(cropId, cropName, priceWeight, type, variety, null, description);
+          crop.updateCrop(crop);
+          selectedRow = null;
+          $('#submitBtn').text('Add crop');
+          $('#cancelBtn').hide(); 
       } else {
-        let crop = new Crop(cropId, cropName, priceWeight, type);
-        crop.createCrop(crop);
-        getCrop();
-        displayCrops();
+          let crop = new Crop(cropId, cropName, priceWeight, type, variety, null, description);
+          crop.createCrop(crop);
       }
+
+      getCrop();
+      displayCrops();
 
       // Clear form fields after submission
       $('#cropForm')[0].reset();
-      selectedRow = null;
+      $('#lblCropImg').val('Upload Image:');
       $('#cropTableBody tr').removeClass('selected-row');
-    });
+  }
+});
+
 
     function resetFields() {
       // Reset UI states
@@ -253,6 +303,9 @@ function initializeMethodsCrop() {
           $('#cancelBtn').show();
           $('#cropId').val(crop.cropId);
           $('#cropName').val(crop.cropName);
+          $('#variety').val(crop.variety);
+          $('#description').val(crop.description);
+          $('#lblCropImg').text('Upload New Image (Optional):');
           // Split the string at the '/' and take the first part
           var extractedValue = crop.priceWeight.split('/')[0].trim();
           $('#priceWeight').val(extractedValue);

@@ -277,6 +277,17 @@ function addDownload(name, type) {
     });
 }
 
+async function getUniqueCropNames(season, type) {
+    try {
+        const response = await fetch(`/api/unique-crop-names?season=${encodeURIComponent(season)}&type=${encodeURIComponent(type)}`);
+        const uniqueCropNames = await response.json();
+        return uniqueCropNames.map(name => name.toLowerCase());
+    } catch (error) {
+        console.error('Failed to fetch unique crop names:', error);
+        return [];
+    }
+}
+
 export { getCrop, getBarangay, getProduction, getProductions, getPrice, getPest, 
     getDisease, getFarmer, getDataEntries, getRecord, getUsers, getConcerns, 
-    getYearRange, getDownloadCount, addDownload };
+    getYearRange, getDownloadCount, getUniqueCropNames, addDownload };

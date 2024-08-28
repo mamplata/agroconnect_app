@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Crop;
+use App\Models\Production;
 use Illuminate\Http\Request;
 
 class CropController extends Controller
@@ -10,7 +11,7 @@ class CropController extends Controller
 
     public function index()
     {
-        // Get all crops, with admins first, ordered by their ID in descending order
+        // Get all crops, ordered by their ID in descending order
         $crops = Crop::orderBy('cropId', 'desc')->get();
 
         return response()->json($crops, 200);
@@ -22,6 +23,8 @@ class CropController extends Controller
             'cropName' => 'required|string',
             'priceWeight' => 'required|string',
             'type' => 'required|string',
+            'cropImg' => 'nullable|string',  // Optional field
+            'description' => 'nullable|string',  // Optional field
         ]);
 
         // Accessing input data using $request->input('fieldName')
@@ -29,6 +32,8 @@ class CropController extends Controller
             'cropName' => $request->input('cropName'),
             'priceWeight' => $request->input('priceWeight'),
             'type' => $request->input('type'),
+            'cropImg' => $request->input('cropImg'),  // Optional field
+            'description' => $request->input('description'),  // Optional field
         ]);
 
         $crop->save();
@@ -38,24 +43,26 @@ class CropController extends Controller
 
     public function show($id)
     {
-        $crop = crop::findOrFail($id);
+        $crop = Crop::findOrFail($id);
         return response()->json($crop, 200);
     }
 
     public function update(Request $request, $id)
     {
-        // Find crop by username
-        $crop = crop::findOrFail($id);
+        // Find crop by ID
+        $crop = Crop::findOrFail($id);
 
         // Validate request data
         $request->validate([
             'cropName' => 'required|string',
             'priceWeight' => 'required|string',
             'type' => 'required|string',
+            'cropImg' => 'nullable|string',  // Optional field
+            'description' => 'nullable|string',  // Optional field
         ]);
 
         // Update crop attributes
-        $crop->fill($request->only(['cropName', 'priceWeight', 'type']));
+        $crop->fill($request->only(['cropName', 'priceWeight', 'type', 'cropImg', 'description']));
 
         // Save updated crop to the database
         $crop->save();
@@ -66,12 +73,35 @@ class CropController extends Controller
 
     public function destroy($id)
     {
-        $crop = crop::find($id);
+        $crop = Crop::find($id);
         if ($crop) {
             $crop->delete();
             return response()->json(null, 204);
         } else {
-            return response()->json(['message' => 'crop not found'], 404);
+            return response()->json(['message' => 'Crop not found'], 404);
         }
+    }
+
+    public function getUniqueCropNames(Request $request)
+    {
+        // Get parameters from the request
+        $season = $request->query('season'); // e.g., 'Dry' or 'Wet'
+        $type = $request->query('type'); // e.g., 'vegetable', 'fruit', 'rice'
+
+        // Build the query to filter crops based on production season and crop type
+        $query = Crop::whereHas('productions', function ($query) use ($season) {
+            if ($season) {
+                $query->where('season', $season); // Filter by season if provided
+            }
+        });
+
+        if ($type) {
+            $query->where('type', $type); // Filter by type if provided
+        }
+
+        // Get distinct crop names
+        $uniqueCropNames = $query->distinct()->pluck('cropName');
+
+        return response()->json($uniqueCropNames, 200);
     }
 }

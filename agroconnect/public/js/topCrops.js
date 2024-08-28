@@ -1,6 +1,6 @@
+import Dialog from '../management/components/helpers/Dialog.js';
 import { getCrop, getProduction, getPrice, getPest, getDisease, addDownload} from './fetch.js';
 import * as stats from './statistics.js';
-
 let crops = [];
 let dataEntry = []; // Global variable to store all entries
 
@@ -276,7 +276,7 @@ class TopCrops {
                 `The ideal months for this crop variety are <strong>${bestMonthRangeForCrop}</strong>.</p>` +
                 `<p class="text-center"></br> Average production volume: <strong>${entry.volumeProductionPerHectare} per hectare/ha</strong>` +
                 `</br> Average price: <strong>₱${parseFloat(entry.price).toLocaleString()}</strong>` +
-                `</br> Average price income: <strong>₱${parseFloat(entry.incomePerHectare).toLocaleString()} per hectare/ha</strong>` +
+                `</br> Average income: <strong>₱${parseFloat(entry.incomePerHectare).toLocaleString()} per hectare/ha</strong>` +
                 `</br> Average profit: <strong>₱${parseFloat(entry.benefitPerHectare).toLocaleString()} per hectare/ha</strong>` +
                 `</br> Pest occurence: <strong>${entry.pestOccurrence} (${calculateOccurrencePercentage(entry.pestOccurrence, entry.totalPlanted).toFixed(2)}%)</strong>` +
                 `</br> Disease occurence: <strong>${entry.diseaseOccurrence} (${calculateOccurrencePercentage(entry.diseaseOccurrence, entry.totalPlanted).toFixed(2)}%)</strong><p>`
@@ -289,20 +289,46 @@ class TopCrops {
 
     
 
-    displayTopCrops(data) {
-        const tableBody = $('#cropsTable tbody');
-        tableBody.empty(); // Clear existing rows
+ displayTopCrops(data) {
+    const tableBody = $('#cropsTable tbody');
+    tableBody.empty(); // Clear existing rows
 
-        data.forEach(crop => {
-            const row = `<tr>
-                <td>${crop.cropName}</td>
-                <td>${crop.variety}</td>
-                <td>${crop.type}</td>
-                <td>${crop.remarks}</td>
-            </tr>`;
-            tableBody.append(row);
-        });
-    }
+    data.forEach(crop => {
+        // Find matching crop details
+        const cropDetails = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
+
+        // Default values if no matching crop is found
+        const cropImg = cropDetails ? cropDetails.cropImg : '';
+        const description = cropDetails ? cropDetails.description : 'No description available';
+        const cropVariety = `${crop.cropName} - ${crop.variety}`;
+
+        // Create table row with View button
+        const row = `<tr class="text-center">
+            <td>${crop.cropName}</td>
+            <td>${crop.variety}</td>
+            <td>${crop.type}</td>
+            <td>${crop.remarks}</td>
+            <td><button class="btn btn-green view-btn" data-img="${cropImg}" data-description="${description}" data-variety="${cropVariety}">View</button></td>
+        </tr>`;
+        tableBody.append(row);
+    });
+
+    // Attach click event handler to View buttons
+    $('.view-btn').on('click', async function() {
+        const imgSrc = $(this).data('img');
+        const desc = $(this).data('description');
+        const variety = $(this).data('variety');
+
+        // Call the custom modal function
+        const res = await Dialog.showCropModal(imgSrc, desc, variety);
+
+        if (res.operation === Dialog.OK) {
+            console.log('Modal was closed by the user');
+        } else {
+            console.log('Modal was not closed');
+        }
+    });
+}
 }
 
 $(document).ready(async function() {

@@ -42,60 +42,91 @@ function initializeCropView() {
    // Example content for Crop Records
    $('#maintenance-content').html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
-     <div class="col-md-4">
-       <form id="cropForm">
+      <div class="col-md-4">
+        <form id="cropForm">
           <input type="hidden" class="form-control" id="cropId" name="cropId">
-         <div class="mb-3">
-           <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
-         </div>
-         <div class="mb-3">
-           <select class="form-control" id="type" name="type" required>
-             <option value="" disabled selected>Select Type</option>
-             <option value="Vegetables">Vegetables</option>
-             <option value="Rice">Rice</option>
-             <option value="Fruits">Fruits</option>
-           </select>
-         </div>
-           <div class="mb-3">
-           <select class="form-control" id="priceWeight" name="priceWeight" required>
-             <option value="" disabled selected>Select Price Weight (kg/pc)</option>
-             <option value="kg">kilogram</option>
-             <option value="pc">piece</option>
-           </select>
-         </div>
-        <div class="mb-3">
-           <input style="displayNone" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg" required>
-         </div>
-         <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
-         <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-       </form>
-     </div>
-     <div class="col-md-7">
-       <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-         <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-         <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-         <div id="delete"></div>
-         <div id="edit"></div>
-       </div>
-       <table id="cropTable" class="table table-custom text-center">
-         <thead>
-           <tr style="background-color: #2774E9; color: white;">
-             <th scope="col">Crop Name</th>
-             <th scope="col">Type</th>
-             <th scope="col">Price Weight(pc/kg)</th>
-           </tr>
-         </thead>
-         <tbody id="cropTableBody">
-           <!-- Table rows will be dynamically added here -->
-         </tbody>
-       </table>
-       <div class="text-right">
-         <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-         <button id="nextBtn" class="btn btn-green">Next</button>
-       </div>
-     </div>
-   </div>
- `);
+          
+          <div class="mb-3">
+            <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
+          </div>
+          
+          <div class="mb-3">
+            <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
+          </div>
+          
+          <div class="mb-3">
+            <select class="form-control" id="type" name="type" required>
+              <option value="" disabled selected>Select Type</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Rice">Rice</option>
+              <option value="Fruits">Fruits</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <select class="form-control" id="priceWeight" name="priceWeight" required>
+              <option value="" disabled selected>Select Price Weight (kg/pc)</option>
+              <option value="kg">kilogram</option>
+              <option value="pc">piece</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <input style="display: none;" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg">
+          </div>
+          <div  class="mb-3">
+              <label id="lblCropImg">
+                Upload Image:
+              </label>
+              <div class="input-group mb-3" style="width: 100%;">
+                <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
+                <div class="input-group-append">
+                  <label class="input-group-text" for="cropImg">
+                    <i class="fas fa-upload"></i>
+                  </label>
+                </div>
+              </div>
+          </div>
+          <div class="mb-3">
+            <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
+          </div>
+          
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+  
+      <div class="col-md-7">
+        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+          <div id="delete"></div>
+          <div id="edit"></div>
+        </div>
+  
+        <table id="cropTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">Crop Image</th>
+              <th scope="col">Description</th>
+              <th scope="col">Crop Name</th>
+              <th scope="col">Variety</th>
+              <th scope="col">Type</th>
+              <th scope="col">Price Weight (pc/kg)</th>
+            </tr>
+          </thead>
+          <tbody id="cropTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+        
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);  
   $(document).ready(function() {
       $('#pcToKg').hide();
       $('#priceWeight').change(function() {

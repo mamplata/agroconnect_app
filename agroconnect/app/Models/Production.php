@@ -31,4 +31,10 @@ class Production extends Model
     {
         return $this->belongsTo(Record::class, 'recordId');
     }
+
+    // Define the relationship with Crop model
+    public function crop()
+    {
+        return $this->belongsTo(Crop::class, 'cropName', 'cropName');
+    }
 }

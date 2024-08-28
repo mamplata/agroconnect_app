@@ -1,4 +1,4 @@
-import { getCrop, getProduction, getPest, getDisease, getProductions, getBarangay, getYearRange, addDownload} from './fetch.js';
+import { getCrop, getProduction, getPest, getDisease, getProductions, getBarangay, getYearRange, addDownload, getUniqueCropNames} from './fetch.js';
 import * as stats from './statistics.js';
 
 let barangays = [];
@@ -139,38 +139,18 @@ function interpret(data, key, text) {
   `);
 }
 
-async function getUniqueCropNames() {
-  let season = $('#season').val();
-  try {
-      // Fetch production data
-      const productions = await getProductions();
-      
-      // Filter productions based on the specified season
-      const filteredProductions = productions.filter(p => p.season.toLowerCase() === season.toLowerCase());
-      
-      // Extract unique crop names from the filtered data
-      const uniqueCropNames = [...new Set(filteredProductions.map(p => p.cropName.toLowerCase()))];
-      
-      return uniqueCropNames;
-  } catch (error) {
-      console.error('Failed to fetch production data:', error);
-      return [];
-  }
-}
-
-
+// Function to update crop options based on type and season
 async function updateCropOptions() {
   const type = $('#type').val().toLowerCase();
+  const season = $('#season').val().toLowerCase();
   let options = '';
 
   try {
-      const crops = await getCrop(type);
-      const uniqueCropNames = await getUniqueCropNames();
+      const uniqueCropNames = await getUniqueCropNames(season, type);
 
-      if (crops.length > 0) {
-          const filteredCrops = crops.filter(crop => uniqueCropNames.includes(crop.cropName.toLowerCase()));
-          options = filteredCrops.length > 0 
-              ? filteredCrops.map(crop => `<option value="${crop.cropName.toLowerCase()}">${crop.cropName}</option>`).join('')
+      if (uniqueCropNames.length > 0) {
+          options = uniqueCropNames.length > 0 
+              ? uniqueCropNames.map(cropName => `<option value="${cropName}">${cropName.charAt(0).toUpperCase() + cropName.slice(1)}</option>`).join('')
               : '<option value="">No crops available</option>';
       } else {
           options = '<option value="">No crops available</option>';

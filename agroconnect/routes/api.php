@@ -139,3 +139,5 @@ Route::get('check-user', function (Request $request) {
         'user' => $user
     ]);
 })->middleware('check.user');
+
+Route::get('/unique-crop-names', [CropController::class, 'getUniqueCropNames']);
