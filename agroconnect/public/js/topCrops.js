@@ -68,7 +68,6 @@ class TopCrops {
                 price: normalize(indicators.price, ranges.price.min, ranges.price.max),
                 pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
                 disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min),
-                totalPlanted: normalize(indicators.totalPlanted, ranges.totalPlanted.min, ranges.totalPlanted.max) // Normalize totalPlanted
             };
     
             return (
@@ -77,8 +76,7 @@ class TopCrops {
                 0.15 * normalizedIndicators.benefit +
                 0.15 * normalizedIndicators.price +
                 0.1 * normalizedIndicators.pest +
-                0.1 * normalizedIndicators.disease +
-                0.2 * normalizedIndicators.totalPlanted // Adjust weight if necessary
+                0.1 * normalizedIndicators.disease
             );
         };
     
@@ -462,7 +460,7 @@ function downloadCSV(filename, data) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename;
+    a.download = $("#seasonSelect").val() + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -593,7 +591,7 @@ function downloadExcel(filename, data) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = $("#seasonSelect").val() + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
         a.click();
         URL.revokeObjectURL(url);
     });
@@ -617,7 +615,7 @@ function downloadPDF(filename, data) {
         theme: 'striped'
     });
 
-    doc.save(filename);
+    doc.save($("#seasonSelect").val() + "_" + filename.charAt(0).toUpperCase() + filename.slice(1));
     addDownload(filename, 'PDF');
 }
 

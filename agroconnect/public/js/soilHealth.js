@@ -1,8 +1,21 @@
-import { addDownload } from './fetch.js';
+import { addDownload, getYearRange } from './fetch.js';
 
 $(document).ready(function() {
   let vegetablesData, riceData, fruitsData;
   let currentDataType;
+  let yearRange;
+  
+  async function initialize() {
+  
+    try {
+      yearRange = await getYearRange();
+      console.log(yearRange); // Use the yearRange as needed
+    } catch (error) {
+      console.error('Error fetching year range:', error);
+    }
+  }
+  
+  initialize();
 
   fetch('api/soilhealths')
     .then(response => response.json())
@@ -107,72 +120,222 @@ $(document).ready(function() {
     }
   }
   
-  // Download CSV
   function downloadCSV(filename, data) {
-    const csv = [
-      ['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating'],
-      ...data.map(record => [
-        record.fieldType,  // Ensure this key matches your data's structure
-        record.phosphorusContent,
-        record.nitrogenContent,
-        record.potassiumContent,
-        record.pH,
-        record.generalRating
-      ])
-    ].map(row => row.join(',')).join('\n');
-  
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Define the header mapping
+    const headerMap = {
+      barangay: 'Barangay / Area',
+      fieldType: 'Type',
+      phosphorusContent: 'Phosphorus',
+      nitrogenContent: 'Nitrogen',
+      potassiumContent: 'Potassium',
+      pH: 'pH',
+      generalRating: 'General Rating',
+      monthYear: 'Data Observed',
+      season: 'Season Collected',
+  };
+
+  // Define the order of headers
+  const headersToInclude = [
+      'barangay',
+      'fieldType',
+      'phosphorusContent',
+      'nitrogenContent',
+      'potassiumContent',
+      'pH',
+      'generalRating',
+      'monthYear',
+      'season',
+  ];
+
+
+  filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
+
+    // Map headers to the desired names
+    const headers = headersToInclude.map(key => headerMap[key]);
+
+    // Helper function to escape CSV values
+    function escapeCSVValue(value) {
+        if (value === undefined || value === null) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
+
+    // Filter data to match the new headers and format values
+    const csvRows = [
+        headers.join(','),
+        ...data.map(row => 
+            headersToInclude.map(key => {
+                const value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
+                if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+                    return value !== '' ? `₱${parseFloat(value).toFixed(2)}` : '';
+                }
+                return escapeCSVValue(value);
+            }).join(',')
+        )
+    ].join('\n');
+
+    // Create a Blob and trigger download
+    const blob = new Blob([csvRows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    // Optional: Log download action
     addDownload(filename, 'CSV');
-  }
-  
-// Download Excel
-function downloadExcel(filename, data) {
-  // Map the data to ensure it matches the headers
-  const formattedData = data.map(record => ({
-    Type: record.fieldType,
-    Phosphorus: record.phosphorusContent,
-    Nitrogen: record.nitrogenContent,
-    Potassium: record.potassiumContent,
-    pH: record.pH,
-    'General Rating': record.generalRating
-  }));
-
-  // Convert formatted data to worksheet
-  const worksheet = XLSX.utils.json_to_sheet(formattedData, {
-    header: ['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating']
-  });
-
-  // Create a new workbook and append the worksheet
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-
-  // Write the workbook to a file
-  XLSX.writeFile(workbook, filename);
-  addDownload(filename, 'XLSX');
 }
+  
+  function downloadExcel(filename, data) {
+    // Define the header mapping
+    const headerMap = {
+        barangay: 'Barangay / Area',
+        fieldType: 'Type',
+        phosphorusContent: 'Phosphorus',
+        nitrogenContent: 'Nitrogen',
+        potassiumContent: 'Potassium',
+        pH: 'pH',
+        generalRating: 'General Rating',
+        monthYear: 'Data Observed',
+        season: 'Season Collected',
+    };
 
+    // Define the order of headers
+    const headersToInclude = [
+        'barangay',
+        'fieldType',
+        'phosphorusContent',
+        'nitrogenContent',
+        'potassiumContent',
+        'pH',
+        'generalRating',
+        'monthYear',
+        'season',
+    ];
+
+
+    filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
+
+    // Map headers to the desired names
+    const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+    // Filter data to match the new headers
+    const filteredData = data.map(row => {
+        const filteredRow = {};
+        headersToInclude.forEach(key => {
+            filteredRow[headerMap[key]] = row[key];
+        });
+        return filteredRow;
+    });
+
+    // Create a new workbook and add a worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+
+    // Add filtered data to the worksheet
+    worksheet.addRow(mappedHeaders);
+    filteredData.forEach(row => {
+        worksheet.addRow(headersToInclude.map(header => {
+            const value = row[headerMap[header]];
+
+            return value;
+        }));
+    });
+
+    // Define header and data style
+    const headerStyle = {
+        font: {
+            name: "Calibri",
+            size: 12,
+            bold: true,
+            color: { argb: "FFFFFFFF" } // White color
+        },
+        fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: "B1BA4D" } // Green fill color
+        },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    const dataStyle = {
+        font: {
+            name: "Calibri",
+            size: 11
+        },
+        alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    // Apply style to header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+        cell.style = headerStyle;
+    });
+    headerRow.height = 20; // Set header row height
+
+    // Apply style to data rows
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+        if (rowNumber > 1) { // Skip header row
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = dataStyle;
+            });
+        }
+    });
+
+    // Set column widths with padding to prevent overflow
+    worksheet.columns = mappedHeaders.map(header => ({
+        width: Math.max(header.length, 10) + 5 // Ensure minimum width
+    }));
+
+    // Write workbook to browser
+    workbook.xlsx.writeBuffer().then(function(buffer) {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+}
 
   
   // Download PDF
   function downloadPDF(filename, data) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+
+    filename = 'Soil Health_' + yearRange + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
   
     doc.autoTable({
-      head: [['Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating']],
+      head: [['Barangay', 'Type', 'Phosphorus', 'Nitrogen', 'Potassium', 'pH', 'General Rating', 'Date Observed', 'Season Collected']],
       body: data.map(record => [
-        record.fieldType,  // Ensure this key matches your data's structure
+        record.barangay,
+        record.fieldType,
         record.phosphorusContent,
         record.nitrogenContent,
         record.potassiumContent,
         record.pH,
-        record.generalRating
+        record.generalRating,
+        record.monthYear,
+        record.season,
       ]),
       startY: 10,
       margin: { top: 10, right: 10, bottom: 10, left: 10 },
@@ -180,6 +343,6 @@ function downloadExcel(filename, data) {
     });
   
     doc.save(filename);
+    addDownload(filename, 'PDF');
   }
-  addDownload(filename, 'PDF');
 });  

@@ -14,7 +14,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.2.1/dist/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.16/jspdf.plugin.autotable.min.js"></script>  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> 
@@ -138,12 +138,12 @@
                         <div class="form-group col-md-6">
                           <label for="category">Category:</label>
                           <select id="category" class="form-control">
-                            <option value="total_planted">Total Planted</option>
-                            <option value="production_volume">Production Volume Per Hectare</option>
+                            <option value="production_volume">Estimated Yield</option>
+                            <option value="price_income_per_hectare">Estimated Income</option>
+                            <option value="benefit_per_hectare">Estimated Revenue</option>
+                            <option value="total_planted">Average Area Planted</option>
                             <option value="pest_occurrence">Pest Occurrence</option>
                             <option value="disease_occurrence">Disease Occurrence</option>
-                            <option value="price_income_per_hectare">Price Income per Hectare</option>
-                            <option value="benefit_per_hectare">Benefit Per Hectare</option>
                           </select>
                         </div>
                       </div>

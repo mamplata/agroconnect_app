@@ -203,38 +203,43 @@ function averageVolumeProductionBarangay(data) {
         return [];
     }
 
-    // Aggregate total volume and area, and count records per barangay and crop
+    // Aggregate total volume, area, count records, and track season per barangay and crop
     const barangayCropTotals = data.reduce((acc, item) => {
-        const { barangay, cropName, volumeProduction, areaPlanted } = item;
+        const { barangay, cropName, volumeProduction, areaPlanted, season } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
         }
 
         if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = { totalVolume: 0, totalArea: 0, count: 0 };
+            acc[barangay][cropName] = { totalVolume: 0, totalArea: 0, count: 0, season: '' };
         }
 
         acc[barangay][cropName].totalVolume += volumeProduction;
         acc[barangay][cropName].totalArea += areaPlanted;
         acc[barangay][cropName].count++;
 
+        // Assume the season is consistent across records for the same barangay and crop
+        acc[barangay][cropName].season = season;
+
         return acc;
     }, {});
 
     // Transform aggregated data into the desired format
     return Object.entries(barangayCropTotals).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, { totalVolume, totalArea, count }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalVolume, totalArea, count }]) => ({
             barangay,
             cropName,
+            season,
             totalVolume: totalVolume.toFixed(2),
             totalArea: totalArea.toFixed(2),
             volumeProduction: totalArea > 0 
                 ? parseFloat((totalVolume / totalArea).toFixed(2)) 
-                : 0,            
+                : 0,
         }))
     );
 }
+
 
 function averagePrice(data) {
     if (!Array.isArray(data)) {
@@ -315,59 +320,39 @@ function countPestOccurrenceBarangay(data) {
         return [];
     }
 
+    // Aggregate pest occurrences per barangay, crop, and season
     const barangayCropCounts = data.reduce((acc, item) => {
-        const { barangay, cropName } = item;
+        const { barangay, cropName, season } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
         }
 
         if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = 0;
+            acc[barangay][cropName] = {};
         }
 
-        acc[barangay][cropName]++;
+        if (!acc[barangay][cropName][season]) {
+            acc[barangay][cropName][season] = 0;
+        }
+
+        acc[barangay][cropName][season]++;
         return acc;
     }, {});
 
+    // Transform aggregated data into the desired format
     return Object.entries(barangayCropCounts).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, count]) => ({
-            barangay,
-            cropName,
-            pestOccurrence: count
-        }))
+        Object.entries(crops).flatMap(([cropName, seasons]) =>
+            Object.entries(seasons).map(([season, count]) => ({
+                barangay,
+                cropName,
+                season,
+                pestOccurrence: count
+            }))
+        )
     );
 }
 
-function countDiseaseOccurrenceBarangay(data) {
-    if (!Array.isArray(data)) {
-        console.error('Expected data to be an array');
-        return [];
-    }
-
-    const barangayCropCounts = data.reduce((acc, item) => {
-        const { barangay, cropName } = item;
-
-        if (!acc[barangay]) {
-            acc[barangay] = {};
-        }
-
-        if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = 0;
-        }
-
-        acc[barangay][cropName]++;
-        return acc;
-    }, {});
-
-    return Object.entries(barangayCropCounts).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, count]) => ({
-            barangay,
-            cropName,
-            diseaseOccurrence: count
-        }))
-    );
-}
 
 function countDiseaseOccurrence(data) {
     if (!Array.isArray(data)) {
@@ -402,6 +387,45 @@ function countDiseaseOccurrence(data) {
                 cropName,
                 season,
                 diseaseOccurrence
+            }))
+        )
+    );
+}
+
+function countDiseaseOccurrenceBarangay(data) {
+    if (!Array.isArray(data)) {
+        console.error('Expected data to be an array');
+        return [];
+    }
+
+    // Aggregate disease occurrences per barangay, crop, and season
+    const barangayCropCounts = data.reduce((acc, item) => {
+        const { barangay, cropName, season } = item;
+
+        if (!acc[barangay]) {
+            acc[barangay] = {};
+        }
+
+        if (!acc[barangay][cropName]) {
+            acc[barangay][cropName] = {};
+        }
+
+        if (!acc[barangay][cropName][season]) {
+            acc[barangay][cropName][season] = 0;
+        }
+
+        acc[barangay][cropName][season]++;
+        return acc;
+    }, {});
+
+    // Transform aggregated data into the desired format
+    return Object.entries(barangayCropCounts).flatMap(([barangay, crops]) =>
+        Object.entries(crops).flatMap(([cropName, seasons]) =>
+            Object.entries(seasons).map(([season, count]) => ({
+                barangay,
+                cropName,
+                season,
+                diseaseOccurrence: count
             }))
         )
     );
@@ -474,14 +498,14 @@ function priceIncomePerHectareBarangay(data) {
     };
 
     const barangayCropTotals = data.reduce((acc, item) => {
-        const { barangay, cropName, volumeSold, areaPlanted, price } = item;
+        const { barangay, cropName, volumeSold, areaPlanted, price, season } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
         }
 
         if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = { totalIncome: 0, totalArea: 0 };
+            acc[barangay][cropName] = { totalIncome: 0, totalArea: 0, season: '' };
         }
 
         let calculatedPrice = parsePrice(price);
@@ -495,19 +519,24 @@ function priceIncomePerHectareBarangay(data) {
         acc[barangay][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[barangay][cropName].totalArea += areaPlanted;
 
+        // Store the season, assuming it's consistent for each barangay-crop pair
+        acc[barangay][cropName].season = season;
+
         return acc;
     }, {});
 
     return Object.entries(barangayCropTotals).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, { totalIncome, totalArea }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalIncome, totalArea }]) => ({
             barangay,
             cropName,
+            season,
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             incomePerHectare: totalArea > 0 ? parseFloat((totalIncome / totalArea).toFixed(2)) : 0
         }))
     );
 }
+
 
 function benefitPerHectare(data) {
     if (!Array.isArray(data)) {
@@ -578,14 +607,14 @@ function benefitPerHectareBarangay(data) {
     };
 
     const barangayCropTotals = data.reduce((acc, item) => {
-        const { barangay, cropName, volumeSold, areaPlanted, price, productionCost } = item;
+        const { barangay, cropName, volumeSold, areaPlanted, price, productionCost, season } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
         }
 
         if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = { totalIncome: 0, totalArea: 0, totalProductionCost: 0 };
+            acc[barangay][cropName] = { totalIncome: 0, totalArea: 0, totalProductionCost: 0, season: '' };
         }
 
         let calculatedPrice = parsePrice(price);
@@ -600,13 +629,17 @@ function benefitPerHectareBarangay(data) {
         acc[barangay][cropName].totalArea += areaPlanted;
         acc[barangay][cropName].totalProductionCost += productionCost;
 
+        // Store the season, assuming it's consistent for each barangay-crop pair
+        acc[barangay][cropName].season = season;
+
         return acc;
     }, {});
 
     return Object.entries(barangayCropTotals).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, { totalIncome, totalArea, totalProductionCost }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalIncome, totalArea, totalProductionCost }]) => ({
             barangay,
             cropName,
+            season,
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
@@ -614,6 +647,7 @@ function benefitPerHectareBarangay(data) {
         }))
     );
 }
+
 
 function getCropData(production, price, pest, disease, crops, type) {
     if (!Array.isArray(production) || !Array.isArray(price) || !Array.isArray(pest) || !Array.isArray(disease)) {

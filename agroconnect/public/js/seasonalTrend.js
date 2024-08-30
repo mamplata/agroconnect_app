@@ -2,6 +2,7 @@ import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, 
 import * as stats from './statistics.js';
 
 let colorIndex = 0;
+let downloadYR;
 
 function getColor(opacity = 1) {
     // Define an array of colors
@@ -45,6 +46,8 @@ class SeasonalTrends {
     const yearRange = uniqueYears.length === 1
         ? uniqueYears[0]
         : `${Math.min(...uniqueYears)}-${Math.max(...uniqueYears)}`;
+
+    downloadYR = yearRange;
 
     // Prepare data for line chart
      // Prepare and sort monthly labels
@@ -516,7 +519,7 @@ $(document).ready(function() {
 });
 
 
-function download(format, type, data) {
+function download(format, type, data, yearlyData) {
     const filename = `${type.toLowerCase()}.${format}`;
     if (format === 'csv') {
       downloadCSV(filename, data);
@@ -541,50 +544,352 @@ function escapeCSVValue(value) {
 }
 
 function downloadCSV(filename, data) {
-  const keys = Object.keys(data[0]);
-  const headers = keys.map(formatHeader);
+    // Define the header mapping
+    const headerMap = {
+        cropName: 'Crop Name',
+        season: 'Season',
+        monthYear: 'Month-Year',
+        volumeProduction: 'Average Volume Production (mt/ha)',
+        incomePerHectare: 'Average Income / ha',
+        benefitPerHectare: 'Average Profit / ha',
+        price: 'Price (kg)',
+        pestOccurrence: 'Pest Observed',
+        diseaseOccurrence: 'Disease Observed',
+        totalPlanted: 'Total Planted'
+    };
 
-  const csv = [
-    headers,
-    ...data.map(record => 
-      keys.map(key => 
-        key === 'monthYear' ? `'${record[key]}` : escapeCSVValue(record[key])
-      )
-    )
-  ].map(row => row.join(',')).join('\n');
+    // Always include these headers for both monthly and yearly data
+    const alwaysIncludedHeaders = ['cropName', 'season', 'monthYear'];
 
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-  addDownload(filename, 'CSV');
+    // Dynamically include other headers based on filename
+    const additionalHeaders = [];
+    const filenameLower = filename.toLowerCase();
+
+    if (filenameLower.includes('volumeproduction')) {
+        additionalHeaders.push('volumeProduction');
+    }
+    if (filenameLower.includes('incomeperhectare')) {
+        additionalHeaders.push('incomePerHectare');
+    }
+    if (filenameLower.includes('benefitperhectare')) {
+        additionalHeaders.push('benefitPerHectare');
+    }
+    if (filenameLower.includes('price')) {
+        additionalHeaders.push('price');
+    }
+    if (filenameLower.includes('pestoccurrence')) {
+        additionalHeaders.push('pestOccurrence');
+    }
+    if (filenameLower.includes('diseaseoccurrence')) {
+        additionalHeaders.push('diseaseOccurrence');
+    }
+    if (filenameLower.includes('totalplanted')) {
+        additionalHeaders.push('totalPlanted');
+    }
+
+    // ======= MONTHLY DATA SECTION =======
+    const headersToInclude = [...alwaysIncludedHeaders, ...additionalHeaders];
+    const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+    const monthlyCSVData = [
+        'Monthly Data',
+        mappedHeaders.join(','),
+        ...data.map(row => headersToInclude.map(key => {
+            const value = row[key];
+            // Format specific columns with peso sign
+            if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+                return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
+            }
+            return escapeCSVValue(value);
+        }).join(','))
+    ].join('\n');
+
+    // ======= YEARLY DATA SECTION =======
+    const yearlyData = {};
+    data.forEach(row => {
+        const year = new Date(row.monthYear).getFullYear();
+        const cropSeasonKey = `${row.cropName}-${row.season}`;
+
+        if (!yearlyData[year]) {
+            yearlyData[year] = {};
+        }
+
+        if (!yearlyData[year][cropSeasonKey]) {
+            yearlyData[year][cropSeasonKey] = {
+                cropName: row.cropName,
+                season: row.season,
+                count: 0,
+                sums: {}
+            };
+            additionalHeaders.forEach(header => {
+                yearlyData[year][cropSeasonKey].sums[header] = 0;
+            });
+        }
+
+        yearlyData[year][cropSeasonKey].count++;
+        additionalHeaders.forEach(header => {
+            yearlyData[year][cropSeasonKey].sums[header] += parseFloat(row[header]) || 0;
+        });
+    });
+
+    const yearlyHeaders = ['Year', 'Crop Name', 'Season', ...additionalHeaders.map(header => headerMap[header])];
+    const yearlyCSVData = [
+        '\nYearly Data',
+        yearlyHeaders.join(','),
+        ...Object.entries(yearlyData).flatMap(([year, cropSeasons]) =>
+            Object.values(cropSeasons).map(cropSeason => {
+                const row = [year, cropSeason.cropName, cropSeason.season];
+                additionalHeaders.forEach(header => {
+                    const average = (cropSeason.sums[header] / cropSeason.count).toFixed(2);
+                    row.push(average);
+                });
+                return row.join(',');
+            })
+        )
+    ].join('\n');
+
+    // Combine monthly and yearly data into a single CSV
+    const completeCSVData = [monthlyCSVData, yearlyCSVData].join('\n');
+
+    // Create CSV download
+    const blob = new Blob([completeCSVData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    let season = $("#season").val();
+    let crop = $("#crop").val();
+    crop = crop.charAt(0).toUpperCase() + crop.slice(1);
+    season = season.charAt(0).toUpperCase() + season.slice(1);
+    filename = crop + "_" + season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 function downloadExcel(filename, data) {
-  // Get keys from the first record and format them
-  const keys = Object.keys(data[0]);
-  const headers = keys.map(formatHeader);
+    // Define the header mapping
+    const headerMap = {
+        monthYear: 'Month Year',
+        cropName: 'Crop Name',
+        season: 'Season',
+        volumeProduction: 'Average Volume Production (mt/ha)',
+        incomePerHectare: 'Average Income / ha',
+        benefitPerHectare: 'Average Profit / ha',
+        price: 'Price (kg)',
+        pestOccurrence: 'Pest Observed',
+        diseaseOccurrence: 'Disease Observed',
+        totalPlanted: 'Total Planted'
+    };
 
-  // Prepare the worksheet data
-  const worksheetData = [
-    headers,
-    ...data.map(record => 
-      keys.map(key => key === 'monthYear' ? `'${record[key]}` : record[key])
-    )
-  ];
+    console.log(data);
 
-  // Create a new workbook and add the worksheet
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    // Always include these three headers
+    const alwaysIncludedHeaders = ['monthYear', 'cropName', 'season'];
 
-  // Write the workbook and trigger the download
-  XLSX.writeFile(workbook, filename);
-  addDownload(filename, 'XLSX');
+    // Dynamically include other headers based on filename
+    const additionalHeaders = [];
+
+    const filenameLower = filename.toLowerCase();
+
+    if (filenameLower.includes('volumeproduction')) {
+        additionalHeaders.push('volumeProduction');
+    }
+    if (filenameLower.includes('incomeperhectare')) {
+        additionalHeaders.push('incomePerHectare');
+    }
+    if (filenameLower.includes('benefitperhectare')) {
+        additionalHeaders.push('benefitPerHectare');
+    }
+    if (filenameLower.includes('price')) {
+        additionalHeaders.push('price');
+    }
+    if (filenameLower.includes('pestoccurrence')) {
+        additionalHeaders.push('pestOccurrence');
+    }
+    if (filenameLower.includes('diseaseoccurrence')) {
+        additionalHeaders.push('diseaseOccurrence');
+    }
+    if (filenameLower.includes('totalplanted')) {
+        additionalHeaders.push('totalPlanted');
+    }
+
+    // Define the order of headers to include (first three + dynamically added)
+    const headersToInclude = [...alwaysIncludedHeaders, ...additionalHeaders];
+
+    // Map headers to the desired names
+    const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+    // Filter data to match the new headers
+    const filteredData = data.map(row => {
+        const filteredRow = {};
+        headersToInclude.forEach(key => {
+            filteredRow[headerMap[key]] = row[key];
+        });
+        return filteredRow;
+    });
+
+    // Create a new workbook and add the main worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Monthly');
+
+    // Add filtered data to the worksheet
+    worksheet.addRow(mappedHeaders);
+    filteredData.forEach(row => {
+        worksheet.addRow(headersToInclude.map(header => {
+            let value = row[headerMap[header]];
+            
+            // Format specific columns with decimal places (e.g., income, benefit, price)
+            if (header === 'incomePerHectare' || header === 'benefitPerHectare' || header === 'price') {
+                value = value ? `₱${parseFloat(value).toFixed(2)}` : ''; // Add decimal formatting and peso sign
+            } else if (typeof value === 'number') {
+                value = value.toFixed(2); // Add decimal formatting for other numeric columns
+            }
+            
+            return value;
+        }));
+    });    
+
+    // Define header and data style (same as before)
+    const headerStyle = {
+        font: {
+            name: "Calibri",
+            size: 12,
+            bold: true,
+            color: { argb: "FFFFFFFF" } // White color
+        },
+        fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: "B1BA4D" } // Green fill color
+        },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    const dataStyle = {
+        font: {
+            name: "Calibri",
+            size: 11
+        },
+        alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+        border: {
+            top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+            right: { style: 'thin', color: { argb: "FF000000" } },
+            bottom: { style: 'thin', color: { argb: "FF000000" } },
+            left: { style: 'thin', color: { argb: "FF000000" } }
+        }
+    };
+
+    // Apply style to header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell({ includeEmpty: true }, (cell) => {
+        cell.style = headerStyle;
+    });
+    headerRow.height = 20; // Set header row height
+
+    // Apply style to data rows
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+        if (rowNumber > 1) { // Skip header row
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = dataStyle;
+            });
+        }
+    });
+
+    // Set column widths with padding to prevent overflow
+    worksheet.columns = mappedHeaders.map(header => ({
+        width: Math.max(header.length, 10) + 5
+    }));
+
+    // ======= Add Yearly Averages Sheet =======
+    const yearlyData = {};
+    data.forEach(row => {
+        const year = new Date(row.monthYear).getFullYear();
+        if (!yearlyData[year]) {
+            yearlyData[year] = {
+                count: 0,
+                sums: {}
+            };
+            additionalHeaders.forEach(header => {
+                yearlyData[year].sums[header] = 0;
+            });
+        }
+        yearlyData[year].count++;
+        additionalHeaders.forEach(header => {
+            yearlyData[year].sums[header] += parseFloat(row[header]) || 0;
+        });
+    });
+
+    // Extract cropName and season from the first row of data (assuming they are consistent across all rows)
+    const cropName = data[0].cropName;
+    const season = data[0].season;
+
+    // Calculate the averages
+    const yearlyAverages = Object.keys(yearlyData).map(year => {
+        const averages = { Year: year, CropName: cropName, Season: season };
+        additionalHeaders.forEach(header => {
+            averages[headerMap[header]] = (yearlyData[year].sums[header] / yearlyData[year].count).toFixed(2);
+        });
+        return averages;
+    });
+
+    // Add the yearly averages to a new worksheet
+    const yearlyWorksheet = workbook.addWorksheet('Yearly');
+
+    // Define headers for the yearly sheet, including Crop Name and Season
+    const yearlyHeaders = ['Year', 'Crop Name', 'Season', ...additionalHeaders.map(header => headerMap[header])];
+    yearlyWorksheet.addRow(yearlyHeaders);
+
+    // Add the calculated yearly averages to the worksheet
+    yearlyAverages.forEach(row => {
+        yearlyWorksheet.addRow(Object.values(row));
+    });
+
+    // Apply styles to the new sheet
+    const yearlyHeaderRow = yearlyWorksheet.getRow(1);
+    yearlyHeaderRow.eachCell({ includeEmpty: true }, (cell) => {
+        cell.style = headerStyle;
+    });
+    yearlyHeaderRow.height = 20;
+
+    yearlyWorksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+        if (rowNumber > 1) {
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.style = dataStyle;
+            });
+        }
+    });
+
+    // Set column widths
+    yearlyWorksheet.columns = yearlyHeaders.map(header => ({
+        width: Math.max(header.length, 10) + 5
+    }));
+
+
+    // Write workbook to browser
+    workbook.xlsx.writeBuffer().then(function(buffer) {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        let season = $("#season").val();
+        let crop = $("#crop").val();
+        crop = crop.charAt(0).toUpperCase() + crop.slice(1);
+        season = season.charAt(0).toUpperCase() + season.slice(1);
+        filename = crop + "_" + season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
 }
+
 
 function downloadPDF(filename) {
     const { jsPDF } = window.jspdf;
@@ -617,6 +922,12 @@ function downloadPDF(filename) {
     
         return y; // Return updated y-coordinate
     };
+
+    let season = $("#season").val();
+    let crop = $("#crop").val();
+    crop = crop.charAt(0).toUpperCase() + crop.slice(1);
+    season = season.charAt(0).toUpperCase() + season.slice(1);
+    filename = crop + "_" + season + "_" + downloadYR + "_" + filename.charAt(0).toUpperCase() + filename.slice(1);
 
     // Add content from seasonalTrendChart
     html2canvas(document.getElementById('seasonalTrendChart'), {

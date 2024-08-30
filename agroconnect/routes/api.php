@@ -119,13 +119,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/concerns/{id}', [ConcernController::class, 'destroy']);
 
     // Api for weatherforecasts
-    Route::post('/weatherforecasts', [WeatherForecastController::class, 'store']);
-    Route::get('/weatherforecasts/{id}', [WeatherForecastController::class, 'show']);
     Route::put('/weatherforecasts/{id}', [WeatherForecastController::class, 'update']);
     Route::delete('/weatherforecasts/{id}', [WeatherForecastController::class, 'destroy']);
 });
 
 Route::post('/concerns', [ConcernController::class, 'store']);
+Route::post('/weatherforecasts', [WeatherForecastController::class, 'store']);
+Route::get('/weatherforecasts/{id}', [WeatherForecastController::class, 'show']);
 
 // Downloads routes
 Route::get('/downloads/count', [DownloadController::class, 'countDownloads']);
