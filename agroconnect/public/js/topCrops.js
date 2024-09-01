@@ -347,14 +347,17 @@ $(document).ready(async function() {
         });
     });
 
-    $('.download-btn').click(function() {
-        $('#downloadModal').modal('show');
-    });
-
-    $('.download-option').click(function() {
-        const format = $(this).data('format');
-        const currentType = $('#typeSelect').val();
-        download(format, currentType, dataEntry);
+    $(document).ready(function() {
+        $('.download-btn').click(function() {
+            // Call the downloadDialog method and handle the promise
+            Dialog.downloadDialog().then(format => {
+                console.log(format);  // This will log the format (e.g., 'csv', 'xlsx', or 'pdf')
+                const currentType = $('#typeSelect').val();
+                download(format, currentType, dataEntry);
+            }).catch(error => {
+                console.error('Error:', error);  // Handle any errors that occur
+            });
+        });
     });
 });
 

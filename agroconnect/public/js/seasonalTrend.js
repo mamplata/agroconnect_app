@@ -1,5 +1,6 @@
 import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, addDownload, getUniqueCropNames} from './fetch.js';
 import * as stats from './statistics.js';
+import Dialog from '../management/components/helpers/Dialog.js';
 
 let colorIndex = 0;
 let downloadYR;
@@ -509,17 +510,18 @@ const bestMonthRange = (cropName, averageByMonth) => {
 
 $(document).ready(function() {
     $('.download-btn').click(function() {
-        $('#downloadModal').modal('show');
-    });
-
-    $('.download-option').click(function() {
-        const format = $(this).data('format');
-        download(format, currentType, downloadData);
+        // Call the downloadDialog method and handle the promise
+        Dialog.downloadDialog().then(format => {
+            console.log(format);  // This will log the format (e.g., 'csv', 'xlsx', or 'pdf')
+            download(format, currentType, downloadData);
+        }).catch(error => {
+            console.error('Error:', error);  // Handle any errors that occur
+        });
     });
 });
 
 
-function download(format, type, data, yearlyData) {
+function download(format, type, data) {
     const filename = `${type.toLowerCase()}.${format}`;
     if (format === 'csv') {
       downloadCSV(filename, data);

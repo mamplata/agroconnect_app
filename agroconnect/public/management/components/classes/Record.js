@@ -584,41 +584,47 @@ function initializeMethodsRecord(dataType) {
       $('#recordTableBody tr').removeClass('selected-row');
     }
 
-    $('#editBtn').click(function() { 
-        // Open the delete modal
-        $('#dataEdit').text('record');
-        $('#editModal').modal('show');
-
-        // Edit button click handler
-        $('#confirmEditBtn').click(function() {
-          $('#editModal').modal('hide');
+    $('#editBtn').click(async function() { 
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Edit",
+          "Are you sure you want to edit this record?"
+      );
+  
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          // Proceed with the edit
+          $('#dataEdit').text('record');
           $('#cancelBtn').show();
           $('#recordId').val(record.recordId);
+  
           // Assuming record.monthYear is like 'July 2024'
           var monthYear = record.monthYear;
-
+  
           // Split the monthYear into month and year
           var parts = monthYear.split(' ');
           var month = parts[0]; // 'July'
           var year = parts[1]; // '2024'
-
+  
           // Set the values in the input fields
           $('#monthPicker select').val(month);
           $('#yearPicker input').val(year);
           $('#fileRecord').removeAttr('required');
           $('#lblUpload').text('Insert New File (optional):');
           $('#submitBtn').text('Update Record');
-        });
-
-        $('#cancelEdit').click(function() {
-          resetFields();
-        });
-    });
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Edit action was canceled.");
+      }
+  });
+  
+  $('#cancelEdit').click(function() {
+      resetFields();
+  });
+  
 
     // Cancel button click handler
     $('#cancelBtn').click(function() {
-      var confirmation = confirm('Are you sure you want to cancel editing?');
-      if (confirmation) {
         selectedRow = null;
         $('#recordForm')[0].reset();
         $('#lblUpload').text('Upload File:');
@@ -626,30 +632,32 @@ function initializeMethodsRecord(dataType) {
         $('#fileRecord').attr('required', 'required');
         $('#cancelBtn').hide();
         $('#recordTableBody tr').removeClass('selected-row');
+    });
+    $('#deleteBtn').click(async function() {
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Deletion",
+          "Are you sure you want to delete this record?"
+      );
+  
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          // Proceed with deletion
+          let recordToDelete = new Record();
+          recordToDelete.removeRecord(record.recordId);
+          getRecord(dataType);
+          displayRecords();
+          resetFields();
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Delete action was canceled.");
       }
-    });
-
-  // Delete button click handler
-  $('#deleteBtn').click(function() {
-    // Open the delete modal
-    $('#dataDelete').text('record');
-    $('#deleteModal').modal('show');
-
-    // Click handler for modal's delete button
-    $('#confirmDeleteBtn').click(function() {
-      // Close the modal
-      $('#deleteModal').modal('hide');
-        let recordToDelete = new Record();
-        recordToDelete.removeRecord(record.recordId);
-        getRecord(dataType);
-        displayRecords();
-        resetFields();
-      });
-
-    $('#cancelDelete').click(function() {
-      resetFields();
-    });
   });
+  
+  $('#cancelDelete').click(function() {
+      resetFields();
+  });
+  
 
 // Row click handler (for selecting rows)
 $('#recordTableBody').on('click', 'tr', function() {

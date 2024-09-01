@@ -14,6 +14,7 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../../css/index.css">
+  <link rel="stylesheet" href="../../management/css/dialog.css">
   
   <!-- JavaScript Libraries -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -25,6 +26,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   <style>
+    #pageTitle {
+      background-color: #6FC700;
+    }
     .cont {
       margin: 3.25rem;
       margin-top: 2rem;
@@ -76,7 +80,7 @@
     <!-- Vegetables Section -->
     <div class="cont">
       <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 bg-success">
+        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
           <h2>Vegetables</h2>
         </div>
         <div class="card mb-3">
@@ -139,7 +143,7 @@
     <!-- Rice Section -->
     <div class="cont">
       <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 bg-success">
+        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
           <h2>Rice</h2>
         </div>
         <div class="card mb-3">
@@ -202,7 +206,7 @@
     <!-- Fruits Section -->
     <div class="cont">
       <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 bg-success">
+        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
           <h2>Fruits</h2>
         </div>
         <div class="card mb-3">
@@ -265,24 +269,6 @@
   
   <div class="footer-container">
     <!-- Include your footer content or component here -->
-  </div>
-
-  <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="downloadModalLabel">Download Options</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <button class="btn btn-primary download-option" data-format="csv">Download CSV</button>
-          <button class="btn btn-primary download-option" data-format="xlsx">Download Excel</button>
-          <button class="btn btn-primary download-option" data-format="pdf">Download PDF</button>
-        </div>
-      </div>
-    </div>
   </div>
 
    <!-- JavaScript Files -->

@@ -1,3 +1,5 @@
+import Dialog from '../helpers/Dialog.js';
+
 // Crop.js
 let crops = [];
 
@@ -292,13 +294,15 @@ $('#submitBtn').click(function(event) {
       $('#cropTableBody tr').removeClass('selected-row');
     }
 
-    $('#editBtn').click(function() { 
-        // Open the delete modal
-        $('#dataEdit').text('crop');
-        $('#editModal').modal('show');
-
-        // Edit button click handler
-        $('#confirmEditBtn').click(function() {
+    $('#editBtn').click(async function() { 
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Edit",
+          "Are you sure you want to edit this crop's details?"
+      );
+  
+      // Check if the user clicked OK
+      if (result.operation === 1) { 
           $('#editModal').modal('hide');
           $('#cancelBtn').show();
           $('#cropId').val(crop.cropId);
@@ -306,56 +310,58 @@ $('#submitBtn').click(function(event) {
           $('#variety').val(crop.variety);
           $('#description').val(crop.description);
           $('#lblCropImg').text('Upload New Image (Optional):');
+          
           // Split the string at the '/' and take the first part
           var extractedValue = crop.priceWeight.split('/')[0].trim();
           $('#priceWeight').val(extractedValue);
+  
           if (extractedValue === 'pc') {
-            $('#pcToKg').show();
-        } else {
-            $('#pcToKg').hide();
-        }
+              $('#pcToKg').show();
+          } else {
+              $('#pcToKg').hide();
+          }
+  
           $('#type').val(crop.type);
           $('#submitBtn').text('Update Crop');
-        });
-
-        $('#cancelEdit').click(function() {
-          resetFields();
-        });
-    });
+      }
+  });
+  
+  // Cancel button click handler
+  $('#cancelEdit').click(function() {
+      resetFields();
+  });
+  
 
     // Cancel button click handler
     $('#cancelBtn').click(function() {
-      var confirmation = confirm('Are you sure you want to cancel editing?');
-      if (confirmation) {
-        selectedRow = null;
-        $('#cropForm')[0].reset();
-        $('#submitBtn').text('Add Crop');
-        $('#cancelBtn').hide();
-        $('#cropTableBody tr').removeClass('selected-row');
+     
+      selectedRow = null;
+      $('#cropForm')[0].reset();
+      $('#submitBtn').text('Add Crop');
+      $('#cancelBtn').hide();
+      $('#cropTableBody tr').removeClass('selected-row');
+    });
+
+    // Delete button click handler
+    $('#deleteBtn').click(async function() {
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Deletion",
+          "Are you sure you want to delete this crop?"
+      );
+
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          let cropToDelete = new Crop();
+          cropToDelete.removeCrop(crop.cropId);
+          getCrop();
+          displayCrops();
+          resetFields();
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Delete action was canceled.");
       }
     });
-
-  // Delete button click handler
-  $('#deleteBtn').click(function() {
-    // Open the delete modal
-    $('#dataDelete').text('crop');
-    $('#deleteModal').modal('show');
-
-    // Click handler for modal's delete button
-    $('#confirmDeleteBtn').click(function() {
-      // Close the modal
-      $('#deleteModal').modal('hide');
-        let cropToDelete = new Crop();
-        cropToDelete.removeCrop(crop.cropId);
-        getCrop();
-        displayCrops();
-        resetFields();
-      });
-
-    $('#cancelDelete').click(function() {
-      resetFields();
-    });
-  });
 
 // Row click handler (for selecting rows)
 $('#cropTableBody').on('click', 'tr', function() {

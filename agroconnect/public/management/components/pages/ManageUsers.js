@@ -210,12 +210,15 @@ export default function initDashboard() {
         $('#userTableBody tr').removeClass('selected-row');
       }
 
-      $('#editBtn').click(function() { 
-          // Open the delete modal
-          $('#editModal').modal('show');
-
-          // Edit button click handler
-          $('#confirmEditBtn').click(function() {
+      $('#editBtn').click(async function() { 
+        // Open the confirmation dialog
+        const result = await Dialog.confirmDialog(
+            "Confirm Edit",
+            "Are you sure you want to edit this user's details?"
+        );
+    
+        // Check if the user clicked OK
+        if (result.operation === 1) { 
             $('#editModal').modal('hide');
             $('#cancelBtn').show();
             $('#password').attr('placeholder', 'Password (optional)');
@@ -225,46 +228,45 @@ export default function initDashboard() {
             $('#lastName').val(user.lastName);
             $('#username').val(user.username);
             $('#submitBtn').text('Update User');
-          });
-
-          $('#cancelEdit').click(function() {
-            resetFields();
-          });
-      });
-
-      // Cancel button click handler
-      $('#cancelBtn').click(function() {
-        var confirmation = confirm('Are you sure you want to cancel editing?');
-        if (confirmation) {
-          selectedRow = null;
-          $('#userForm')[0].reset();
-          $('#submitBtn').text('Add User');
-          $('#cancelBtn').hide();
-          $('#password').attr('placeholder', 'Password');
-          $('#password').attr('required', 'required');
-          $('#userTableBody tr').removeClass('selected-row');
         }
-      });
+
+        $('#cancelEdit').click(function() {
+          resetFields();
+        }); 
+    });    
+
+    // Cancel button click handler
+    $('#cancelBtn').click(function() {
+        selectedRow = null;
+        $('#userForm')[0].reset();
+        $('#submitBtn').text('Add User');
+        $('#cancelBtn').hide();
+        $('#password').attr('placeholder', 'Password');
+        $('#password').attr('required', 'required');
+        $('#userTableBody tr').removeClass('selected-row');
+    });
 
     // Delete button click handler
-    $('#deleteBtn').click(function() {
-      // Open the delete modal
-      $('#deleteModal').modal('show');
+    $('#deleteBtn').click(async function() {
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Deletion",
+          "Are you sure you want to delete this user?"
+      );
 
-      // Click handler for modal's delete button
-      $('#confirmDeleteBtn').click(function() {
-        // Close the modal
-        $('#deleteModal').modal('hide');
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          // Proceed with deletion
           userToDelete = new User();
           userToDelete.removeUser(user.userId);
           displayUsers();
           resetFields();
-        });
-
-      $('#cancelDelete').click(function() {
-        resetFields();
-      });
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Delete action was canceled.");
+      }
     });
+
 
   // Row click handler (for selecting rows)
   $('#userTableBody').on('click', 'tr', function() {
@@ -293,7 +295,5 @@ export default function initDashboard() {
   }
     // Initialize manage users view when document is ready
     initializeManageUsersView();
-    createDeleteModal();
-    createEditModal();
   });
 }

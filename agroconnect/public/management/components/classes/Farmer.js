@@ -1,3 +1,4 @@
+import Dialog from '../helpers/Dialog.js';
 // Farmer.js
 let farmers = [];
 let barangayArray = [];
@@ -296,13 +297,16 @@ function initializeMethodsFarmer() {
       $('#farmerTableBody tr').removeClass('selected-row');
     }
 
-    $('#editBtn').click(function() { 
-        // Open the delete modal
-        $('#dataEdit').text('farmer');
-        $('#editModal').modal('show');
-
-        // Edit button click handler
-        $('#confirmEditBtn').click(function() {
+    $('#editBtn').click(async function() { 
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Edit",
+          "Are you sure you want to edit this farmer's details?"
+      );
+  
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          // Proceed with editing
           $('#editModal').modal('hide');
           $('#cancelBtn').show();
           $('#farmerId').val(farmer.farmerId);
@@ -312,46 +316,52 @@ function initializeMethodsFarmer() {
           $('#phoneNumber').val(farmer.phoneNumber);
           $('#barangay-option').val(farmer.barangayId);
           $('#submitBtn').text('Update Farmer');
-        });
-
-        $('#cancelEdit').click(function() {
-          resetFields();
-        });
-    });
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Edit action was canceled.");
+      }
+  });
+  
+  $('#cancelEdit').click(function() {
+      resetFields();
+  });
+  
 
     // Cancel button click handler
     $('#cancelBtn').click(function() {
-      var confirmation = confirm('Are you sure you want to cancel editing?');
-      if (confirmation) {
-        selectedRow = null;
-        $('#farmerForm')[0].reset();
-        $('#submitBtn').text('Add Farmer');
-        $('#cancelBtn').hide();
-        $('#farmerTableBody tr').removeClass('selected-row');
+   
+      selectedRow = null;
+      $('#farmerForm')[0].reset();
+      $('#submitBtn').text('Add Farmer');
+      $('#cancelBtn').hide();
+      $('#farmerTableBody tr').removeClass('selected-row');
+    });
+
+    $('#deleteBtn').click(async function() {
+      // Open the confirmation dialog
+      const result = await Dialog.confirmDialog(
+          "Confirm Deletion",
+          "Are you sure you want to delete this farmer?"
+      );
+  
+      // Check if the user clicked OK
+      if (result.operation === 1) {
+          // Proceed with deletion
+          let farmerToDelete = new Farmer();
+          farmerToDelete.removeFarmer(farmer.farmerId);
+          getFarmer();
+          displayFarmers();
+          resetFields();
+      } else {
+          // If Cancel is clicked, do nothing or add additional handling if needed
+          console.log("Delete action was canceled.");
       }
-    });
-
-  // Delete button click handler
-  $('#deleteBtn').click(function() {
-    // Open the delete modal
-    $('#dataDelete').text('farmer');
-    $('#deleteModal').modal('show');
-
-    // Click handler for modal's delete button
-    $('#confirmDeleteBtn').click(function() {
-      // Close the modal
-      $('#deleteModal').modal('hide');
-        let farmerToDelete = new Farmer();
-        farmerToDelete.removeFarmer(farmer.farmerId);
-        getFarmer();
-        displayFarmers();
-        resetFields();
-      });
-
-    $('#cancelDelete').click(function() {
-      resetFields();
-    });
   });
+  
+  $('#cancelDelete').click(function() {
+      resetFields();
+  });
+  
 
 // Row click handler (for selecting rows)
 $('#farmerTableBody').on('click', 'tr', function() {

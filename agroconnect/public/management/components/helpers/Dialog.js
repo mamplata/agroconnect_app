@@ -300,6 +300,88 @@ class Dialog {
     });
 }
 
+static async downloadDialog() {
+    // Create elements
+    const inputDialog = document.createElement('dialog');
+    const title = document.createElement('h5');
+    const divButtons = document.createElement('div');
+    const btnCSV = document.createElement('button');
+    const btnExcel = document.createElement('button');
+    const btnPDF = document.createElement('button');
+    const closeButton = document.createElement('button');
+
+    // Add attributes and text
+    inputDialog.setAttribute('id', 'downloadModal');
+
+    // Modal header
+    title.className = 'modal-title';
+    title.id = 'downloadModalLabel';
+    title.innerText = 'Download Options';
+
+    closeButton.type = 'button';
+    closeButton.innerText = 'Close';
+    closeButton.className = 'modal-close-button btn btn-secondary';
+    closeButton.addEventListener('click', () => {
+        inputDialog.close();
+    });
+
+    // Modal buttons
+    btnCSV.className = 'btn btn-primary';
+    btnCSV.innerText = 'Download CSV';
+    btnCSV.setAttribute('data-format', 'csv');
+
+    btnExcel.className = 'btn btn-primary';
+    btnExcel.innerText = 'Download Excel';
+    btnExcel.setAttribute('data-format', 'xlsx');
+
+    btnPDF.className = 'btn btn-primary';
+    btnPDF.innerText = 'Download PDF';
+    btnPDF.setAttribute('data-format', 'pdf');
+
+    // Create a new promise each time the dialog is opened
+    let resolvePromise;
+    const formatPromise = new Promise((resolve) => {
+        resolvePromise = resolve;
+    });
+
+    // Add event listeners for buttons
+    [btnCSV, btnExcel, btnPDF].forEach(button => {
+        button.addEventListener('click', (event) => {
+            const format = event.target.getAttribute('data-format');
+            if (resolvePromise) {
+                resolvePromise(format);  // Resolve the promise with the selected format
+            }
+            inputDialog.close();  // Close the dialog after selection
+        });
+    });
+
+    // Styling for buttons and modal
+    divButtons.className = 'modal-body';
+    divButtons.style.display = 'grid';
+    divButtons.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    divButtons.style.gap = '10px';
+    divButtons.style.marginBottom = '20px';
+    divButtons.append(btnCSV, btnExcel, btnPDF);
+
+    // Assemble the dialog
+    inputDialog.append(title, divButtons, closeButton);
+    document.body.appendChild(inputDialog);
+
+    // Style the close button
+    closeButton.style.display = 'block';
+    closeButton.style.margin = '0 auto';
+    closeButton.style.marginTop = '10px';
+
+    // Show the dialog
+    inputDialog.showModal();
+
+    // Return the promise that resolves with the selected format
+    return formatPromise;
+}
+
 }
 
 export default Dialog;
+
+
+// modal for download, concern, info

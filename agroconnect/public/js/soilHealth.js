@@ -1,4 +1,5 @@
 import { addDownload, getYearRange } from './fetch.js';
+import Dialog from '../management/components/helpers/Dialog.js';
 
 $(document).ready(function() {
   let vegetablesData, riceData, fruitsData;
@@ -28,21 +29,22 @@ $(document).ready(function() {
       displayData('rice', riceData);
       displayData('fruits', fruitsData);
 
-      $('.download-btn').click(function() {
-        currentDataType = $(this).data('type');
-        $('#downloadModal').modal('show');
-        console.log(currentDataType);
-      });
-
-      $('.download-option').click(function() {
-        const format = $(this).data('format');
-        if (currentDataType === 'vegetables') {
-          downloadData(format, 'Vegetables', vegetablesData);
-        } else if (currentDataType === 'rice') {
-          downloadData(format, 'Rice', riceData);
-        } else if (currentDataType === 'fruits') {
-          downloadData(format, 'Fruits', fruitsData);
-        }
+      $(document).ready(function() {
+        $('.download-btn').click(function() {
+            // Call the downloadDialog method and handle the promise
+            Dialog.downloadDialog().then(format => {
+                currentDataType = $(this).data('type');
+                if (currentDataType === 'vegetables') {
+                  downloadData(format, 'Vegetables', vegetablesData);
+                } else if (currentDataType === 'rice') {
+                  downloadData(format, 'Rice', riceData);
+                } else if (currentDataType === 'fruits') {
+                  downloadData(format, 'Fruits', fruitsData);
+                }
+            }).catch(error => {
+                console.error('Error:', error);  // Handle any errors that occur
+            });
+        });
       });
     })
     .catch(error => console.error('Error fetching data:', error));

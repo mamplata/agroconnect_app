@@ -225,12 +225,11 @@ function initializeBarangayView() {
 
 // Function to initialize Farmer Records view
 function initializeFarmerView() {
-    // Example content for Farmer Records
-    $('#maintenance-content').html(`
-      <div class="row d-flex justify-content-between align-items-center mt-5">
+  $('#maintenance-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col-md-4">
         <form id="farmerForm">
-            <input type="hidden" class="form-control" id="farmerId" name="farmerId">
+          <input type="hidden" class="form-control" id="farmerId" name="farmerId">
           <div class="mb-3">
             <select style='width: 100%;' id="barangay-option" class="form-control" name="barangayId" required>
             </select>
@@ -243,12 +242,12 @@ function initializeFarmerView() {
           </div>
           <div class="mb-3">
             <select style='width: 100%;' id="fieldType" class="form-control" name="fieldType" required>
-            <option value="" disabled selected>Select Field Type</option>
-             <option value='Vegetables'>Vegetables</option>
-             <option value='Rice'>Rice</option>
-             <option value='Fruit Trees'>Fruit Trees</option>
-             <option value='OA'>OA</option>
-             <option value='Corn'>Corn</option>
+              <option value="" disabled selected>Select Field Type</option>
+              <option value='Vegetables'>Vegetables</option>
+              <option value='Rice'>Rice</option>
+              <option value='Fruit Trees'>Fruit Trees</option>
+              <option value='OA'>OA</option>
+              <option value='Corn'>Corn</option>
             </select>
           </div>
           <div class="mb-3">
@@ -285,7 +284,11 @@ function initializeFarmerView() {
         </div>
       </div>
     </div>
-    `);
+    <div class="text-center mt-3">
+      <button id="downloadBtn" class="btn btn-primary">Download Farmers</button>
+    </div>
+  `);
+  
     getBarangayNames();
     initializeMethodsFarmer();
     createDeleteModal();
@@ -651,3 +654,4 @@ function initializeSoilHealthView() {
 }
 
 export { initializeMaintenanceMenu };
+
