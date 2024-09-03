@@ -1,3 +1,5 @@
+import Dialog from '../helpers/Dialog.js';
+import { addDownload, getYearRange } from '../../../js/fetch.js';
 let soilHealths = [];
 
 class SoilHealth {
@@ -187,6 +189,258 @@ class SoilHealth {
         displaySoilHealth($('#search').val());
       }
     });
+
+    $(document).ready(function() {
+      $('.download-btn').click(function() {
+          // Call the downloadDialog method and handle the promise
+          Dialog.downloadDialog().then(format => {
+              console.log(format);
+              download(format, soilHealths);
+          }).catch(error => {
+              console.error('Error:', error);  // Handle any errors that occur
+          });
+      });
+    });
+    
+    let yearRange = '';
+    
+    // Fetch year range once and store it
+    async function initializeYearRange() {
+        yearRange = await getYearRange();
+    }
+    
+    // Call this function when your app or page loads
+    initializeYearRange();
+    
+    // Modified download function that uses the stored yearRange
+    function download(format, data) {
+        // Construct the filename using the stored yearRange
+        const filename = `Soil Health Data ${yearRange}`;
+    
+        // Call the appropriate download function based on the format
+        if (format === 'csv') {
+            downloadCSV(filename, data);
+        } else if (format === 'xlsx') {
+            downloadExcel(filename, data);
+        } else if (format === 'pdf') {
+            downloadPDF(filename, data);
+        }
+    }
+
+    function downloadCSV(filename, data) {
+      // Define the header mapping for soil health data
+      const headerMap = {
+          barangay: 'Barangay',
+          fieldType: 'Field Type',
+          nitrogenContent: 'Nitrogen',
+          phosphorusContent: 'Phosphorus',
+          potassiumContent: 'Potassium',
+          pH: 'pH',
+          generalRating: 'General Rating',
+          recommendations: 'Recommendations',
+          season: 'Season',
+          monthYear: 'Month Year'
+      };
+  
+      // Define the order of headers
+      const headersToInclude = [
+          'barangay',
+          'fieldType',
+          'nitrogenContent',
+          'phosphorusContent',
+          'potassiumContent',
+          'pH',
+          'generalRating',
+          'recommendations',
+          'season',
+          'monthYear'
+      ];
+  
+      // Map headers to the desired names
+      const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+  
+      // Convert data to CSV format
+      let csvContent = "data:text/csv;charset=utf-8," 
+          + mappedHeaders.join(",") + "\n" 
+          + data.map(row => 
+              headersToInclude.map(key => row[key] || '').join(",")
+          ).join("\n");
+  
+      // Encode CSV content
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link); // Required for FF
+  
+      link.click(); // Download CSV
+      document.body.removeChild(link);
+      addDownload(filename, 'CSV');
+  }
+
+  function downloadExcel(filename, data) {
+    // Define the header mapping for soil health data
+    const headerMap = {
+        barangay: 'Barangay',
+        fieldType: 'Field Type',
+        nitrogenContent: 'Nitrogen',
+        phosphorusContent: 'Phosphorus',
+        potassiumContent: 'Potassium',
+        pH: 'pH',
+        generalRating: 'General Rating',
+        recommendations: 'Recommendations',
+        season: 'Season',
+        monthYear: 'Month Year'
+    };
+
+    // Define the order of headers
+    const headersToInclude = [
+        'barangay',
+        'fieldType',
+        'nitrogenContent',
+        'phosphorusContent',
+        'potassiumContent',
+        'pH',
+        'generalRating',
+        'recommendations',
+        'season',
+        'monthYear'
+    ];
+
+    // Map headers to the desired names
+  const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+  // Filter data to match the new headers
+  const filteredData = data.map(row => {
+      const filteredRow = {};
+      headersToInclude.forEach(key => {
+          filteredRow[headerMap[key]] = row[key];
+      });
+      return filteredRow;
+  });
+
+  // Create a new workbook and add a worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(filename);
+
+  // Add filtered data to the worksheet
+  worksheet.addRow(mappedHeaders);
+  filteredData.forEach(row => {
+      worksheet.addRow(headersToInclude.map(header => {
+          const value = row[headerMap[header]];
+
+          return value;
+      }));
+  });
+
+  // Define header and data style
+  const headerStyle = {
+      font: {
+          name: "Calibri",
+          size: 12,
+          bold: true,
+          color: { argb: "FFFFFFFF" } // White color
+      },
+      fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: "203764" }
+      },
+      alignment: { horizontal: 'center', vertical: 'middle' },
+      border: {
+          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+          right: { style: 'thin', color: { argb: "FF000000" } },
+          bottom: { style: 'thin', color: { argb: "FF000000" } },
+          left: { style: 'thin', color: { argb: "FF000000" } }
+      }
+  };
+
+  const dataStyle = {
+      font: {
+          name: "Calibri",
+          size: 11
+      },
+      alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+      border: {
+          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+          right: { style: 'thin', color: { argb: "FF000000" } },
+          bottom: { style: 'thin', color: { argb: "FF000000" } },
+          left: { style: 'thin', color: { argb: "FF000000" } }
+      }
+  };
+
+  // Apply style to header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.style = headerStyle;
+  });
+  headerRow.height = 20; // Set header row height
+
+  // Apply style to data rows
+  worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      if (rowNumber > 1) { // Skip header row
+          row.eachCell({ includeEmpty: true }, (cell) => {
+              cell.style = dataStyle;
+          });
+      }
+  });
+
+  // Set column widths with padding to prevent overflow
+  worksheet.columns = mappedHeaders.map(header => ({
+      width: Math.max(header.length, 10) + 5 // Ensure minimum width
+  }));
+
+  // Write workbook to browser
+  workbook.xlsx.writeBuffer().then(function(buffer) {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+  });
+  addDownload(filename, 'XLSX');
+}
+
+function downloadPDF(filename, data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Specify the columns you want to include in the PDF
+  const columns = ['barangay', 'fieldType', 'nitrogenContent', 'phosphorusContent', 'potassiumContent', 'pH', 'generalRating', 'recommendations', 'season', 'monthYear'];
+  const headers = columns.map(formatHeader);
+
+  // Create the table using only the specified columns
+  doc.autoTable({
+      head: [headers],
+      body: data.map(row => 
+          columns.map(key => row[key] || '')
+      ),
+      theme: 'striped'
+  });
+
+  doc.save(filename);
+  addDownload(filename, 'PDF');
+}
+
+function formatHeader(key) {
+  const headerMap = {
+      barangay: 'Barangay',
+      fieldType: 'Field Type',
+      nitrogenContent: 'Nitrogen',
+      phosphorusContent: 'Phosphorus',
+      potassiumContent: 'Potassium',
+      pH: 'pH',
+      generalRating: 'General Rating',
+      recommendations: 'Recommendations',
+      season: 'Season',
+      monthYear: 'Month Year'
+  };
+  return headerMap[key] || key;
+}
+
+  
   
     getSoilHealth();
     displaySoilHealth();

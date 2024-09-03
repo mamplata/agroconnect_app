@@ -1,3 +1,5 @@
+import Dialog from '../helpers/Dialog.js';
+import { addDownload, getYearRange } from '../../../js/fetch.js';
 let productions = [];
 
 class Production {
@@ -192,6 +194,308 @@ function initializeMethodsProduction(){
     }
   });
 
+  $(document).ready(function() {
+    $('.download-btn').click(function() {
+        // Call the downloadDialog method and handle the promise
+        Dialog.downloadDialog().then(format => {
+            console.log(format);
+            download(format, productions);
+        }).catch(error => {
+            console.error('Error:', error);  // Handle any errors that occur
+        });
+    });
+  });
+  
+  let yearRange = '';
+  
+  // Fetch year range once and store it
+  async function initializeYearRange() {
+      yearRange = await getYearRange();
+  }
+  
+  // Call this function when your app or page loads
+  initializeYearRange();
+  
+  // Modified download function that uses the stored yearRange
+  function download(format, data) {
+      // Construct the filename using the stored yearRange
+      const filename = `Production Data ${yearRange}`;
+  
+      // Call the appropriate download function based on the format
+      if (format === 'csv') {
+          downloadCSV(filename, data);
+      } else if (format === 'xlsx') {
+          downloadExcel(filename, data);
+      } else if (format === 'pdf') {
+          downloadPDF(filename, data);
+      }
+  }
+
+  function formatHeader(key) {
+    return key.replace(/([a-z])([A-Z])/g, '$1 $2')
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, char => char.toUpperCase());
+  }
+  
+  function escapeCSVValue(value) {
+    if (typeof value === 'string' && (value.includes(',') || value.includes('\n') || value.includes('"'))) {
+        value = '"' + value.replace(/"/g, '""') + '"';
+    }
+    return value; // Return escaped value
+  }
+  
+  function downloadCSV(filename, data) {
+    // Define the header mapping for production data
+    const headerMap = {
+        barangay: 'Barangay',
+        cropName: 'Commodity',
+        variety: 'Variety',
+        areaPlanted: 'Area Planted (ha)',
+        monthPlanted: 'Month Planted',
+        monthHarvested: 'Month Harvested',
+        volumeProduction: 'Volume of Production (ha)',
+        productionCost: 'Cost of Production',
+        price: 'Farm Gate Price',
+        volumeSold: 'Volume Sold (ha)',
+        season: 'Season',
+        monthYear: 'Month Year'
+    };
+
+    // Define the order of headers
+    const headersToInclude = [
+        'barangay',
+        'cropName',
+        'variety',
+        'areaPlanted',
+        'monthPlanted',
+        'monthHarvested',
+        'volumeProduction',
+        'productionCost',
+        'price',
+        'volumeSold',
+        'season',
+        'monthYear'
+    ];
+
+    // Map headers to the desired names
+    const headers = headersToInclude.map(key => headerMap[key]);
+
+    // Helper function to escape CSV values
+    function escapeCSVValue(value) {
+        if (value === undefined || value === null) return '';
+        if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
+
+    // Filter data to match the new headers and format values
+    const csvRows = [
+        headers.join(','),
+        ...data.map(row => 
+            headersToInclude.map(key => {
+                let value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
+
+                // Format specific columns with peso sign
+                if (key === 'productionCost' || key === 'price') {
+                    return value ? `₱${parseFloat(value).toFixed(2)}` : '';
+                }
+                return escapeCSVValue(value);
+            }).join(',')
+        )
+    ].join('\n');
+
+    // Create a Blob and trigger download
+    const blob = new Blob([csvRows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Optional: Log download action
+    addDownload(filename, 'CSV');
+}
+
+function downloadExcel(filename, data) {
+  // Define the header mapping for production data
+  const headerMap = {
+      barangay: 'Barangay',
+      cropName: 'Commodity',
+      variety: 'Variety',
+      areaPlanted: 'Area Planted (ha)',
+      monthPlanted: 'Month Planted',
+      monthHarvested: 'Month Harvested',
+      volumeProduction: 'Volume of Production (ha)',
+      productionCost: 'Cost of Production',
+      price: 'Farm Gate Price',
+      volumeSold: 'Volume Sold (ha)',
+      season: 'Season',
+      monthYear: 'Month Year'
+  };
+
+  // Define the order of headers
+  const headersToInclude = [
+      'barangay',
+      'cropName',
+      'variety',
+      'areaPlanted',
+      'monthPlanted',
+      'monthHarvested',
+      'volumeProduction',
+      'productionCost',
+      'price',
+      'volumeSold',
+      'season',
+      'monthYear'
+  ];
+
+  // Map headers to the desired names
+  const mappedHeaders = headersToInclude.map(key => headerMap[key]);
+
+  // Filter data to match the new headers
+  const filteredData = data.map(row => {
+      const filteredRow = {};
+      headersToInclude.forEach(key => {
+          filteredRow[headerMap[key]] = row[key];
+      });
+      return filteredRow;
+  });
+
+  // Create a new workbook and add a worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(filename);
+
+  // Add filtered data to the worksheet
+  worksheet.addRow(mappedHeaders);
+  filteredData.forEach(row => {
+      worksheet.addRow(headersToInclude.map(header => {
+          const value = row[headerMap[header]];
+          // Format specific columns with peso sign
+          if (header === 'productionCost' || header === 'price') {
+              return value ? `₱${parseFloat(value).toFixed(2)}` : '';
+          }
+          return value;
+      }));
+  });
+
+  // Define header and data style
+  const headerStyle = {
+      font: {
+          name: "Calibri",
+          size: 12,
+          bold: true,
+          color: { argb: "FFFFFFFF" } // White color
+      },
+      fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: "203764" }
+      },
+      alignment: { horizontal: 'center', vertical: 'middle' },
+      border: {
+          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+          right: { style: 'thin', color: { argb: "FF000000" } },
+          bottom: { style: 'thin', color: { argb: "FF000000" } },
+          left: { style: 'thin', color: { argb: "FF000000" } }
+      }
+  };
+
+  const dataStyle = {
+      font: {
+          name: "Calibri",
+          size: 11
+      },
+      alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+      border: {
+          top: { style: 'thin', color: { argb: "FF000000" } }, // Black border
+          right: { style: 'thin', color: { argb: "FF000000" } },
+          bottom: { style: 'thin', color: { argb: "FF000000" } },
+          left: { style: 'thin', color: { argb: "FF000000" } }
+      }
+  };
+
+  // Apply style to header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.style = headerStyle;
+  });
+  headerRow.height = 20; // Set header row height
+
+  // Apply style to data rows
+  worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      if (rowNumber > 1) { // Skip header row
+          row.eachCell({ includeEmpty: true }, (cell) => {
+              cell.style = dataStyle;
+          });
+      }
+  });
+
+  // Set column widths with padding to prevent overflow
+  worksheet.columns = mappedHeaders.map(header => ({
+      width: Math.max(header.length, 10) + 5 // Ensure minimum width
+  }));
+
+  // Write workbook to browser
+  workbook.xlsx.writeBuffer().then(function(buffer) {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+  });
+  addDownload(filename, 'XLSX');
+}
+
+function downloadPDF(filename, data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Specify the columns you want to include in the PDF for production data
+  const columns = ['barangay', 'cropName', 'variety', 'areaPlanted', 'monthPlanted', 'monthHarvested', 'volumeProduction', 'productionCost', 'price', 'volumeSold', 'season', 'monthYear'];
+  const headers = columns.map(formatHeader);
+
+  // Create the table using only the specified columns
+  doc.autoTable({
+      head: [headers],
+      body: data.map(row => 
+          columns.map(key => {
+              let value = row[key];
+              return value;
+          })
+      ),
+      theme: 'striped'
+  });
+
+  // Save the PDF with the season selection in the filename
+  doc.save(filename);
+  addDownload(filename, 'PDF');
+}
+
+function formatHeader(key) {
+  const headerMap = {
+      barangay: 'Barangay',
+      cropName: 'Commodity',
+      variety: 'Variety',
+      areaPlanted: 'Area Planted (ha)',
+      monthPlanted: 'Month Planted',
+      monthHarvested: 'Month Harvested',
+      volumeProduction: 'Volume of Production (ha)',
+      productionCost: 'Cost of Production',
+      price: 'Farm Gate Price',
+      volumeSold: 'Volume Sold (ha)',
+      season: 'Season',
+      monthYear: 'Month Year'
+  };
+  return headerMap[key] || key;
+}
+
+
   getProduction();
   displayProduction();
 }
@@ -275,5 +579,6 @@ function getKeyBySubstring(obj, substr) {
   }
   return null;
 }
+
 
 export { Production, getProduction, productions, initializeMethodsProduction, processProductionData };

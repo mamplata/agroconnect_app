@@ -316,6 +316,7 @@ $(document).ready(function() {
         a.click();
         URL.revokeObjectURL(url);
     });
+    addDownload(filename, 'XLSX');
 }
 
   

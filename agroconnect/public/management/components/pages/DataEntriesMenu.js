@@ -65,7 +65,7 @@ function initializeProductionView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="btn btn-primary">Download Productions</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Productions</button>
     </div>
   `);  
 
@@ -106,6 +106,9 @@ function initializePriceView() {
           <button id="nextBtn" class="btn btn-green">Next</button>
         </div>
       </div>
+    </div>
+    <div class="text-center mt-3">
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Prices</button>
     </div>
   `);  
   initializeMethodsPrice();
@@ -148,7 +151,7 @@ function initializePestView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="btn btn-primary">Download Pests</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Pests</button>
     </div>
   `);  
   initializeMethodsPest();
@@ -191,7 +194,7 @@ function initializeDiseaseView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="btn btn-primary">Download Diseases</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Diseases</button>
     </div>
   `);  
   initializeMethodsDisease();
@@ -240,7 +243,7 @@ function initializeSoilHealthsView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="btn btn-primary">Download Soil Healths</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Soil Healths</button>
     </div>
   `);  
   initializeMethodsSoilHealth();

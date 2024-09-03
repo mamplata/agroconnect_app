@@ -598,6 +598,7 @@ function downloadExcel(filename, data) {
         a.click();
         URL.revokeObjectURL(url);
     });
+    addDownload(filename, 'XLSX');
 }
 
 

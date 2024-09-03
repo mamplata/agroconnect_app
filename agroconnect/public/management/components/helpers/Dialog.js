@@ -379,6 +379,70 @@ static async downloadDialog() {
     return formatPromise;
 }
 
+
+static async showInfoModal(htmlScript) {
+    // Create elements
+    const modal = document.createElement('dialog');
+    const container = document.createElement('div');
+    const btnClose = document.createElement('button');
+    const btnWrapper = document.createElement('div'); // Wrapper for the button
+    
+    // Add attributes
+    modal.setAttribute('id', 'messageDialog');
+    btnClose.setAttribute('id', 'btnClose');
+    btnClose.innerText = 'Close';
+    
+    // Style the modal
+    modal.style.maxWidth = '800px'; // Adjust as needed
+    modal.style.padding = '20px';
+    modal.style.textAlign = 'center';
+    
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column'; // Stack content and button
+    container.style.alignItems = 'center'; // Center items horizontally
+    container.style.gap = '20px'; // Space between content and button
+    
+    // Render the HTML script inside the container
+    container.innerHTML = htmlScript;
+
+    // Style the button wrapper
+    btnWrapper.style.display = 'flex';
+    btnWrapper.style.justifyContent = 'flex-end'; // Align items to the right
+    
+    // Append content and button
+    btnWrapper.append(btnClose);
+    container.append(btnWrapper);
+    modal.append(container);
+    document.body.append(modal);
+    
+    // Create dialogData object
+    const dialogData = {
+        operation: 0, // Default operation
+    };
+    
+    return new Promise((resolve) => {
+        if (!modal.open) {
+            // Display the modal
+            modal.showModal();
+    
+            btnClose.addEventListener('click', () => {
+                // Close the modal
+                modal.close();
+    
+                // Remove the element
+                modal.remove();
+    
+                // Update dialogData to indicate close operation
+                dialogData.operation = 1;
+    
+                // Resolve the promise with dialogData
+                resolve(dialogData);
+            });
+        }
+    });
+}
+
+
 }
 
 export default Dialog;

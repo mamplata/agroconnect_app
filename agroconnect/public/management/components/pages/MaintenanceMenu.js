@@ -285,7 +285,7 @@ function initializeFarmerView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="btn btn-primary">Download Farmers</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Farmers</button>
     </div>
   `);
   

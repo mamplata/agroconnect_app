@@ -668,6 +668,7 @@ function downloadCSV(filename, data) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    addDownload(filename, 'CSV');
 }
 
 function downloadExcel(filename, data) {
@@ -890,6 +891,7 @@ function downloadExcel(filename, data) {
         a.click();
         URL.revokeObjectURL(url);
     });
+    addDownload(filename, 'XLSX');
 }
 
 
