@@ -215,6 +215,8 @@ function initializeMethodsCrop() {
       }
     });
 
+let prevCropImg = '';
+
 // Form submission handler (Add or Update crop)
 $('#submitBtn').click(function(event) {
   event.preventDefault();
@@ -265,7 +267,7 @@ $('#submitBtn').click(function(event) {
       // Handle form submission without a new image
       // Use null for image when no new image is provided during update
       if (selectedRow !== null) {
-          let crop = new Crop(cropId, cropName, priceWeight, type, variety, null, description);
+          let crop = new Crop(cropId, cropName, priceWeight, type, variety, prevCropImg, description);
           crop.updateCrop(crop);
           selectedRow = null;
           $('#submitBtn').text('Add crop');
@@ -277,11 +279,14 @@ $('#submitBtn').click(function(event) {
 
       getCrop();
       displayCrops();
+      prevCropImg = '';
 
       // Clear form fields after submission
       $('#cropForm')[0].reset();
       $('#lblCropImg').val('Upload Image:');
       $('#cropTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   }
 });
 
@@ -308,6 +313,7 @@ $('#submitBtn').click(function(event) {
           $('#cropId').val(crop.cropId);
           $('#cropName').val(crop.cropName);
           $('#variety').val(crop.variety);
+          prevCropImg = crop.cropImg;
           $('#description').val(crop.description);
           $('#lblCropImg').text('Upload New Image (Optional):');
           
@@ -323,12 +329,18 @@ $('#submitBtn').click(function(event) {
   
           $('#type').val(crop.type);
           $('#submitBtn').text('Update Crop');
-      }
+      } 
+        $('#cropTableBody tr').removeClass('selected-row');
+        $('#editBtn').prop('disabled', true);
+        $('#deleteBtn').prop('disabled', true);
   });
   
   // Cancel button click handler
   $('#cancelEdit').click(function() {
       resetFields();
+      $('#cropTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   });
   
 
@@ -340,6 +352,8 @@ $('#submitBtn').click(function(event) {
       $('#submitBtn').text('Add Crop');
       $('#cancelBtn').hide();
       $('#cropTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
     });
 
     // Delete button click handler
@@ -360,6 +374,9 @@ $('#submitBtn').click(function(event) {
       } else {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Delete action was canceled.");
+          $('#cropTableBody tr').removeClass('selected-row');
+          $('#editBtn').prop('disabled', true);
+          $('#deleteBtn').prop('disabled', true);
       }
     });
 

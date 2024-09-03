@@ -15,6 +15,8 @@ class Disease extends Model
         'barangay',
         'cropName',
         'diseaseName',
+        'totalPlanted',
+        'totalAffected',
         'season',
         'monthYear',
     ];

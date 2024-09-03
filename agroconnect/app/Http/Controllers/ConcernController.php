@@ -22,7 +22,7 @@ class ConcernController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'userId' => 'required|exists:users,userId',
+            'userId' => 'required',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'attachment' => 'nullable',
@@ -50,7 +50,7 @@ class ConcernController extends Controller
         $concern = Concern::findOrFail($id);
 
         $validatedData = $request->validate([
-            'userId' => 'required|exists:users,userId',
+            'userId' => 'required',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'attachment' => 'nullable|string|max:255',

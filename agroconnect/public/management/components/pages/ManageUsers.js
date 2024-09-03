@@ -233,6 +233,10 @@ export default function initDashboard() {
         $('#cancelEdit').click(function() {
           resetFields();
         }); 
+
+        $('#userTableBody tr').removeClass('selected-row');
+        $('#editBtn').prop('disabled', true);
+        $('#deleteBtn').prop('disabled', true);
     });    
 
     // Cancel button click handler
@@ -244,6 +248,8 @@ export default function initDashboard() {
         $('#password').attr('placeholder', 'Password');
         $('#password').attr('required', 'required');
         $('#userTableBody tr').removeClass('selected-row');
+        $('#editBtn').prop('disabled', true);
+        $('#deleteBtn').prop('disabled', true);     
     });
 
     // Delete button click handler
@@ -257,7 +263,7 @@ export default function initDashboard() {
       // Check if the user clicked OK
       if (result.operation === 1) {
           // Proceed with deletion
-          userToDelete = new User();
+          let userToDelete = new User();
           userToDelete.removeUser(user.userId);
           displayUsers();
           resetFields();
@@ -265,6 +271,9 @@ export default function initDashboard() {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Delete action was canceled.");
       }
+      $('#userTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
     });
 
 

@@ -1,9 +1,45 @@
+import Dialog from '../management/components/helpers/Dialog.js';
+
 $(document).ready(function() {
   let apiKey;
   let locationKey;
   let lastFetchTimestamp = 0; // Initialize timestamp in memory
   let cachedWeatherData = null; // Initialize data cache
   const fetchInterval = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
+  $(document).ready(function() {
+    $('#infoBtn').click(function() {
+        let htmlScript = `
+        <p>Welcome to the Weather Forecast page. This tool provides a 5-day weather forecast to help you plan and prepare for upcoming weather conditions. Follow these instructions to use the tool effectively:</p>
+
+        <ol>
+          <li><strong>View the 5-Day Forecast:</strong><br>
+          The forecast displays weather information for the next five days. Each day includes detailed data on the following parameters:
+            <ul>
+              <li><strong>Temperature:</strong> The expected high and low temperatures for each day.</li>
+              <li><strong>Humidity:</strong> The forecasted humidity levels, indicating the amount of moisture in the air.</li>
+              <li><strong>Precipitation:</strong> The amount of expected precipitation, including rain, snow, or other forms of moisture.</li>
+              <li><strong>Rainfall Probability:</strong> The likelihood of rainfall, expressed as a percentage probability.</li>
+            </ul>
+          </li>
+
+          <li><strong>Understand Weather Parameters:</strong><br>
+          Each weather parameter provides insights into the expected conditions:
+            <ul>
+              <li><strong>Temperature:</strong> Helps you prepare for hot or cold weather.</li>
+              <li><strong>Humidity:</strong> Useful for understanding comfort levels and potential impacts on health.</li>
+              <li><strong>Precipitation:</strong> Indicates potential for rain or snow, helping you plan outdoor activities.</li>
+              <li><strong>Rainfall Probability:</strong> Allows you to gauge the chance of rain and plan accordingly.</li>
+            </ul>
+          </li>
+
+        <p>This tool provides comprehensive weather forecasting to help you make informed decisions based on expected weather conditions.</p>
+        `;
+
+        Dialog.showInfoModal(htmlScript);
+    });
+});
+
 
   async function fetchWeatherData() {
     const url = `https://dataservice.accuweather.com/forecasts/v1/daily/5day/${locationKey}?apikey=${apiKey}&details=true&metric=true`;

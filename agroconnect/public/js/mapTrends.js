@@ -8,6 +8,54 @@ let downloadData;
 let downloadYR;
 let currentType;
 
+$(document).ready(function() {
+    $('#infoBtn').click(function() {
+        let htmlScript = `
+        <p>Welcome to the Map Trends page. This tool helps you analyze and visualize agricultural trends by barangay location using geo-tagging. Follow these instructions to use the tool effectively:</p>
+
+        <ol>
+          <li><strong>Select Your Parameters:</strong><br>
+          Use the dropdown menus and filters to choose the specific criteria you want to analyze, such as production volume, pest occurrences, or disease incidents.</li>
+
+          <li><strong>View Map Trends:</strong><br>
+          The map will display barangays with geo-tags indicating the level of production volume, pest, and disease occurrences. Areas are categorized as:
+            <ul>
+              <li><strong>Low:</strong> Indicating minimal activity or low values in the selected criteria.</li>
+              <li><strong>Moderate:</strong> Showing average levels of activity or medium values.</li>
+              <li><strong>High:</strong> Highlighting areas with high levels of production, pest, or disease occurrences.</li>
+            </ul>
+          </li>
+
+          <li><strong>Analyze Data:</strong><br>
+          Utilize the map's visual representation to identify trends and patterns in different barangays. Click on specific geo-tags or areas for detailed information about production volume, pest occurrences, or disease incidents.</li>
+
+          <li><strong>Explore Detailed Information:</strong><br>
+          Clicking on a geo-tagged barangay will open a modal with more detailed information, such as:
+            <ul>
+              <li><strong>Production Volume:</strong> Detailed statistics on crop production in that barangay.</li>
+              <li><strong>Pest and Disease Data:</strong> Information on pest and disease occurrences and their impact.</li>
+              <li><strong>Additional Insights:</strong> Other relevant data points to help understand the local agricultural situation.</li>
+            </ul>
+          </li>
+
+          <li><strong>Download Data:</strong><br>
+          You can download the data in various formats for further analysis:
+            <ul>
+              <li><strong>CSV:</strong> Download raw data in CSV format for use in spreadsheet applications or data analysis tools.</li>
+              <li><strong>Excel:</strong> Download the data in Excel format, which includes formatted tables for easy review and manipulation.</li>
+              <li><strong>PDF:</strong> Download charts and visualizations in PDF format for easy sharing and reporting.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>This tool is designed to provide a comprehensive view of agricultural trends by barangay, utilizing geo-tagging to make localized data analysis easier and more informative. The download options allow you to export and work with your data in multiple formats.</p>
+        `;
+
+        Dialog.showInfoModal(htmlScript);
+    });
+});
+
+
 // Fetch initial barangay data
 async function initializeBarangays() {
     try {

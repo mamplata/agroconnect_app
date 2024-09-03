@@ -286,6 +286,8 @@ function initializeMethodsFarmer() {
       $('#farmerForm')[0].reset();
       selectedRow = null;
       $('#farmerTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
       getFarmer();
       displayFarmers();
     });
@@ -321,6 +323,9 @@ function initializeMethodsFarmer() {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Edit action was canceled.");
       }
+      $('#farmerTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   });
   
   $('#cancelEdit').click(function() {
@@ -336,6 +341,8 @@ function initializeMethodsFarmer() {
       $('#submitBtn').text('Add Farmer');
       $('#cancelBtn').hide();
       $('#farmerTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
     });
 
     $('#deleteBtn').click(async function() {
@@ -356,6 +363,8 @@ function initializeMethodsFarmer() {
       } else {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Delete action was canceled.");
+          $('#editBtn').prop('disabled', true);
+          $('#deleteBtn').prop('disabled', true);
       }
   });
   

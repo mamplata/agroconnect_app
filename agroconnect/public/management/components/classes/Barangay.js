@@ -263,6 +263,8 @@ function initializeMethodsBarangay() {
       $('#barangayForm')[0].reset();
       selectedRow = null;
       $('#barangayTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
     });
 
     function resetFields() {
@@ -288,6 +290,9 @@ function initializeMethodsBarangay() {
           $('#barangayName').val(barangay.barangayName);
           $('#submitBtn').text('Update Barangay');
       }
+      $('#barangayTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   });
   
   // Cancel button click handler
@@ -303,6 +308,8 @@ function initializeMethodsBarangay() {
       $('#submitBtn').text('Add Barangay');
       $('#cancelBtn').hide();
       $('#barangayTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
     });
 
 // Delete button click handler
@@ -327,6 +334,8 @@ $('#deleteBtn').click(async function() {
   } else {
       // If Cancel is clicked, do nothing or add additional handling if needed
       console.log("Delete action was canceled.");
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   }
 });
 

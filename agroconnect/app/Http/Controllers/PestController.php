@@ -23,6 +23,8 @@ class PestController extends Controller
             'barangay' => 'required|string|max:255',
             'cropName' => 'required|string|max:255',
             'pestName' => 'required|string|max:255',
+            'totalPlanted' => 'required|numeric',
+            'totalAffected' => 'required|numeric',
             'season' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
         ]);
@@ -33,6 +35,8 @@ class PestController extends Controller
             'barangay' => $request->input('barangay'),
             'cropName' => $request->input('cropName'),
             'pestName' => $request->input('pestName'),
+            'totalPlanted' => $request->input('totalPlanted'),
+            'totalAffected' => $request->input('totalAffected'),
             'season' => $request->input('season'),
             'monthYear' => $request->input('monthYear'),
         ]);
@@ -55,6 +59,8 @@ class PestController extends Controller
                 'pestData.*.barangay' => 'required|string|max:255',
                 'pestData.*.cropName' => 'required|string|max:255',
                 'pestData.*.pestName' => 'required|string|max:255',
+                'pestData.*.totalPlanted' => 'required|numeric',
+                'pestData.*.totalAffected' => 'required|numeric',
                 'pestData.*.season' => 'required|string|max:255',
                 'pestData.*.monthYear' => 'required|string|max:255',
             ]);
@@ -67,6 +73,10 @@ class PestController extends Controller
                     'pestName' => $pestData['pestName'],
                     'season' => $pestData['season'],
                     'monthYear' => $pestData['monthYear']
+                ],
+                [
+                    'totalPlanted' => $pestData['totalPlanted'],
+                    'totalAffected' => $pestData['totalAffected'],
                 ]
             );
         }

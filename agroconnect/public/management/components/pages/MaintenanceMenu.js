@@ -3,6 +3,7 @@ import { initializeMethodsCrop } from '../classes/Crop.js';
 import { initializeMethodsBarangay } from '../classes/Barangay.js';
 import { initializeMethodsFarmer, getBarangayNames } from '../classes/Farmer.js';
 import { initializeMethodsRecord } from '../classes/Record.js';
+import Dialog from '../helpers/Dialog.js';
 
 function loadMonthYear() {
     $(document).ready(function() {
@@ -288,6 +289,7 @@ function initializeFarmerView() {
       <button id="downloadBtn" class="download-btn btn btn-primary">Download Farmers</button>
     </div>
   `);
+
   
     getBarangayNames();
     initializeMethodsFarmer();
@@ -355,10 +357,11 @@ function initializeSupplyMarketView() {
         </div>
         <div class="col-md-7">
           <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+            <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+              <i class="fas fa-info-circle"></i>
+            </button>
             <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
             <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-            <div id="delete"></div>
-            <div id="edit"></div>
           </div>
           <table id="recordTable" class="table table-custom text-center">
             <thead>
@@ -378,6 +381,47 @@ function initializeSupplyMarketView() {
         </div>
       </div>
     `);
+    $(document).ready(function() {
+      $('#infoBtn').click(function() {
+        let htmlScript = `
+<p>To upload your records successfully, please follow the instructions below using the provided template:</p>
+
+<ol>
+  <li><strong>Download the Template:</strong><br>
+  Obtain the file <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+  <li><strong>Gather Your Data:</strong><br>
+  Retrieve the data from your reports and prepare it for entry into the template. The data should include the following fields:
+    <ul>
+      <li><strong>Barangay:</strong> The local administrative division where the production takes place.</li>
+      <li><strong>Commodity:</strong> The type of crop or product being recorded.</li>
+      <li><strong>Variety:</strong> The specific variety or type of the commodity.</li>
+      <li><strong>Area Planted (ha):</strong> The total area planted with the crop, measured in hectares.</li>
+      <li><strong>Month Planted:</strong> The month when planting of the crop started.</li>
+      <li><strong>Month Harvested:</strong> The month when the crop was harvested.</li>
+      <li><strong>Volume of Production (MT):</strong> The total volume of the commodity produced, measured in metric tons.</li>
+      <li><strong>Cost of Production (per ha):</strong> The cost incurred for producing the crop per hectare.</li>
+      <li><strong>Farm Gate Price (per kg):</strong> The price at which the commodity is sold at the farm gate, per kilogram.</li>
+      <li><strong>Volume Sold (MT):</strong> The total volume of the commodity sold, measured in metric tons.</li>
+    </ul>
+  </li>
+
+  <li><strong>Enter Data into the Template:</strong><br>
+  Open the <a href="components/template/Production_Template.xlsx" download>Production_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+  <li><strong>Save and Upload:</strong><br>
+  After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
+
+  <li><strong>Verify Submission:</strong><br>
+  Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p>By adhering to these instructions and utilizing the provided template, you ensure that your data is recorded accurately and efficiently.</p>
+`;
+
+        Dialog.showInfoModal(htmlScript);
+      });
+    });
     initializeMethodsRecord('production');
     createDeleteModal();
     createEditModal();
@@ -444,10 +488,11 @@ function initializePriceMonitoringView() {
           </div>
           <div class="col-md-7">
             <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+              <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+                <i class="fas fa-info-circle"></i>
+              </button>
               <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
               <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-              <div id="delete"></div>
-              <div id="edit"></div>
             </div>
             <table id="recordTable" class="table table-custom text-center">
               <thead>
@@ -467,6 +512,39 @@ function initializePriceMonitoringView() {
           </div>
         </div>
       `);
+      $(document).ready(function() {
+        $('#infoBtn').click(function() {
+          let htmlScript = `
+  <p>To upload your price records successfully, please follow the instructions below using the provided template:</p>
+
+<ol>
+  <li><strong>Download the Template:</strong><br>
+  Obtain the file <a href="components/template/Price_Template.xlsx" download>Price_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+  <li><strong>Gather Your Data:</strong><br>
+  Retrieve the price data from your reports and prepare it for entry into the template. The data should include the following fields:
+    <ul>
+      <li><strong>Commodity:</strong> The type of crop or product for which the price is recorded.</li>
+      <li><strong>Farm Gate Price (per kg):</strong> The price at which the commodity is sold at the farm gate, per kilogram.</li>
+    </ul>
+  </li>
+
+  <li><strong>Enter Data into the Template:</strong><br>
+  Open the <a href="components/template/Price_Template.xlsx" download>Price_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+  <li><strong>Save and Upload:</strong><br>
+  After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
+
+  <li><strong>Verify Submission:</strong><br>
+  Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p>By adhering to these instructions and utilizing the provided template, you ensure that your price data is recorded accurately and efficiently.</p>
+`;
+  
+          Dialog.showInfoModal(htmlScript);
+        });
+      });
       initializeMethodsRecord('price');
       createDeleteModal();
       createEditModal();
@@ -534,10 +612,11 @@ function initializePestReportsView() {
         </div>
         <div class="col-md-7">
           <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+            <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+              <i class="fas fa-info-circle"></i>
+            </button>
             <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
             <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-            <div id="delete"></div>
-            <div id="edit"></div>
           </div>
           <table id="recordTable" class="table table-custom text-center">
             <thead>
@@ -557,6 +636,48 @@ function initializePestReportsView() {
         </div>
       </div>
     `);
+    $(document).ready(function() {
+      $('#infoBtn').click(function() {
+        let htmlScript = `
+<p>To upload your pest and disease records successfully, please follow the instructions below using the provided template:</p>
+
+<ol>
+  <li><strong>Download the Template:</strong><br>
+  Obtain the file <a href="components/template/Pest_and_Disease_Template.xlsx" download>Pest_and_Disease_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+  <li><strong>Gather Your Data:</strong><br>
+  Retrieve the pest and disease data from your reports and prepare it for entry into the template. The data should include the following fields:
+    <ul>
+      <li><strong>Farm Location:</strong> The location where the crops are planted.</li>
+      <li><strong>Crops Planted:</strong> The type of crops that are being monitored.</li>
+      <li><strong>Growth Stage:</strong> The current growth stage of the crops.</li>
+      <li><strong>INSECT PEST:</strong> Details about any insect pests observed.</li>
+      <li><strong>Insect Pest Observed:</strong> The specific insect pest observed.</li>
+      <li><strong>Total no. of Trees/Plants Planted:</strong> The total number of trees or plants planted.</li>
+      <li><strong>Total no. of Trees/Plants Affected/Damaged:</strong> The total number of trees or plants affected or damaged by the pest.</li>
+      <li><strong>DISEASE:</strong> Details about any diseases observed.</li>
+      <li><strong>Disease Observed:</strong> The specific disease observed.</li>
+      <li><strong>Total no. of Trees/Plants Planted:</strong> The total number of trees or plants planted affected by the disease.</li>
+      <li><strong>Total no. of Trees/Plants Affected/Damaged:</strong> The total number of trees or plants affected or damaged by the disease.</li>
+    </ul>
+  </li>
+
+  <li><strong>Enter Data into the Template:</strong><br>
+  Open the <a href="components/template/Pest_and_Disease_Template.xlsx" download>Pest_and_Disease_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+  <li><strong>Save and Upload:</strong><br>
+  After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
+
+  <li><strong>Verify Submission:</strong><br>
+  Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p>By adhering to these instructions and utilizing the provided template, you ensure that your pest and disease data is recorded accurately and efficiently.</p>
+`;
+
+        Dialog.showInfoModal(htmlScript);
+      });
+    });
     initializeMethodsRecord('pestDisease');
     createDeleteModal();
     createEditModal();
@@ -623,10 +744,11 @@ function initializeSoilHealthView() {
       </div>
       <div class="col-md-7">
         <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+          <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+            <i class="fas fa-info-circle"></i>
+          </button>
           <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
           <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-          <div id="delete"></div>
-          <div id="edit"></div>
         </div>
         <table id="recordTable" class="table table-custom text-center">
           <thead>
@@ -646,6 +768,49 @@ function initializeSoilHealthView() {
       </div>
     </div>
   `);
+  $(document).ready(function() {
+    $('#infoBtn').click(function() {
+      let htmlScript = `
+<p>To upload your soil health records successfully, please follow the instructions below using the provided template:</p>
+
+<ol>
+  <li><strong>Download the Template:</strong><br>
+  Obtain the file <a href="components/template/Soil_Health_Template.xlsx" download>Soil_Health_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+  <li><strong>Gather Your Data:</strong><br>
+  Retrieve the soil health data from your reports and prepare it for entry into the template. The data should include the following fields:
+    <ul>
+      <li><strong>Barangay:</strong> The local administrative division where the soil is tested.</li>
+      <li><strong>Field Type:</strong> The type of field or crop area being assessed.</li>
+      <li><strong>Soil Test Results:</strong> The results of the soil tests including:
+        <ul>
+          <li><strong>Nitrogen (as Organic Matter):</strong> The amount of nitrogen present in the soil as organic matter.</li>
+          <li><strong>Phosphorus:</strong> The amount of phosphorus present in the soil.</li>
+          <li><strong>Potassium:</strong> The amount of potassium present in the soil.</li>
+          <li><strong>pH:</strong> The acidity or alkalinity of the soil.</li>
+        </ul>
+      </li>
+      <li><strong>General Fertility Rating:</strong> The overall fertility rating of the soil based on test results.</li>
+      <li><strong>Recommendations:</strong> Suggested actions or amendments based on soil test results to improve soil health.</li>
+    </ul>
+  </li>
+
+  <li><strong>Enter Data into the Template:</strong><br>
+  Open the <a href="components/template/Soil_Health_Template.xlsx" download>Soil_Health_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+  <li><strong>Save and Upload:</strong><br>
+  After filling out the template, save the file with your updated data. Upload this file to the designated upload area or system.</li>
+
+  <li><strong>Verify Submission:</strong><br>
+  Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p>By adhering to these instructions and utilizing the provided template, you ensure that your soil health data is recorded accurately and efficiently.</p>
+`;
+
+      Dialog.showInfoModal(htmlScript);
+    });
+  });
   initializeMethodsRecord('soilHealth');
   createDeleteModal();
   createEditModal();

@@ -3,103 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultation Dashboard</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Captcha Example</title>
+    <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include jQuery Simple Captcha CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-simple-captcha/1.0/jquery.simple.captcha.min.css">
+    <!-- Include jQuery Simple Captcha JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-simple-captcha/1.0/jquery.simple.captcha.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h2 class="mt-4">Crop Consultation</h2>
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <h4>Estimated Yield</h4>
-                <canvas id="yieldChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Estimated Income</h4>
-                <canvas id="incomeChart"></canvas>
-            </div>
-            <div class="col-md-12 mt-4">
-                <h4>Estimated Revenue</h4>
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <!-- Your content goes here -->
+    <form id="myForm">
+        <label for="captcha">Captcha:</label>
+        <div id="captcha"></div>
+        <input type="text" id="captchaInput" name="captchaInput" placeholder="Enter CAPTCHA">
+        <button type="submit">Submit</button>
+    </form>
 
+    <!-- Initialize CAPTCHA Plugin -->
     <script>
         $(document).ready(function() {
-            // Estimated Yield Chart
-            var ctxYield = document.getElementById('yieldChart').getContext('2d');
-            var yieldChart = new Chart(ctxYield, {
-                type: 'bar',
-                data: {
-                    labels: ['Normal Yield', 'Worst-Case Yield', 'Average Impact Yield'],
-                    datasets: [{
-                        label: 'Yield (tons per hectare)',
-                        data: [8.0, 5.6, 6.0],
-                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(255, 206, 86, 0.2)'],
-                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 206, 86, 1)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+            // Initialize Captcha
+            $('#captcha').captcha({
+                // Plugin options
+                length: 6,
+                chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
             });
-        
-            // Estimated Income Chart
-            var ctxIncome = document.getElementById('incomeChart').getContext('2d');
-            var incomeChart = new Chart(ctxIncome, {
-                type: 'bar',
-                data: {
-                    labels: ['Normal Income', 'Worst-Case Income', 'Average Impact Income'],
-                    datasets: [{
-                        label: 'Income ($ per hectare)',
-                        data: [2400, 1680, 1800],
-                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(255, 206, 86, 0.2)'],
-                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 206, 86, 1)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        
-            // Estimated Revenue Chart
-            var ctxRevenue = document.getElementById('revenueChart').getContext('2d');
-            var revenueChart = new Chart(ctxRevenue, {
-                type: 'line',
-                data: {
-                    labels: ['Normal Revenue', 'Worst-Case Revenue', 'Average Impact Revenue'],
-                    datasets: [{
-                        label: 'Revenue ($ per hectare)',
-                        data: [2400, 1680, 1800],
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 2,
-                        fill: true
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
+
+            $('#myForm').on('submit', function(e) {
+                e.preventDefault();
+                var captchaValue = $('#captchaInput').val();
+                if ($('#captcha').captcha('validate', captchaValue)) {
+                    alert('CAPTCHA validation passed');
+                } else {
+                    alert('CAPTCHA validation failed');
                 }
             });
         });
-        
     </script>
 </body>
 </html>

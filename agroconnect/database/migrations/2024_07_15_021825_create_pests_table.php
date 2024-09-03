@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('barangay', 255);
             $table->string('cropName', 255);
             $table->string('pestName', 255);
+            $table->string('totalPlanted', 255);
+            $table->string('totalAffected', 255);
             $table->string('season', 255);
             $table->string('monthYear', 255);
             $table->timestamps();

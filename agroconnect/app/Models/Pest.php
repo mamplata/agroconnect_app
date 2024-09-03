@@ -15,6 +15,8 @@ class Pest extends Model
         'barangay',
         'cropName',
         'pestName',
+        'totalPlanted',
+        'totalAffected',
         'season',
         'monthYear',
     ];

@@ -1,6 +1,7 @@
 function sendConcern() {
     // Show the concerns modal when the "Send Feedback" button is clicked
     $('#concernsModal').modal('show');
+   
   }
   
   function previewImage(event) {
@@ -45,15 +46,12 @@ function sendConcern() {
     });
   
     function sendContent(title, content, attachmentData = ' ') {
-      // Retrieve user information from sessionStorage
-      const user = JSON.parse(sessionStorage.getItem('user'));
-      const userId = user ? user.userId : null; // Ensure userId is obtained safely
-  
+
       $.ajax({
         url: '/api/concerns',  // Laravel API endpoint
         method: 'POST',
         data: {
-          userId: userId,
+          userId: 8,
           title: title,
           content: content,
           attachment: attachmentData,
@@ -63,12 +61,21 @@ function sendConcern() {
           $('#uploadForm')[0].reset();
           $('#modal-image').attr('alt', '');
           $('#modal-image').attr('src', '').hide();
-          $('#successModal').modal('show'); // Show success modal
-          console.log(response);
+          toastr.success('Form submitted successfully!', 'Success', {
+            timeOut: 5000,  // 5 seconds
+            positionClass: 'toast-top-center',
+            toastClass: 'toast-success-custom'
+          });  
         },
         error: function(xhr) {
           // Handle error
           console.error('Error saving content:', xhr);
+          // Example of an error toast
+          toastr.error('Something went wrong.', 'Error', {
+              timeOut: 5000,  // 5 seconds
+              positionClass: 'toast-center-center',
+              toastClass: 'toast-error-custom' // Custom error color
+          });
         }
       });
     }

@@ -158,3 +158,23 @@ h2 {
     padding: 4px 8px; /* Padding top and bottom only */
     line-height: 30px; /* Adjust this to match the height of your nav links */
 }
+
+.toast-success-custom {
+    background-color: #28a745; /* Green color for success */
+    color: #ffffff; /* White text color */
+}
+
+.toast-error-custom {
+    background-color: #dc3545; /* Red color for error */
+    color: #ffffff; /* White text color */
+}
+
+.toast-info-custom {
+    background-color: #17a2b8; /* Blue color for info */
+    color: #ffffff; /* White text color */
+}
+
+.toast-warning-custom {
+    background-color: #ffc107; /* Yellow color for warning */
+    color: #000000; /* Black text color */
+}

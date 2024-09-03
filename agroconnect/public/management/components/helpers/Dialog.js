@@ -393,14 +393,18 @@ static async showInfoModal(htmlScript) {
     btnClose.innerText = 'Close';
     
     // Style the modal
-    modal.style.maxWidth = '800px'; // Adjust as needed
+    modal.style.maxWidth = '1000px'; // Adjust as needed
     modal.style.padding = '20px';
-    modal.style.textAlign = 'center';
+    modal.style.fontSize = '1em';
+    modal.style.textAlign = 'justify';
+    modal.style.margin = '20px'; // Margin around the modal
     
+    // Style the container
     container.style.display = 'flex';
     container.style.flexDirection = 'column'; // Stack content and button
     container.style.alignItems = 'center'; // Center items horizontally
     container.style.gap = '20px'; // Space between content and button
+    container.style.margin = '20px'; // Margin around the content
     
     // Render the HTML script inside the container
     container.innerHTML = htmlScript;

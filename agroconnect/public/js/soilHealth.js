@@ -6,6 +6,47 @@ $(document).ready(function() {
   let currentDataType;
   let yearRange;
   
+  $(document).ready(function() {
+    $('#infoBtn').click(function() {
+        let htmlScript = `
+        <p>Welcome to the Soil Health Monitoring page. This tool allows you to monitor and analyze the average soil health in Cabuyao by tracking key soil parameters. Follow these instructions to use the tool effectively:</p>
+
+        <ol>
+          <li><strong>Monitor Soil Health:</strong><br>
+          This page provides an overview of soil health based on data collected from soil test kits provided to local farmers. Key parameters monitored include:
+            <ul>
+              <li><strong>Nitrogen (N):</strong> The amount of nitrogen in the soil, which is essential for plant growth.</li>
+              <li><strong>Phosphorus (P):</strong> The amount of phosphorus present, which supports root development and energy transfer.</li>
+              <li><strong>Potassium (K):</strong> The amount of potassium, which helps in disease resistance and overall plant health.</li>
+              <li><strong>pH Levels:</strong> The acidity or alkalinity of the soil, affecting nutrient availability and microbial activity.</li>
+              <li><strong>General Rating:</strong> An overall rating of soil fertility based on the combined results of NPK and pH levels.</li>
+            </ul>
+          </li>
+
+          <li><strong>View Average Soil Health:</strong><br>
+          The page displays average values for NPK, pH, and general rating across different fields and areas within Cabuyao. This helps in understanding the overall soil health in the city.</li>
+
+          <li><strong>Update Soil Health Records:</strong><br>
+          Regular updates are made based on new soil test results. Farmers are encouraged to submit their soil test data to ensure continuous monitoring and accurate assessments.</li>
+
+          <li><strong>Download Soil Health Data:</strong><br>
+          You can download the soil health data in various formats for offline review and analysis:
+            <ul>
+              <li><strong>CSV:</strong> Download raw soil health data in CSV format for use in data analysis tools.</li>
+              <li><strong>Excel:</strong> Download the data in Excel format, including formatted tables for easy review and manipulation.</li>
+              <li><strong>PDF:</strong> Download a summary of soil health data through a table, in PDF format for sharing or reporting.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>This tool is designed to provide comprehensive monitoring of soil health in Cabuyao. By utilizing the provided data and download options, you can keep track of soil conditions and make informed decisions to maintain and improve soil fertility in the area.</p>
+        `;
+
+        Dialog.showInfoModal(htmlScript);
+    });
+});
+
+  
   async function initialize() {
   
     try {

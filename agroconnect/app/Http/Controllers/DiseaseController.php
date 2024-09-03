@@ -23,6 +23,8 @@ class DiseaseController extends Controller
             'barangay' => 'required|string|max:255',
             'cropName' => 'required|string|max:255',
             'diseaseName' => 'required|string|max:255',
+            'totalPlanted' => 'required|numeric',
+            'totalAffected' => 'required|numeric',
             'season' => 'required|string|max:255',
             'monthYear' => 'required|string|max:255',
         ]);
@@ -33,6 +35,8 @@ class DiseaseController extends Controller
             'barangay' => $request->input('barangay'),
             'cropName' => $request->input('cropName'),
             'diseaseName' => $request->input('diseaseName'),
+            'totalPlanted' => $request->input('totalPlanted'),
+            'totalAffected' => $request->input('totalAffected'),
             'season' => $request->input('season'),
             'monthYear' => $request->input('monthYear'),
         ]);
@@ -55,6 +59,8 @@ class DiseaseController extends Controller
                 'diseaseData.*.barangay' => 'required|string|max:255',
                 'diseaseData.*.cropName' => 'required|string|max:255',
                 'diseaseData.*.diseaseName' => 'required|string|max:255',
+                'diseaseData.*.totalPlanted' => 'required|numeric',
+                'diseaseData.*.totalAffected' => 'required|numeric',
                 'diseaseData.*.season' => 'required|string|max:255',
                 'diseaseData.*.monthYear' => 'required|string|max:255',
             ]);
@@ -67,6 +73,10 @@ class DiseaseController extends Controller
                     'diseaseName' => $diseaseData['diseaseName'],
                     'season' => $diseaseData['season'],
                     'monthYear' => $diseaseData['monthYear']
+                ],
+                [
+                    'totalPlanted' => $diseaseData['totalPlanted'],
+                    'totalAffected' => $diseaseData['totalAffected'],
                 ]
             );
         }

@@ -13,6 +13,7 @@ use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\SoilHealthController;
 use App\Http\Controllers\ConcernController;
 use App\Http\Controllers\WeatherForecastController;
+use App\Http\Controllers\DamageReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DownloadController;
 
@@ -96,6 +97,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/pests/{id}', [PestController::class, 'destroy']);
     Route::post('/pests-batch', [PestController::class, 'storeBatch']);
     Route::delete('/pestsByRecords', [PestController::class, 'destroyBatch']);
+
+    // Api for damage reports
+    Route::post('/damages', [DamageReportController::class, 'store']);
+    Route::get('/damages/{id}', [DamageReportController::class, 'show']);
+    Route::put('/damages/{id}', [DamageReportController::class, 'update']);
+    Route::delete('/damages/{id}', [DamageReportController::class, 'destroy']);
+    Route::post('/damages-batch', [DamageReportController::class, 'storeBatch']);
+    Route::delete('/damagesByRecords', [DamageReportController::class, 'destroyBatch']);
 
     // Api for diseases
     Route::post('/diseases', [DiseaseController::class, 'store']);

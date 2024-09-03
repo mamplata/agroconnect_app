@@ -616,6 +616,9 @@ function initializeMethodsRecord(dataType) {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Edit action was canceled.");
       }
+      $('#recordTableBody tr').removeClass('selected-row');
+      $('#editBtn').prop('disabled', true);
+      $('#deleteBtn').prop('disabled', true);
   });
   
   $('#cancelEdit').click(function() {
@@ -632,6 +635,8 @@ function initializeMethodsRecord(dataType) {
         $('#fileRecord').attr('required', 'required');
         $('#cancelBtn').hide();
         $('#recordTableBody tr').removeClass('selected-row');
+        $('#editBtn').prop('disabled', true);
+        $('#deleteBtn').prop('disabled', true);
     });
     $('#deleteBtn').click(async function() {
       // Open the confirmation dialog
@@ -651,6 +656,8 @@ function initializeMethodsRecord(dataType) {
       } else {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Delete action was canceled.");
+          $('#editBtn').prop('disabled', true);
+          $('#deleteBtn').prop('disabled', true);
       }
   });
   

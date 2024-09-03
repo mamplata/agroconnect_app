@@ -4,6 +4,57 @@ import * as stats from './statistics.js';
 let crops = [];
 let dataEntry = []; // Global variable to store all entries
 
+$(document).ready(function() {
+    $('#infoBtn').click(function() {
+        let htmlScript = `
+        <p>Welcome to the Top Crops page. This tool allows you to rank crops based on various performance indicators. Follow these instructions to use the tool effectively:</p>
+
+        <ol>
+          <li><strong>Understand Ranking Criteria:</strong><br>
+          Crops are ranked based on a composite score that includes production volume, price, income, revenue, and pest/disease occurrences etc. The formula for calculating the composite score is as follows:</li>
+        </ol>
+
+        <pre>
+        Composite Score = (Production Volume Score * Weight1) +
+                          (Price Score * Weight2) +
+                          (Income Score * Weight3) +
+                          (Revenue Score * Weight4) -
+                          (Pest/Disease Score * Weight5)
+                          + ... (additional factors)
+        </pre>
+
+        <p>Where the scores for each factor are normalized and weighted according to their importance. The weights (Weight1, Weight2, etc.) are predefined to reflect the relative significance of each factor. The formula may also include other factors relevant to crop performance.</p>
+
+        <ol start="2">
+          <li><strong>View Rankings:</strong><br>
+          The crops are displayed in descending order of their composite score. Higher scores indicate better overall performance based on the selected criteria.</li>
+
+          <li><strong>Access Crop Details:</strong><br>
+          Click the 'View' button next to a crop to open a modal with detailed information. This modal includes:
+            <ul>
+              <li><strong>Crop Image:</strong> A visual representation of the crop variety.</li>
+              <li><strong>Crop Information:</strong> Details such as maturity period, variety, and other relevant data.</li>
+            </ul>
+          </li>
+
+          <li><strong>Download Data:</strong><br>
+          You can download the data in various formats for further analysis:
+            <ul>
+              <li><strong>CSV:</strong> Download raw data in CSV format for use in spreadsheet applications or data analysis tools.</li>
+              <li><strong>Excel:</strong> Download the data in Excel format, which includes formatted tables for easy review and manipulation.</li>
+              <li><strong>PDF:</strong> Download table in PDF format for easy sharing and reporting.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>This tool is designed to help you rank crops transparently and make informed decisions based on comprehensive performance data.</p>
+        `;
+
+        Dialog.showInfoModal(htmlScript);
+    });
+});
+
+
 // Fetch initial crop data
 async function initializeCrops() {
     try {

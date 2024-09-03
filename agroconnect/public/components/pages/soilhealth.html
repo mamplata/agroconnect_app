@@ -9,6 +9,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   
   <!-- CSS Libraries -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -36,12 +37,6 @@
 
     .rounded-custom {
       border-radius: 30px;
-    }
-
-    p {
-      font-size: 10px;
-      font-weight: bold;
-      font-style: italic;
     }
 
     .card-header {
@@ -80,9 +75,12 @@
     <!-- Vegetables Section -->
     <div class="cont">
       <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
-          <h2>Vegetables</h2>
-        </div>
+        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+          <h2 class="w-100 text-center">Vegetables</h2>
+          <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
+            <i class="fas fa-info-circle"></i>
+          </button>
+        </div> 
         <div class="card mb-3">
           <div class="card-body text-center" id="vegetables-body">
             <div class="row justify-content-between">

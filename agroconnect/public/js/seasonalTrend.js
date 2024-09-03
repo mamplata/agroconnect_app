@@ -2,6 +2,42 @@ import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, 
 import * as stats from './statistics.js';
 import Dialog from '../management/components/helpers/Dialog.js';
 
+$(document).ready(function() {
+    $('#infoBtn').click(function() {
+        let htmlScript = `
+        <p>Welcome to our Seasonal Trends page. To effectively use this tool, follow these instructions:</p>
+
+        <ol>
+          <li><strong>Select Your Parameters:</strong><br>
+          Use the dropdown menus and filters to choose the crops, seasons, or other criteria you wish to analyze.</li>
+
+          <li><strong>View Trends:</strong><br>
+          Explore the displayed charts and tables to see trends in crop production volumes, prices, income, and pest/disease occurrences etc.</li>
+
+          <li><strong>Analyze Data:</strong><br>
+          Utilize the provided data to observe patterns, compare different crops, and make strategic decisions for crop management.</li>
+
+          <li><strong>Monitor Growth:</strong><br>
+          Track the growth of selected crops and assess their performance over time to improve agricultural practices.</li>
+
+          <li><strong>Download Data:</strong><br>
+          You can download the data in various formats for further analysis:
+            <ul>
+              <li><strong>CSV:</strong> Download raw data in CSV format for use in spreadsheet applications or data analysis tools.</li>
+              <li><strong>Excel:</strong> Download the data in Excel format, which includes formatted tables for easy review and manipulation.</li>
+              <li><strong>PDF:</strong> Download charts and visualizations in PDF format for easy sharing and reporting.</li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>This tool is designed to help you identify and monitor key agricultural trends, offering valuable insights into crop performance and market dynamics.</p>
+        `;
+
+        Dialog.showInfoModal(htmlScript);
+    });
+});
+
+
 let colorIndex = 0;
 let downloadYR;
 

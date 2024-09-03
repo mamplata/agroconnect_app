@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../css/index.css">
+  <link rel="stylesheet" href="../../management/css/dialog.css">
 
   <!-- JavaScript Libraries -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -95,9 +96,12 @@
   <div class="main-content m-5">
     <div class="container-fluid ">
       <div class="card w-100 bg-white">
-        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
-          <h2>Weather Forecast</h2>
-        </div>
+        <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+          <h2 class="w-100 text-center">Weather Forecasts</h2>
+          <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
+            <i class="fas fa-info-circle"></i>
+          </button>
+        </div> 
         <div class="bg container-fluid rounded p-5">
           <div class="content">
             <h1 class="mb-4">5-Day Forecast for Cabuyao, Laguna, Philippines</h1>
@@ -126,7 +130,7 @@
   <!-- JavaScript Files -->
   <script src="../../components/Header.js"></script>
   <script type="module" src="../../components/Footer.js"></script>
-  <script src="../../js/weatherForecast.js"></script>
+  <script type="module" src="../../js/weatherForecast.js"></script>
 </body>
 
 </html>

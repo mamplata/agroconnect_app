@@ -8,7 +8,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   <link rel="stylesheet" href="../../css/index.css">
+  <link rel="stylesheet" href="../../management/css/dialog.css">
   <style>
     .form-control {
       padding-left: 20px;
@@ -64,9 +66,12 @@
       <div class="row">
         <div class="col-md-12">
           <div class="card w-100 bg-white">
-            <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2">
-              <h2>Send Feedback</h2>
-            </div>
+            <div id="pageTitle" class="container-fluid text-white d-flex justify-content-center align-items-center py-2 position-relative">
+              <h2 class="w-100 text-center">Send Feedback</h2>
+              <button id="infoBtn" class="btn btn-info position-absolute" style="right: 10px;">
+                <i class="fas fa-info-circle"></i>
+              </button>
+            </div> 
             <div class="bg card-body">
               <!-- Button container -->
               <div class="btn-container text-center">
@@ -154,33 +159,53 @@
   </div>
 </div>
 
-  <!-- Success Modal -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="successModalLabel">Feedback Sent Successfully</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Your feedback has been successfully sent. Thank you!</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Ensure jQuery is included first -->
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <!-- Toastr JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/widgets/widget-storage.min.js"></script>
   <script src="../../components/Header.js"></script>
   <script type="module" src="../../components/Footer.js"></script>
+  <script type="module">
+    import Dialog from '../../management/components/helpers/Dialog.js';
+
+    $(document).ready(function() {
+      $('#infoBtn').click(function() {
+          let htmlScript = `
+          <p>Welcome to the Contact Us page. Here, you can send us your feedback or inquiries by filling out the form. Follow these instructions to use the form effectively:</p>
+  
+          <ol>
+            <li><strong>Provide Your Feedback:</strong><br>
+            Fill out the form with the following details:
+              <ul>
+                <li><strong>Subject:</strong> Enter a brief subject line for your feedback or inquiry.</li>
+                <li><strong>Content:</strong> Provide detailed content of your message or feedback. Include any relevant information or questions you have.</li>
+                <li><strong>Image (Optional):</strong> If you have an image related to your feedback or inquiry, you can upload it using the optional image upload field. This helps us better understand your message if relevant.</li>
+              </ul>
+            </li>
+  
+            <li><strong>Submit Your Message:</strong><br>
+            After filling out the form, click the "Send Feedback" button to submit your message. Ensure that the subject and content fields are completed to avoid submission errors.</li>
+  
+            <li><strong>Confirmation:</strong><br>
+            You will receive a confirmation message on the screen once your feedback is successfully submitted. We will review your message and respond as necessary.</li>
+  
+            <li><strong>Privacy and Security:</strong><br>
+            Your feedback, including any uploaded images, will be treated confidentially and used solely for addressing your inquiry or improving our services. We are committed to protecting your data according to our privacy policy.</li>
+          </ol>
+  
+          <p>We appreciate your feedback and look forward to assisting you. If you have any further questions or need additional help, please use the contact form.</p>
+          `;
+  
+          Dialog.showInfoModal(htmlScript);
+      });
+  });
+  
+  </script>
   <script src="../../js/sendConcern.js"></script>
 </body>
 </html>

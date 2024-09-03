@@ -13,11 +13,15 @@ class UserController extends Controller
 
     public function index()
     {
-        // Get all users, with admins first, ordered by their ID in descending order
-        $users = User::orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")->orderBy('userId', 'desc')->get();
+        // Get all users, excluding those with the role 'guest', with admins first, ordered by their ID in descending order
+        $users = User::where('role', '<>', 'guest') // Exclude users with the role 'guest'
+            ->orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END") // Order by role, admins first
+            ->orderBy('userId', 'desc') // Then order by userId in descending order
+            ->get();
 
         return response()->json($users, 200);
     }
+
 
     public function store(Request $request)
     {
