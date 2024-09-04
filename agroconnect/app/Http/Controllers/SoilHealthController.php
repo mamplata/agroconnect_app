@@ -21,7 +21,6 @@ class SoilHealthController extends Controller
         $request->validate([
             'recordId' => 'required|exists:records,recordId',
             'barangay' => 'required|string|max:255',
-            'farmerName' => 'required|string|max:255',
             'fieldType' => 'required|string|max:255',
             'nitrogenContent' => 'required|string|max:2',
             'phosphorusContent' => 'required|string|max:2',
@@ -37,7 +36,6 @@ class SoilHealthController extends Controller
         $soilHealth = new SoilHealth([
             'recordId' => $request->input('recordId'),
             'barangay' => $request->input('barangay'),
-            'farmerName' => $request->input('farmerName'),
             'fieldType' => $request->input('fieldType'),
             'nitrogenContent' => $request->input('nitrogenContent'),
             'phosphorusContent' => $request->input('phosphorusContent'),
@@ -65,7 +63,6 @@ class SoilHealthController extends Controller
             $request->validate([
                 'soilHealthData.*.recordId' => 'required|exists:records,recordId',
                 'soilHealthData.*.barangay' => 'required|string|max:255',
-                'soilHealthData.*.farmerName' => 'required|string|max:255',
                 'soilHealthData.*.fieldType' => 'required|string|max:255',
                 'soilHealthData.*.nitrogenContent' => 'required|string|max:2',
                 'soilHealthData.*.phosphorusContent' => 'required|string|max:2',
@@ -80,7 +77,6 @@ class SoilHealthController extends Controller
                 [
                     'recordId' => $soilHealthData['recordId'],
                     'barangay' => $soilHealthData['barangay'],
-                    'farmerName' => $soilHealthData['farmerName'],
                     'fieldType' => $soilHealthData['fieldType'],
                     'nitrogenContent' => $soilHealthData['nitrogenContent'],
                     'phosphorusContent' => $soilHealthData['phosphorusContent'],
@@ -140,5 +136,31 @@ class SoilHealthController extends Controller
 
         // Return a JSON response with status code 204 (No Content)
         return response()->json(null, 204);
+    }
+
+    public function updateMonthYear(Request $request)
+    {
+        // Validate request data
+        $request->validate([
+            'recordId' => 'required|integer',
+            'monthYear' => 'required|string',  // The new value for monthYear
+        ]);
+
+        // Find all records with the given recordId
+        $records = SoilHealth::where('recordId', $request->input('recordId'))->get();
+
+        // Check if records were found
+        if ($records->isEmpty()) {
+            return response()->json(['message' => 'No records found with the provided recordId'], 404);
+        }
+
+        // Update the monthYear for all matching records
+        foreach ($records as $record) {
+            $record->monthYear = $request->input('monthYear');
+            $record->save();
+        }
+
+        // Return a success response
+        return response()->json(['message' => 'MonthYear updated successfully'], 200);
     }
 }

@@ -502,16 +502,15 @@ function formatHeader(key) {
 
 
 // Function to build and return table rows as an array of Production instances
+// Function to build and return table rows as an array of Production instances
 async function processProductionData(workbook, cellMappings, id, season, monthYear) {
-  // Assuming workbook is already loaded or passed as a parameter
-
   // Select the sheet you want to read from
   var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
-  var worksheet = workbook.Sheets[sheetName];   
+  var worksheet = workbook.Sheets[sheetName];
 
-  // Find the column index for 'Delivery' in cellMappings
-  var deliveryColumn = getKeyBySubstring(cellMappings, 'Delivery');
-  console.log(deliveryColumn);
+  // Find the column index for 'Volume of Production' in cellMappings (or any other key you want to check)
+  var productionVolumeColumn = getKeyBySubstring(cellMappings, 'Volume of Production');
+  console.log(productionVolumeColumn);
 
   // Decode the range of the worksheet
   var range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -519,12 +518,12 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
 
   // Loop through rows starting from the first row after the header
   for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-      // Check if the corresponding row in column 'Delivery' has the value 'Delivered' or 'Pick up'
-      var cellAddressDelivery = deliveryColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Delivery' cell address
-      var cellValueDelivery = worksheet[cellAddressDelivery] ? worksheet[cellAddressDelivery].v : '';
+      // Check if the corresponding row in column 'Volume of Production' has a numeric value or valid range
+      var cellAddressProduction = productionVolumeColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Volume of Production' cell address
+      var cellValueProduction = worksheet[cellAddressProduction] ? worksheet[cellAddressProduction].v : '';
 
-      // Check if the value is 'Delivered' or 'Pick up'
-      if (cellValueDelivery !== 'Delivered' && cellValueDelivery !== 'Pick up') {
+      // Check if the value is numeric or a valid range
+      if (!isNumeric(cellValueProduction)) {
           continue; // Skip this row if it doesn't meet the filter criteria
       }
 
@@ -532,7 +531,6 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
       var productionData = {};
       Object.keys(cellMappings).forEach(function(key) {
           var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
-          
           var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
           productionData[key] = cellValue; // Store value for the current key in productionData
       });
@@ -554,11 +552,11 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
           monthYear,
       );
 
-      // Add the new production instance to productions array using addProduction method
+      // Add the new production instance to productionDatas array
       productionDatas.push(production);
   }
 
-  // Check if the record ID already exists in the productions array
+  // Check if the record ID already exists in the productionDatas array
   var existingProduction = productions.find(p => p.recordId === productionDatas[0].recordId);
 
   if (existingProduction) {
@@ -569,6 +567,12 @@ async function processProductionData(workbook, cellMappings, id, season, monthYe
   productionDatas[0].addProduction(productionDatas);
   return productions;
 }
+
+// Helper function to check if a value is numeric
+function isNumeric(value) {
+  return !isNaN(parseFloat(value)) && isFinite(value);
+}
+
 
 // Function to find a key in object containing a substring
 function getKeyBySubstring(obj, substr) {

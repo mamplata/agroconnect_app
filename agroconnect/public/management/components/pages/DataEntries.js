@@ -13,6 +13,7 @@ export default function initDashboard() {
                     <option value="prices">Prices</option>
                     <option value="pests">Pests</option>
                     <option value="diseases">Diseases</option>
+                     <option value="damages">Damages</option>
                     <option value="soil_healths">Soil Healths</option>
                 </select>
             </div>

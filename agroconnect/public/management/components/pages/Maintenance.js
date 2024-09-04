@@ -12,16 +12,18 @@ export default function initDashboard() {
                     <option value="crop">Crop Records</option>
                     <option value="barangay">Barangay Records</option>
                     <option value="farmer">Farmer Records</option>
-                    <option value="supplyMarket">Supply and Market</option>
+                    <option value="production">Production Reports</option>
                     <option value="price">Crop Price Monitoring</option>
                     <option value="pestDisease">Pest and Disease Reports</option>
+                    <option value="damage">Damage Reports</option>
                     <option value="soilHealth">Soil Health Records</option>
                 `;
             } else if (user.role === 'agriculturist') {
                 optionsHtml = `
-                    <option value="supplyMarket">Supply and Market</option>
+                    <option value="production">Production Reports</option>
                     <option value="price">Crop Price Monitoring</option>
                     <option value="pestDisease">Pest and Disease Reports</option>
+                                        <option value="damage">Damage Reports</option>
                     <option value="soilHealth">Soil Health Records</option>
                 `;
             }

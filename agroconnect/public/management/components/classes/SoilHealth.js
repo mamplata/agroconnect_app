@@ -3,10 +3,9 @@ import { addDownload, getYearRange } from '../../../js/fetch.js';
 let soilHealths = [];
 
 class SoilHealth {
-    constructor(recordId, barangay, farmerName, fieldType, nitrogenContent, phosphorusContent, potassiumContent, pH, generalRating, recommendations, season, monthYear) {
+    constructor(recordId, barangay, fieldType, nitrogenContent, phosphorusContent, potassiumContent, pH, generalRating, recommendations, season, monthYear) {
       this.recordId = recordId;
       this.barangay = barangay;
-      this.farmerName = farmerName;
       this.fieldType = fieldType;
       this.nitrogenContent = nitrogenContent;
       this.phosphorusContent = phosphorusContent;
@@ -143,7 +142,6 @@ class SoilHealth {
           $('#soilHealthTableBody').append(`
             <tr data-index=${soilHealth.recordId}>
               <td>${soilHealth.barangay}</td>
-              <td>${soilHealth.farmerName}</td>
               <td>${soilHealth.fieldType}</td>
               <td>${soilHealth.nitrogenContent}</td>
               <td>${soilHealth.phosphorusContent}</td>
@@ -455,7 +453,6 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
 
   // Find the column index for the relevant fields in cellMappings
   var barangayColumn = getKeyBySubstring(cellMappings, 'Barangay');
-  var farmerColumn = getKeyBySubstring(cellMappings, 'Farmer');
   var typeColumn = getKeyBySubstring(cellMappings, 'Field Type');
   var nitrogenColumn = getKeyBySubstring(cellMappings, 'Nitrogen');
   var phosphorusColumn = getKeyBySubstring(cellMappings, 'Phosphorus');
@@ -463,7 +460,7 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
   var phColumn = getKeyBySubstring(cellMappings, 'pH');
   var generalFertilityColumn = getKeyBySubstring(cellMappings, 'General Fertility');
   var recommendationsColumn = getKeyBySubstring(cellMappings, 'Recommendations');
-  console.log(barangayColumn, farmerColumn, nitrogenColumn, phosphorusColumn, potassiumColumn, phColumn, generalFertilityColumn, recommendationsColumn);
+  console.log(barangayColumn, nitrogenColumn, phosphorusColumn, potassiumColumn, phColumn, generalFertilityColumn, recommendationsColumn);
 
   // Decode the range of the worksheet
   var range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -505,7 +502,6 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
       var soilHealth = new SoilHealth(
           id,
           getKeyBySubstring(soilHealthData, 'Barangay'),
-          getKeyBySubstring(soilHealthData, 'Farmer'),
           getKeyBySubstring(soilHealthData, 'Field Type'),
           getKeyBySubstring(soilHealthData, 'Nitrogen'),
           getKeyBySubstring(soilHealthData, 'Phosphorus'),

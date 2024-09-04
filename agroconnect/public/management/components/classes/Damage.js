@@ -1,24 +1,24 @@
 import Dialog from '../helpers/Dialog.js';
 import { addDownload, getYearRange } from '../../../js/fetch.js';
-let prices = [];
+let damages = [];
 
-class Price {
-  constructor(recordId, cropName, price, season, monthYear) {
+class Damage {
+  constructor(recordId, cropName, damage, season, monthYear) {
     this.recordId = recordId;
     this.cropName = cropName;
-    this.price = price;
+    this.damage = damage;
     this.season = season;
     this.monthYear = monthYear;
   }
 
-  async addPrice(prices) {
-    console.log(prices);
+  async addDamage(damages) {
+    console.log(damages);
 
     $.ajax({
-      url: '/api/prices-batch',
+      url: '/api/damages-batch',
       method: 'POST',
       data: {
-        priceData: prices, // Custom key for data
+        damageData: damages, // Custom key for data
         _token: $('meta[name="csrf-token"]').attr('content')
       },
       success: function(response) {
@@ -29,27 +29,27 @@ class Price {
       }
     });
 
-    getPrices();
+    getDamages();
   }
 
-  updatePrice(updatedPrice) {
-    const existingPrice = prices.find(p => p.recordId === updatedPrice.recordId);
+  updateDamage(updatedDamage) {
+    const existingDamage = damages.find(p => p.recordId === updatedDamage.recordId);
 
-    if (existingPrice && existingPrice.recordId !== updatedPrice.recordId) {
-      alert('Price ID already exists');
+    if (existingDamage && existingDamage.recordId !== updatedDamage.recordId) {
+      alert('Damage ID already exists');
       return;
     }
 
-    prices = prices.map(price =>
-      price.recordId === updatedPrice.recordId ? { ...price, ...updatedPrice } : price
+    damages = damages.map(damage =>
+      damage.recordId === updatedDamage.recordId ? { ...damage, ...updatedDamage } : damage
     );
 
-    fetch(`/api/prices/${updatedPrice.recordId}`, {
+    fetch(`/api/damages/${updatedDamage.recordId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedPrice),
+      body: JSON.stringify(updatedDamage),
     })
       .then(response => response.json())
       .then(data => {
@@ -58,15 +58,15 @@ class Price {
       .catch(error => {
         console.error('Error:', error);
       });
-    getPrices();
+    getDamages();
   }
 
-  removePrice(prices) {
+  removeDamage(damages) {
     $.ajax({
-      url: '/api/pricesByRecords',
+      url: '/api/damagesByRecords',
       method: 'DELETE',
       data: {
-        priceData: prices, // Custom key for data
+        damageData: damages, // Custom key for data
         _token: $('meta[name="csrf-token"]').attr('content')
       },
       success: function(response) {
@@ -76,12 +76,12 @@ class Price {
         console.error(xhr.responseText);
       }
     });
-    getPrices();
+    getDamages();
   }
 }
 
-function getPrices() {
-  // Fetch prices from Laravel backend
+function getDamages() {
+  // Fetch damages from Laravel backend
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -89,62 +89,62 @@ function getPrices() {
   });
 
   $.ajax({
-    url: '/api/prices',
+    url: '/api/damages',
     method: 'GET',
     success: function(response) {
-      // Assuming response is an array of prices [{...fields...}, ...]
-      prices = response;
-      console.log(prices);
+      // Assuming response is an array of damages [{...fields...}, ...]
+      damages = response;
+      console.log(damages);
     },
     error: function(xhr, status, error) {
-      console.error('Error fetching prices:', error);
+      console.error('Error fetching damages:', error);
     }
   });
 }
 
-function initializeMethodsPrice() {
+function initializeMethodsDamage() {
 
-  function searchPrice(searchTerm) {
+  function searchDamage(searchTerm) {
     const lowerCaseSearchTerm = searchTerm.toLowerCase(); // Convert search term to lowercase for case-insensitive search
-    const foundPrices = prices.filter(price => {
-      return Object.values(price).some(value => 
+    const foundDamages = damages.filter(damage => {
+      return Object.values(damage).some(value => 
         value.toString().toLowerCase().includes(lowerCaseSearchTerm)
       );
     });
-    return foundPrices;
+    return foundDamages;
   }
 
   var pageSize = 5;
   var currentPage = 1;
 
-  async function displayPrice(searchTerm = null) {
+  async function displayDamage(searchTerm = null) {
     // Simulate a delay of 1 second
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    $('#priceTableBody').empty();
+    $('#damageTableBody').empty();
 
     var startIndex = (currentPage - 1) * pageSize;
     var endIndex = startIndex + pageSize;
 
-    const foundPrices = searchTerm ? searchPrice(searchTerm) : prices;
+    const foundDamages = searchTerm ? searchDamage(searchTerm) : damages;
 
-    if (foundPrices.length > 0) {
+    if (foundDamages.length > 0) {
       for (var i = startIndex; i < endIndex; i++) {
-        if (i >= foundPrices.length) {
+        if (i >= foundDamages.length) {
           break;
         }
-        var price = foundPrices[i];
-        $('#priceTableBody').append(`
-          <tr data-index=${price.priceId}>
-            <td>${price.cropName}</td>
-            <td>${price.price}</td>
-            <td>${price.season}</td>
-            <td>${price.monthYear}</td>
+        var damage = foundDamages[i];
+        $('#damageTableBody').append(`
+          <tr data-index=${damage.damageId}>
+            <td>${damage.cropName}</td>
+            <td>${damage.damage}</td>
+            <td>${damage.season}</td>
+            <td>${damage.monthYear}</td>
           </tr>
         `);
       }
     } else {
-      $('#priceTableBody').append(`
+      $('#damageTableBody').append(`
         <tr>
           <td colspan="4">No results found!</td>
         </tr>
@@ -152,28 +152,28 @@ function initializeMethodsPrice() {
     }
 
      // Reinitialize tablesorter after adding rows
-     $('#priceTable').trigger('update');
+     $('#damageTable').trigger('update');
   }
 
   $('#search').on('input', function() {
     let searchTerm = $('#search').val();
-    displayPrice(searchTerm);
+    displayDamage(searchTerm);
   });
 
   // Pagination: Previous button click handler
   $('#prevBtn').click(function() {
     if (currentPage > 1) {
       currentPage--;
-      displayPrice($('#search').val());
+      displayDamage($('#search').val());
     }
   });
 
   // Pagination: Next button click handler
   $('#nextBtn').click(function() {
-    var totalPages = Math.ceil((searchPrice($('#search').val()).length) / pageSize);
+    var totalPages = Math.ceil((searchDamage($('#search').val()).length) / pageSize);
     if (currentPage < totalPages) {
       currentPage++;
-      displayPrice($('#search').val());
+      displayDamage($('#search').val());
     }
   });
 
@@ -182,7 +182,7 @@ function initializeMethodsPrice() {
         // Call the downloadDialog method and handle the promise
         Dialog.downloadDialog().then(format => {
             console.log(format);
-            download(format, prices);
+            download(format, damages);
         }).catch(error => {
             console.error('Error:', error);  // Handle any errors that occur
         });
@@ -202,7 +202,7 @@ function initializeMethodsPrice() {
   // Modified download function that uses the stored yearRange
   function download(format, data) {
       // Construct the filename using the stored yearRange
-      const filename = `Prices Data ${yearRange}`;
+      const filename = `Damages Data ${yearRange}`;
   
       // Call the appropriate download function based on the format
       if (format === 'csv') {
@@ -215,10 +215,10 @@ function initializeMethodsPrice() {
   }
 
   function downloadCSV(filename, data) {
-    // Define the header mapping for price data
+    // Define the header mapping for damage data
     const headerMap = {
         cropName: 'Commodity',
-        price: 'Farm Gate Price',
+        damage: 'Farm Gate Damage',
         season: 'Season',
         monthYear: 'Month Year'
     };
@@ -226,7 +226,7 @@ function initializeMethodsPrice() {
     // Define the order of headers
     const headersToInclude = [
         'cropName',
-        'price',
+        'damage',
         'season',
         'monthYear'
     ];
@@ -251,7 +251,7 @@ function initializeMethodsPrice() {
                 let value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
 
                 // Format specific columns with peso sign
-                if (key === 'price') {
+                if (key === 'damage') {
                     return value ? `₱${parseFloat(value).toFixed(2)}` : '';
                 }
                 return escapeCSVValue(value);
@@ -275,10 +275,10 @@ function initializeMethodsPrice() {
 }
 
 function downloadExcel(filename, data) {
-  // Define the header mapping for price data
+  // Define the header mapping for damage data
   const headerMap = {
       cropName: 'Commodity',
-      price: 'Farm Gate Price',
+      damage: 'Farm Gate Damage',
       season: 'Season',
       monthYear: 'Month Year'
   };
@@ -286,7 +286,7 @@ function downloadExcel(filename, data) {
   // Define the order of headers
   const headersToInclude = [
       'cropName',
-      'price',
+      'damage',
       'season',
       'monthYear'
   ];
@@ -313,7 +313,7 @@ function downloadExcel(filename, data) {
       worksheet.addRow(headersToInclude.map(header => {
           const value = row[headerMap[header]];
           // Format specific columns with peso sign
-          if (header === 'price') {
+          if (header === 'damage') {
               return value ? `₱${parseFloat(value).toFixed(2)}` : '';
           }
           return value;
@@ -394,8 +394,8 @@ function downloadPDF(filename, data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Specify the columns you want to include in the PDF for price data
-  const columns = ['cropName', 'price', 'season', 'monthYear'];
+  // Specify the columns you want to include in the PDF for damage data
+  const columns = ['cropName', 'damage', 'season', 'monthYear'];
   const headers = columns.map(formatHeader);
 
   // Create the table using only the specified columns
@@ -419,7 +419,7 @@ function downloadPDF(filename, data) {
 function formatHeader(key) {
   const headerMap = {
       cropName: 'Commodity',
-      price: 'Farm Gate Price',
+      damage: 'Farm Gate Damage',
       season: 'Season',
       monthYear: 'Month Year'
   };
@@ -427,8 +427,8 @@ function formatHeader(key) {
 }
 
 
-  getPrices();
-  displayPrice();
+  getDamages();
+  displayDamage();
 }
 
 // Function to check if the data is numeric or a valid range
@@ -452,63 +452,63 @@ function isNumeric(data) {
   return false;
 }
 
-// Function to build and return table rows as an array of Price instances
-async function processPriceData(workbook, cellMappings, id, season, monthYear) {
+// Function to build and return table rows as an array of Damage instances
+async function processDamageData(workbook, cellMappings, id, season, monthYear) {
   // Select the sheet you want to read from
   var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
   var worksheet = workbook.Sheets[sheetName];   
 
-  // Find the column index for 'Price' in cellMappings
-  var priceColumn = getKeyBySubstring(cellMappings, 'Farm Gate Price');
-  console.log(priceColumn);
+  // Find the column index for 'Damage' in cellMappings
+  var damageColumn = getKeyBySubstring(cellMappings, 'Farm Gate Damage');
+  console.log(damageColumn);
 
   // Decode the range of the worksheet
   var range = XLSX.utils.decode_range(worksheet['!ref']);
-  let priceDatas = [];
+  let damageDatas = [];
 
   // Loop through rows starting from the first row after the header
   for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
-      // Check if the corresponding row in column 'Price' has a numeric value or valid range
-      var cellAddressPrice = priceColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Price' cell address
-      var cellValuePrice = worksheet[cellAddressPrice] ? worksheet[cellAddressPrice].v : '';
+      // Check if the corresponding row in column 'Damage' has a numeric value or valid range
+      var cellAddressDamage = damageColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Damage' cell address
+      var cellValueDamage = worksheet[cellAddressDamage] ? worksheet[cellAddressDamage].v : '';
 
       // Check if the value is numeric or a valid range
-      if (!isNumeric(cellValuePrice)) {
+      if (!isNumeric(cellValueDamage)) {
           continue; // Skip this row if it doesn't meet the filter criteria
       }
 
       // Read values based on the defined cell mappings
-      var priceData = {};
+      var damageData = {};
       Object.keys(cellMappings).forEach(function(key) {
           var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
           
           var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
-          priceData[key] = cellValue; // Store value for the current key in priceData
+          damageData[key] = cellValue; // Store value for the current key in damageData
       });
 
-      // Create a new Price instance
-      var price = new Price(
+      // Create a new Damage instance
+      var damage = new Damage(
           id,
-          getKeyBySubstring(priceData, 'Commodity'),
-          String(getKeyBySubstring(priceData, 'Farm Gate Price')),
+          getKeyBySubstring(damageData, 'Commodity'),
+          String(getKeyBySubstring(damageData, 'Farm Gate Damage')),
           season,
           monthYear,
       );
 
-      // Add the new price instance to priceDatas array using addPrice method
-      priceDatas.push(price);
+      // Add the new damage instance to damageDatas array using addDamage method
+      damageDatas.push(damage);
   }
 
-  // Check if the record ID already exists in the priceDatas array
-  var existingPrice = prices.find(p => p.recordId === priceDatas[0].recordId);
+  // Check if the record ID already exists in the damageDatas array
+  var existingDamage = damages.find(p => p.recordId === damageDatas[0].recordId);
 
-  if (existingPrice) {
-      // Remove existing price before adding the new one
-      await priceDatas[0].removePrice(priceDatas);
+  if (existingDamage) {
+      // Remove existing damage before adding the new one
+      await damageDatas[0].removeDamage(damageDatas);
   }
 
-  priceDatas[0].addPrice(priceDatas);
-  return prices;
+  damageDatas[0].addDamage(damageDatas);
+  return damages;
 }
 
 // Function to find a key in object containing a substring
@@ -521,4 +521,4 @@ function getKeyBySubstring(obj, substr) {
   return null;
 }
 
-export { Price, getPrices, prices, initializeMethodsPrice, processPriceData };
+export { Damage, getDamages, damages, initializeMethodsDamage, processDamageData };

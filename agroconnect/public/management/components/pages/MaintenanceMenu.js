@@ -56,8 +56,8 @@ function initializeMaintenanceMenu(option) {
         case 'farmer':
             initializeFarmerView();
             break;
-        case 'supplyMarket':
-            initializeSupplyMarketView();
+        case 'production':
+            initializeProductionView();
             break;
         case 'price':
             initializePriceMonitoringView();
@@ -65,6 +65,9 @@ function initializeMaintenanceMenu(option) {
         case 'pestDisease':
             initializePestReportsView();
             break;
+        case 'damage':
+          initializeDamageReportsView();
+          break;
         case 'soilHealth':
             initializeSoilHealthView();
             break;
@@ -298,7 +301,7 @@ function initializeFarmerView() {
 }
 
 // Function to initialize Supply and Market view
-function initializeSupplyMarketView() {
+function initializeProductionView() {
     // Example content for Supply and Market
     $('#maintenance-content').html(`
       <div class="row d-flex justify-content-between align-items-center mt-5">
@@ -309,7 +312,6 @@ function initializeSupplyMarketView() {
             <div class="mb-3">
               <div class="input-group" id="monthPicker" style="width: 100%;">
                   <select class="form-control" required>
-                      <option value="" disabled selected>Month</option>
                       <option value="January">January</option>
                       <option value="February">February</option>
                       <option value="March">March</option>
@@ -440,7 +442,6 @@ function initializePriceMonitoringView() {
               <div class="mb-3">
                 <div class="input-group" id="monthPicker" style="width: 100%;">
                     <select class="form-control" required>
-                        <option value="" disabled selected>Month</option>
                         <option value="January">January</option>
                         <option value="February">February</option>
                         <option value="March">March</option>
@@ -564,7 +565,6 @@ function initializePestReportsView() {
             <div class="mb-3">
               <div class="input-group" id="monthPicker" style="width: 100%;">
                   <select class="form-control" required>
-                      <option value="" disabled selected>Month</option>
                       <option value="January">January</option>
                       <option value="February">February</option>
                       <option value="March">March</option>
@@ -685,6 +685,133 @@ function initializePestReportsView() {
   
 }
 
+// Function to initialize Damage Reports view
+function initializeDamageReportsView() {
+  $('#maintenance-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col-md-4">
+        <form id="recordForm" enctype="multipart/form-data">
+          <input type="hidden" class="form-control" id="recordId" name="recordId">
+          <input type="hidden" class="form-control" id="userId" name="userId">
+          <div class="mb-3">
+            <div class="input-group" id="monthPicker" style="width: 100%;">
+                <select class="form-control" required>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                </select>
+                <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="input-group" id="yearPicker" style="width: 100%;">
+                <select id="yearSelect" class="form-control" required>
+                    <!-- Options will be added by jQuery -->
+                </select>
+                <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
+            </div>
+        </div>
+          <div  class="mb-3">
+            <label id="lblUpload">
+              Upload File:
+            </label>
+            <div class="input-group" style="width: 100%;">
+              <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+              <div class="input-group-append">
+                <label class="input-group-text" for="fileRecord" id="btnUpload">
+                  <i class="fas fa-upload"></i>
+                </label>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+      <div class="col-md-7">
+        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+          <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+            <i class="fas fa-info-circle"></i>
+          </button>
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+        </div>
+        <table id="recordTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">File Name</th>
+              <th scope="col">File Size</th>
+            </tr>
+          </thead>
+          <tbody id="recordTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+  `);
+  $(document).ready(function() {
+    $('#infoBtn').click(function() {
+      let htmlScript = `
+<p style="margin-bottom: 15px;">To upload your damage reports successfully, please follow the instructions below using the provided template:</p>
+
+<ol style="margin-bottom: 15px;">
+  <li><strong>Download the Template:</strong><br>
+  Obtain the file <a href="components/template/Damage_Report_Template.xlsx" download>Damage_Report_Template.xlsx</a>. This template will guide you in entering the necessary data.</li>
+
+  <li><strong>Gather Your Data:</strong><br>
+  Retrieve the data from your reports and prepare it for entry into the template. The data should include the following fields:</li>
+  <ul style="margin-bottom: 15px;">
+    <li><strong>Barangay:</strong> The local administrative division where the damage occurred.</li>
+    <li><strong>Commodity:</strong> The type of crop or product that was affected by the damage.</li>
+    <li><strong>Variety:</strong> The specific variety or type of the commodity that was affected.</li>
+    <li><strong>Number of Farmers Affected:</strong> The total number of farmers affected by the damage.</li>
+    <li><strong>Area Affected (ha) - Total:</strong> The total area affected by the damage, measured in hectares.</li>
+    <li><strong>Yield Loss (%):</strong> The percentage of yield loss due to the damage.</li>
+    <li><strong>Grand Total Value:</strong> The total financial value of the damage, calculated based on the yield loss and area affected.</li>
+  </ul>
+
+  <li><strong>Enter Data into the Template:</strong><br>
+  Open <a href="components/template/Damage_Report_Template.xlsx" download>Damage_Report_Template.xlsx</a> and enter your data into the appropriate columns based on the definitions provided above. Ensure accuracy to avoid errors in the data upload process.</li>
+
+  <li><strong>Save and Upload:</strong><br>
+  After filling out the template, save the file with your updated data. You will then upload this file to the designated upload area or system.</li>
+
+  <li><strong>Verify Submission:</strong><br>
+  Confirm that your file was uploaded correctly and check for any validation messages or errors that may require correction.</li>
+</ol>
+
+<p style="margin-bottom: 15px;">By adhering to these instructions and utilizing the provided template, you ensure that your damage reports are recorded accurately and efficiently.</p>
+`;
+
+      Dialog.showInfoModal(htmlScript);
+    });
+  });
+  initializeMethodsRecord('damage');
+  createDeleteModal();
+  createEditModal();
+  loadMonthYear();
+
+}
+
+
 // Function to initialize Soil Health Records view
 function initializeSoilHealthView() {
   $('#maintenance-content').html(`
@@ -696,7 +823,6 @@ function initializeSoilHealthView() {
           <div class="mb-3">
             <div class="input-group" id="monthPicker" style="width: 100%;">
                 <select class="form-control" required>
-                    <option value="" disabled selected>Month</option>
                     <option value="January">January</option>
                     <option value="February">February</option>
                     <option value="March">March</option>

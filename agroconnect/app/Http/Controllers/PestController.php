@@ -71,13 +71,11 @@ class PestController extends Controller
                     'barangay' => $pestData['barangay'],
                     'cropName' => $pestData['cropName'],
                     'pestName' => $pestData['pestName'],
+                    'totalPlanted' => $pestData['totalPlanted'],
+                    'totalAffected' => $pestData['totalAffected'],
                     'season' => $pestData['season'],
                     'monthYear' => $pestData['monthYear']
                 ],
-                [
-                    'totalPlanted' => $pestData['totalPlanted'],
-                    'totalAffected' => $pestData['totalAffected'],
-                ]
             );
         }
 
@@ -127,5 +125,31 @@ class PestController extends Controller
 
         // Return a JSON response with status code 204 (No Content)
         return response()->json(null, 204);
+    }
+
+    public function updateMonthYear(Request $request)
+    {
+        // Validate request data
+        $request->validate([
+            'recordId' => 'required|integer',
+            'monthYear' => 'required|string',  // The new value for monthYear
+        ]);
+
+        // Find all records with the given recordId
+        $records = Pest::where('recordId', $request->input('recordId'))->get();
+
+        // Check if records were found
+        if ($records->isEmpty()) {
+            return response()->json(['message' => 'No records found with the provided recordId'], 404);
+        }
+
+        // Update the monthYear for all matching records
+        foreach ($records as $record) {
+            $record->monthYear = $request->input('monthYear');
+            $record->save();
+        }
+
+        // Return a success response
+        return response()->json(['message' => 'MonthYear updated successfully'], 200);
     }
 }

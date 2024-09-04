@@ -3,11 +3,13 @@ import { addDownload, getYearRange } from '../../../js/fetch.js';
 let pests = [];
 
 class Pest {
-    constructor(recordId, barangay, cropName, pestName, season, monthYear) {
+    constructor(recordId, barangay, cropName, pestName, totalPlanted, totalAffected, season, monthYear) {
       this.recordId = recordId;
       this.barangay = barangay;
       this.cropName = cropName;
       this.pestName = pestName;
+      this.totalPlanted = totalPlanted;
+      this.totalAffected = totalAffected;
       this.season = season;
       this.monthYear = monthYear;
     }
@@ -139,6 +141,8 @@ class Pest {
               <td>${pest.barangay}</td>
               <td>${pest.cropName}</td>
               <td>${pest.pestName}</td>
+              <td>${pest.totalPlanted}</td>
+              <td>${pest.totalAffected}</td>
               <td>${pest.season}</td>
               <td>${pest.monthYear}</td>
             </tr>
@@ -221,6 +225,8 @@ class Pest {
           barangay: 'Barangay',
           cropName: 'Crops Planted',
           pestName: 'Pest Observed',
+          totalPlanted: 'Total no. of Trees/Plants Planted',
+          totalAffected: 'Total no. of Trees/Plants Affected/Damaged',
           season: 'Season'
       };
   
@@ -229,6 +235,8 @@ class Pest {
           'barangay',
           'cropName',
           'pestName',
+          'totalPlanted',
+          'totalAffected',
           'season'
       ];
   
@@ -276,6 +284,8 @@ class Pest {
         barangay: 'Barangay',
         cropName: 'Crops Planted',
         pestName: 'Pest Observed',
+        totalPlanted: 'Total no. of Trees/Plants Planted',
+        totalAffected: 'Total no. of Trees/Plants Affected/Damaged',
         season: 'Season'
     };
 
@@ -285,6 +295,8 @@ class Pest {
     const headersToInclude = [
         'barangay',
         'cropName',
+        'totalPlanted',
+        'totalAffected',
         'pestName',
         'season'
     ];
@@ -390,7 +402,7 @@ function downloadPDF(filename, data) {
   const doc = new jsPDF();
 
   // Specify the columns you want to include in the PDF for pest data
-  const columns = ['barangay', 'cropName', 'pestName', 'season'];
+  const columns = ['barangay', 'cropName', 'pestName', 'totalPlanted', 'totalAffected', 'season'];
   const headers = columns.map(formatHeader);
 
   // Create the table using only the specified columns
@@ -412,6 +424,8 @@ function formatHeader(key) {
       barangay: 'Barangay',
       cropName: 'Crops Planted',
       pestName: 'Pest Observed',
+      totalPlanted: 'Total no. of Trees/Plants Planted',
+      totalAffected: 'Total no. of Trees/Plants Affected/Damaged',
       season: 'Season'
   };
   return headerMap[key] || key;
@@ -424,70 +438,75 @@ function formatHeader(key) {
   }
   
   
-// Function to build and return table rows as an array of Pest instances
-async function processPestData(workbook, cellMappings, id, season, monthYear) {
-  // Select the sheet you want to read from
-  var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
-  var worksheet = workbook.Sheets[sheetName];   
+  async function processPestData(workbook, cellMappings, id, season, monthYear) {
+    // Select the sheet you want to read from
+    var sheetName = workbook.SheetNames[0]; // Assuming the first sheet
+    var worksheet = workbook.Sheets[sheetName];   
 
-  // Find the column index for 'Pest Observed' and 'Crops Planted' in cellMappings
-  var pestColumn = getKeyBySubstring(cellMappings, 'Pest Observed');
-  var cropsPlantedColumn = getKeyBySubstring(cellMappings, 'Crops Planted');
-  console.log(pestColumn, cropsPlantedColumn);
+    // Find the column index for 'Pest Observed' in cellMappings
+    var pestColumn = getKeyBySubstring(cellMappings, 'Pest Observed');
+    console.log(pestColumn);
 
-  // Decode the range of the worksheet
-  var range = XLSX.utils.decode_range(worksheet['!ref']);
-  let pestDatas = [];
+    // Decode the range of the worksheet
+    var range = XLSX.utils.decode_range(worksheet['!ref']);
+    let pestDatas = [];
 
-  // Loop through rows starting from the first row after the header
-  for (var rowNum = range.s.r + 5; rowNum <= range.e.r; rowNum++) {
-      // Check if the corresponding row in column 'Pest Observed' and 'Crops Planted' are not empty or 'None'
-      var cellAddressPest = pestColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Pest Observed' cell address
-      var cellValuePest = worksheet[cellAddressPest] ? worksheet[cellAddressPest].v : '';
+    // Loop through rows starting from the first row after the header
+    for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
+        // Check if the corresponding row in column 'Pest Observed' has a non-empty value
+        var cellAddressPest = pestColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Pest Observed' cell address
+        var cellValuePest = worksheet[cellAddressPest] ? worksheet[cellAddressPest].v : '';
 
-      var cellAddressCrops = cropsPlantedColumn.charAt(0) + (rowNum + 1); // Dynamically construct column 'Crops Planted' cell address
-      var cellValueCrops = worksheet[cellAddressCrops] ? worksheet[cellAddressCrops].v : '';
+        // Skip rows where 'Pest Observed' is empty
+        if (cellValuePest === '' || cellValuePest === 'None') {
+            continue; // Skip this row if it doesn't meet the filter criteria
+        }
 
-      // Check if the pest value and crops planted value are valid
-      if ((cellValuePest === '' || cellValuePest === 'None') || (cellValueCrops === '')) {
-           console.log(cellValueCrops);
-          continue; // Skip this row if it doesn't meet the filter criteria
-      }
+        // Find the index of the column to the right of 'Pest Observed'
+        var pestColumnIndex = XLSX.utils.decode_cell(pestColumn + '1').c;
+        var totalPlantedColumn = XLSX.utils.encode_col(pestColumnIndex + 1) + (rowNum + 1); // Column to the right
+        var totalAffectedColumn = XLSX.utils.encode_col(pestColumnIndex + 2) + (rowNum + 1); // Column to the next right
 
-      // Read values based on the defined cell mappings
-      var pestData = {};
-      Object.keys(cellMappings).forEach(function(key) {
-          var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
-          
-          var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
-          pestData[key] = cellValue; // Store value for the current key in pestData
-      });
+        // Read values based on the defined cell mappings
+        var pestData = {};
+        Object.keys(cellMappings).forEach(function(key) {
+            var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
+            var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
+            pestData[key] = cellValue; // Store value for the current key in pestData
+        });
 
-      // Create a new Pest instance
-      var pest = new Pest(
-          id,
-          getKeyBySubstring(pestData, 'Farm Location'),
-          getKeyBySubstring(pestData, 'Crops Planted'),
-          getKeyBySubstring(pestData, 'Pest Observed'),
-          season,
-          monthYear,
-      );
+        // Add the values of 'Total no. of Trees/Plants Planted' and 'Total no. of Trees/Plants Affected/Damaged'
+        pestData['TotalPlanted'] = worksheet[totalPlantedColumn] ? worksheet[totalPlantedColumn].v : '';
+        pestData['TotalAffected'] = worksheet[totalAffectedColumn] ? worksheet[totalAffectedColumn].v : '';
 
-      // Add the new pest instance to pestDatas array using addPest method
-      pestDatas.push(pest);
-  }
+        // Create a new Pest instance
+        var pest = new Pest(
+            id,
+            getKeyBySubstring(pestData, 'Farm Location'),
+            getKeyBySubstring(pestData, 'Crops Planted'),
+            getKeyBySubstring(pestData, 'Pest Observed'),
+            pestData['TotalPlanted'],
+            pestData['TotalAffected'],
+            season,
+            monthYear,
+        );
 
-  // Check if the record ID already exists in the pestDatas array
-  var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
+        // Add the new pest instance to pestDatas array
+        pestDatas.push(pest);
+    }
 
-  if (existingPest) {
-      // Remove existing pest before adding the new one
-      await pestDatas[0].removePest(pests);
-  }
+    // Check if the record ID already exists in the pestDatas array
+    var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
 
-  pestDatas[0].addPest(pestDatas);
-  return pests;
+    if (existingPest) {
+        // Remove existing pest before adding the new one
+        await pestDatas[0].removePest(pestDatas);
+    }
+
+    pestDatas[0].addPest(pestDatas.slice(2));
+    return pests;
 }
+
   
   function getKeyBySubstring(obj, substr) {
     for (let key in obj) {

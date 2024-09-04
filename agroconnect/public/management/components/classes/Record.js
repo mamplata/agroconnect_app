@@ -323,17 +323,64 @@ function initializeMethodsRecord(dataType) {
           return 'Invalid month';
       }
     }
+
+    function updateMonthYear(dataType, requestData) {
+      let urls = [];
+      
+      switch (dataType) {
+          case 'production':
+              urls = ['/api/productions/update-month-year'];
+              break;
+          case 'price':
+              urls = ['/api/prices/update-month-year'];
+              break;
+          case 'pestDisease':
+              urls = ['/api/pests/update-month-year', '/api/diseases/update-month-year'];
+              break;
+          case 'soilHealth':
+              urls = ['/api/soilhealths/update-month-year'];
+              break;
+          case 'damage':
+              urls = ['/api/damages/update-month-year'];
+              break;
+          default:
+              console.error('Unsupported data type');
+              return;
+      }
+  
+      if (urls.length === 0) {
+          console.error('No URLs found for the data type');
+          return;
+      }
+  
+      urls.forEach(function(url) {
+          $.ajax({
+              url: url,
+              type: 'POST',
+              contentType: 'application/json',
+              data: JSON.stringify(requestData),
+              success: function(response) {
+                  console.log('Success:', response);
+              },
+              error: function(xhr) {
+                  console.error('Error:', xhr.responseText);
+              }
+          });
+      });
+  }
+  
+  
     
     $('#submitBtn').click(async function(event) {
       event.preventDefault();
       var recordId = Number($('#recordId').val());
       var userId = user.userId;
       var month = $('#monthPicker select').val(); // input is inside #monthPicker
-      var year = $('#yearPicker input').val(); // input is inside #yearPicker
+      var year = $('#yearPicker select').val(); // input is inside #yearPicker
       var season = getSeason(month);
       var type = dataType;
       var monthYear = `${month} ${year}`;
-      var name = `${dataType.charAt(0).toUpperCase() + dataType.slice(1).toLowerCase()} ${monthYear}`;
+      var name = `${dataType.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())} ${monthYear}`;
     
       var fileInput = document.getElementById('fileRecord');
       var file = fileInput.files[0];
@@ -345,7 +392,11 @@ function initializeMethodsRecord(dataType) {
           let isValid = await validateSearchTerms(file, terms[0], terms[4]);
           
           if (!isValid) {
-            alert('The file is not a valid format.');
+            toastr.success('Invalid File Format!', 'Invalid', {
+              timeOut: 5000,  // 5 seconds
+              positionClass: 'toast-top-center',
+              toastClass: 'toast-warning'
+            }); 
             return;
           }
       
@@ -375,14 +426,24 @@ function initializeMethodsRecord(dataType) {
               $('#lblUpload').text('Upload File:');
               $('#submitBtn').text('Add record');
               $('#cancelBtn').hide();
-              $('#recordForm')[0].reset();
               $('#fileRecord').attr('required', 'required');
+              $('#recordForm')[0].reset();
               getRecord(dataType);
               displayRecords();
               resetFields();
+              toastr.success('File uploaded successfully!', 'Success', {
+                timeOut: 5000,  // 5 seconds
+                positionClass: 'toast-top-center',
+                toastClass: 'toast-success-custom'
+              }); 
               selectedRow = null;
             }).catch(error => {
               console.error("Error creating/updating record:", error);
+              toastr.error('Something went wrong.', 'Error', {
+                timeOut: 5000,  // 5 seconds
+                positionClass: 'toast-center-center',
+                toastClass: 'toast-error' // Custom error color
+              });
             });
           };
           
@@ -398,18 +459,42 @@ function initializeMethodsRecord(dataType) {
               $('#recordForm')[0].reset();
               $('#fileRecord').attr('required', 'required');
               getRecord(dataType);
+              const requestData = {
+                recordId: recordId,
+                monthYear: monthYear
+              };
+              updateMonthYear(dataType, requestData);
               displayRecords();
               resetFields();
+              toastr.success('File uploaded successfully!', 'Success', {
+                timeOut: 5000,  // 5 seconds
+                positionClass: 'toast-top-center',
+                toastClass: 'toast-success-custom'
+              }); 
               selectedRow = null;
             }).catch(error => {
               console.error("Error updating record:", error);
+              toastr.error('Something went wrong.', 'Error', {
+                timeOut: 5000,  // 5 seconds
+                positionClass: 'toast-center-center',
+                toastClass: 'toast-error' // Custom error color
+              });
             });
           } else {
-            alert('Please select a file first.');
+            toastr.success('Please select a file first!', 'Alert', {
+              timeOut: 5000,  // 5 seconds
+              positionClass: 'toast-top-center',
+              toastClass: 'toast-info'
+            }); 
           }
         }
       } catch (error) {
         console.error('Error during file validation:', error);
+        toastr.error('Something went wrong.', 'Error', {
+          timeOut: 5000,  // 5 seconds
+          positionClass: 'toast-center-center',
+          toastClass: 'toast-error' // Custom error color
+        });
       }
       
     });
@@ -423,26 +508,31 @@ function initializeMethodsRecord(dataType) {
       let methodName2;
       switch (dataType) {
         case 'production':
-          checkFormat = "SUPPLY AND MARKET PROFILE";
-          terms = ["Barangay", "Commodity", "Variety", "Area Planted", "Month Planted", "Month Harvested", "Volume of Production", "Cost of Production", "Farm Gate Price", "Volume Sold", "Mode of Delivery"];
+          checkFormat = "PRODUCTION MONITORING REPORT";
+          terms = ["Barangay", "Commodity", "Variety", "Area Planted", "Month Planted", "Month Harvested", "Volume of Production", "Cost of Production", "Farm Gate Price", "Volume Sold"];
           methodName = processProductionData;
           break;
         case 'price':
           checkFormat = "PRICE MONITORING REPORT";
-          terms = ["Commodity", "Price"];
+          terms = ["Commodity", "Farm Gate Price"];
           methodName = processPriceData;
           break;
         case 'pestDisease':
-          checkFormat = "PEST MONITORING REPORT";
-          terms = ["Farm Location" ,"Crops Planted", "Pest Observed"];
-          terms2 = ["Farm Location", "Crops Planted", "Disease Observed"];
+          checkFormat = "PEST AND DISEASE MONITORING REPORT";
+          terms = ["Farm Location" ,"Crops Planted", "Pest Observed", 'Total no. of Trees/Plants Planted', 'Total no. of Trees/Plants Affected/Damaged'];
+          terms2 = ["Farm Location", "Crops Planted", "Disease Observed", 'Total no. of Trees/Plants Planted', 'Total no. of Trees/Plants Affected/Damaged'];
           methodName = processPestData;
           methodName2 = processDiseaseData;
           break;
         case 'soilHealth':
-          checkFormat = "GENERAL SOIL FERTILITY RATING";
-          terms = ["Barangay", "Farmer", "Field Type", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
+          checkFormat = "SOIL HEALTH MONITORING REPORT";
+          terms = ["Barangay", "Field Type", "Nitrogen", "Phosphorus", "Potassium", "pH", "General Fertility", "Recommendations"];
           methodName = processSoilHealthData;
+          break;
+        case 'damage':
+          checkFormat = "DAMAGE MONITORING REPORT";
+          terms = ["Barangay", "Commodity", "Variety", "NUMBER OF FARMERS AFFECTED", "AREA AFFECTED", "Yield Loss", "GRAND TOTAL VALUE"];
+          methodName = processDamageData;
           break;
         default:
           console.error("Unknown data type");
@@ -558,7 +648,7 @@ function initializeMethodsRecord(dataType) {
           const range = XLSX.utils.decode_range(worksheet['!ref']);
   
           // Iterate through each row in the sheet
-          for (let rowNum = (range.s.r + 4); rowNum <= range.e.r; rowNum++) {
+          for (let rowNum = (range.s.r + 1); rowNum <= range.e.r; rowNum++) {
               // Iterate through each cell in the row
               for (let colNum = range.s.c; colNum <= range.e.c; colNum++) {
                   const cellAddress = XLSX.utils.encode_cell({ r: rowNum, c: colNum });
@@ -608,7 +698,7 @@ function initializeMethodsRecord(dataType) {
   
           // Set the values in the input fields
           $('#monthPicker select').val(month);
-          $('#yearPicker input').val(year);
+          $('#yearPicker select').val(year);
           $('#fileRecord').removeAttr('required');
           $('#lblUpload').text('Insert New File (optional):');
           $('#submitBtn').text('Update Record');
@@ -629,7 +719,6 @@ function initializeMethodsRecord(dataType) {
     // Cancel button click handler
     $('#cancelBtn').click(function() {
         selectedRow = null;
-        $('#recordForm')[0].reset();
         $('#lblUpload').text('Upload File:');
         $('#submitBtn').text('Add Record');
         $('#fileRecord').attr('required', 'required');

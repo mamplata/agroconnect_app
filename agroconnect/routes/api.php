@@ -81,6 +81,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/productions/{id}', [ProductionController::class, 'update']);
     Route::post('/productions-batch', [ProductionController::class, 'storeBatch']);
     Route::delete('/productionsByRecords', [ProductionController::class, 'destroyBatch']);
+    Route::post('/productions/update-month-year', [ProductionController::class, 'updateMonthYear']);
+
 
     // Api for prices
     Route::post('/prices', [PriceController::class, 'store']);
@@ -89,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/prices/{id}', [PriceController::class, 'destroy']);
     Route::post('/prices-batch', [PriceController::class, 'storeBatch']);
     Route::delete('/pricesByRecords', [PriceController::class, 'destroyBatch']);
+    Route::post('/prices/update-month-year', [PriceController::class, 'updateMonthYear']);
 
     // Api for pests
     Route::post('/pests', [PestController::class, 'store']);
@@ -97,6 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/pests/{id}', [PestController::class, 'destroy']);
     Route::post('/pests-batch', [PestController::class, 'storeBatch']);
     Route::delete('/pestsByRecords', [PestController::class, 'destroyBatch']);
+    Route::post('/pests/update-month-year', [PestController::class, 'updateMonthYear']);
 
     // Api for damage reports
     Route::post('/damages', [DamageReportController::class, 'store']);
@@ -105,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/damages/{id}', [DamageReportController::class, 'destroy']);
     Route::post('/damages-batch', [DamageReportController::class, 'storeBatch']);
     Route::delete('/damagesByRecords', [DamageReportController::class, 'destroyBatch']);
+    Route::post('/damages/update-month-year', [DamageReportController::class, 'updateMonthYear']);
 
     // Api for diseases
     Route::post('/diseases', [DiseaseController::class, 'store']);
@@ -113,6 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/diseases/{id}', [DiseaseController::class, 'destroy']);
     Route::post('/diseases-batch', [DiseaseController::class, 'storeBatch']);
     Route::delete('/diseasesByRecords', [DiseaseController::class, 'destroyBatch']);
+    Route::post('/diseases/update-month-year', [DiseaseController::class, 'updateMonthYear']);
 
     // Api for soilhealths
     Route::post('/soilhealths', [SoilHealthController::class, 'store']);
@@ -121,6 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/soilhealths/{id}', [SoilHealthController::class, 'destroy']);
     Route::post('/soilhealths-batch', [SoilHealthController::class, 'storeBatch']);
     Route::delete('/soilhealthsByRecords', [SoilHealthController::class, 'destroyBatch']);
+    Route::post('/soilhealths/update-month-year', [SoilHealthController::class, 'updateMonthYear']);
 
     // Api for concerns
     Route::get('/concerns/{id}', [ConcernController::class, 'show']);

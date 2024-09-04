@@ -3,6 +3,7 @@ import { initializeMethodsDisease } from '../classes/Disease.js';
 import { initializeMethodsProduction } from '../classes/Production.js';
 import { initializeMethodsSoilHealth } from '../classes/SoilHealth.js';
 import { initializeMethodsPrice } from '../classes/Price.js';
+import { initializeMethodsDamage } from '../classes/Damage.js';
 
 function initializeDataEntriesMenu(option) {
     // Clear previous content
@@ -22,6 +23,9 @@ function initializeDataEntriesMenu(option) {
         case 'diseases':
             initializeDiseaseView();
             break;
+        case 'damages':
+          initializeDamageView();
+          break;
         case 'soil_healths':
             initializeSoilHealthsView();
             break;
@@ -135,6 +139,8 @@ function initializePestView() {
                 <th scope="col">Farm Location</th>
                 <th scope="col">Crops Planted</th>
                 <th scope="col">Pest Observed</th>
+                <th scope="col">Total no. of Trees/Plants Planted</th>
+                <th scope="col">Total no. of Trees/Plants Affected/Damaged</th>
                 <th scope="col">Season</th>
                 <th scope="col">Month Year</th>
               </tr>
@@ -178,6 +184,8 @@ function initializeDiseaseView() {
                 <th scope="col">Farm Location</th>
                 <th scope="col">Crops Planted</th>
                 <th scope="col">Disease Observed</th>
+                <th scope="col">Total no. of Trees/Plants Planted</th>
+                <th scope="col">Total no. of Trees/Plants Affected/Damaged</th>
                 <th scope="col">Season</th>
                 <th scope="col">Month Year</th>
               </tr>
@@ -210,6 +218,53 @@ function initializeDiseaseView() {
   });
 }
 
+function initializeDamageView() {
+  $('#entries-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col">
+        <div class="table-responsive">
+          <table id="diseaseTable" class="table table-custom table-sm text-center tablesorter">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Barangay</th>
+                <th scope="col">Commodity</th>
+                <th scope="col">Variety</th>
+                <th scope="col">Number of Farmers Affected</th>
+                <th scope="col">Total Area Affected (ha)</th>
+                <th scope="col">Yield Loss (%)</th>
+                <th scope="col">Grand Total Value</th>
+                <th scope="col">Season</th>
+                <th scope="col">Month Year</th>
+              </tr>
+            </thead>
+            <tbody id="diseaseTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Diseases</button>
+    </div>
+  `);  
+  initializeMethodsDamage();
+
+  // Initialize tablesorter
+  $('#diseaseTable').tablesorter({
+    theme: 'bootstrap', // or another theme if you're using it
+    widgets: ['zebra'], // Example of adding widgets
+    widgetOptions: {
+      // Add custom classes for the sorting icons
+      cssIcon: 'tablesorter-header-icon'
+    },
+  });
+}
+
 function initializeSoilHealthsView() {
   $('#entries-content').html(`
     <div class="row d-flex justify-content-between align-items-center mt-5">
@@ -219,13 +274,12 @@ function initializeSoilHealthsView() {
             <thead>
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">Barangay</th>
-                <th scope="col">Farmer</th>
                 <th scope="col">Field Type</th>
                 <th scope="col">Nitrogen</th>
                 <th scope="col">Phosphorus</th>
                 <th scope="col">Potassium</th>
                 <th scope="col">pH</th>
-                <th scope="col">General Fertility</th>
+                <th scope="col">General Rating</th>
                 <th scope="col">Recommendations</th>
                 <th scope="col">Season</th>
                 <th scope="col">Month Year</th>
