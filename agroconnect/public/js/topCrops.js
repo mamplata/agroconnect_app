@@ -159,31 +159,35 @@ class TopCrops {
             return acc;
         }, {});
     
-        // Aggregate data by crop and variety
         const aggregatedDataByCrop = Object.entries(aggregatedData).reduce((acc, [key, values]) => {
             const [cropName, variety, monthYear] = key.split(' - ');
             if (!acc[`${cropName} - ${variety}`]) {
                 acc[`${cropName} - ${variety}`] = {
-                    volumeProductionPerHectare: 0,
-                    incomePerHectare: 0,
-                    profitPerHectare: 0,
-                    price: 0,
-                    pestOccurrence: 0,
-                    diseaseOccurrence: 0,
-                    totalPlanted: 0, // Initialize totalPlanted
+                    totalVolumeProductionPerHectare: 0,
+                    totalIncomePerHectare: 0,
+                    totalProfitPerHectare: 0,
+                    totalPrice: 0,
+                    totalPestOccurrence: 0,
+                    totalDiseaseOccurrence: 0,
+                    totalPlanted: 0,
                     count: 0,
                     monthlyData: []
                 };
             }
+        
             const item = acc[`${cropName} - ${variety}`];
-            item.volumeProductionPerHectare += values.volumeProductionPerHectare / values.count;
-            item.incomePerHectare += values.incomePerHectare / values.count;
-            item.profitPerHectare += values.profitPerHectare / values.count;
-            item.price += values.price / values.count;
-            item.pestOccurrence += values.pestOccurrence / values.count;
-            item.diseaseOccurrence += values.diseaseOccurrence / values.count;
-            item.totalPlanted += values.totalPlanted / values.count; // Aggregate totalPlanted
-            item.count += 1;
+            
+            // Accumulate the sums
+            item.totalVolumeProductionPerHectare += values.volumeProductionPerHectare;
+            item.totalIncomePerHectare += values.incomePerHectare;
+            item.totalProfitPerHectare += values.profitPerHectare;
+            item.totalPrice += values.price;
+            item.totalPestOccurrence += values.pestOccurrence;
+            item.totalDiseaseOccurrence += values.diseaseOccurrence;
+            item.totalPlanted += values.totalPlanted;
+            item.count += values.count; // Update total count for averaging
+        
+            // Add monthly data (divide by values.count for per-count values)
             item.monthlyData.push({
                 monthYear,
                 volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
@@ -192,11 +196,23 @@ class TopCrops {
                 price: values.price / values.count,
                 pestOccurrence: values.pestOccurrence / values.count,
                 diseaseOccurrence: values.diseaseOccurrence / values.count,
-                totalPlanted: values.totalPlanted / values.count // Include totalPlanted in monthlyData
+                totalPlanted: values.totalPlanted / values.count
             });
+        
             return acc;
         }, {});
-    
+        
+        // After the reduce function, calculate averages
+        Object.values(aggregatedDataByCrop).forEach(item => {
+            item.volumeProductionPerHectare = item.totalVolumeProductionPerHectare / item.count;
+            item.incomePerHectare = item.totalIncomePerHectare / item.count;
+            item.profitPerHectare = item.totalProfitPerHectare / item.count;
+            item.price = item.totalPrice / item.count;
+            item.pestOccurrence = item.totalPestOccurrence / item.count;
+            item.diseaseOccurrence = item.totalDiseaseOccurrence / item.count;
+            item.totalPlanted = item.totalPlanted / item.count;
+        });
+        
         // Calculate ranges for normalization
         const ranges = {
             volumeProduction: calculateMinMax(Object.values(aggregatedDataByCrop), 'volumeProductionPerHectare'),
