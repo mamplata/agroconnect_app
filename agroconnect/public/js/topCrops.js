@@ -91,6 +91,7 @@ class TopCrops {
     }
 
     generateTopCrops(data) {
+        console.log(data);
         const calculateMinMax = (data, key) => {
             const values = data.map(entry => entry[key]);
             return { min: Math.min(...values), max: Math.max(...values) };
