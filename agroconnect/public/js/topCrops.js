@@ -105,7 +105,7 @@ class TopCrops {
             const indicators = {
                 volumeProduction: entry.volumeProductionPerHectare,
                 income: entry.incomePerHectare,
-                benefit: entry.benefitPerHectare,
+                profit: entry.profitPerHectare,
                 price: entry.price,
                 pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
                 disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence,
@@ -115,7 +115,7 @@ class TopCrops {
             const normalizedIndicators = {
                 volumeProduction: normalize(indicators.volumeProduction, ranges.volumeProduction.min, ranges.volumeProduction.max),
                 income: normalize(indicators.income, ranges.income.min, ranges.income.max),
-                benefit: normalize(indicators.benefit, ranges.benefit.min, ranges.benefit.max),
+                profit: normalize(indicators.profit, ranges.profit.min, ranges.profit.max),
                 price: normalize(indicators.price, ranges.price.min, ranges.price.max),
                 pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
                 disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min),
@@ -124,7 +124,7 @@ class TopCrops {
             return (
                 0.15 * normalizedIndicators.volumeProduction +
                 0.15 * normalizedIndicators.income +
-                0.15 * normalizedIndicators.benefit +
+                0.15 * normalizedIndicators.profit +
                 0.15 * normalizedIndicators.price +
                 0.1 * normalizedIndicators.pest +
                 0.1 * normalizedIndicators.disease
@@ -138,7 +138,7 @@ class TopCrops {
                 acc[key] = {
                     volumeProductionPerHectare: 0,
                     incomePerHectare: 0,
-                    benefitPerHectare: 0,
+                    profitPerHectare: 0,
                     price: 0,
                     pestOccurrence: 0,
                     diseaseOccurrence: 0,
@@ -149,7 +149,7 @@ class TopCrops {
             const item = acc[key];
             item.volumeProductionPerHectare += entry.volumeProductionPerHectare;
             item.incomePerHectare += entry.incomePerHectare;
-            item.benefitPerHectare += entry.benefitPerHectare;
+            item.profitPerHectare += entry.profitPerHectare;
             item.price += entry.price;
             item.pestOccurrence += entry.pestOccurrence;
             item.diseaseOccurrence += entry.diseaseOccurrence;
@@ -165,7 +165,7 @@ class TopCrops {
                 acc[`${cropName} - ${variety}`] = {
                     volumeProductionPerHectare: 0,
                     incomePerHectare: 0,
-                    benefitPerHectare: 0,
+                    profitPerHectare: 0,
                     price: 0,
                     pestOccurrence: 0,
                     diseaseOccurrence: 0,
@@ -177,7 +177,7 @@ class TopCrops {
             const item = acc[`${cropName} - ${variety}`];
             item.volumeProductionPerHectare += values.volumeProductionPerHectare / values.count;
             item.incomePerHectare += values.incomePerHectare / values.count;
-            item.benefitPerHectare += values.benefitPerHectare / values.count;
+            item.profitPerHectare += values.profitPerHectare / values.count;
             item.price += values.price / values.count;
             item.pestOccurrence += values.pestOccurrence / values.count;
             item.diseaseOccurrence += values.diseaseOccurrence / values.count;
@@ -187,7 +187,7 @@ class TopCrops {
                 monthYear,
                 volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
                 incomePerHectare: values.incomePerHectare / values.count,
-                benefitPerHectare: values.benefitPerHectare / values.count,
+                profitPerHectare: values.profitPerHectare / values.count,
                 price: values.price / values.count,
                 pestOccurrence: values.pestOccurrence / values.count,
                 diseaseOccurrence: values.diseaseOccurrence / values.count,
@@ -200,7 +200,7 @@ class TopCrops {
         const ranges = {
             volumeProduction: calculateMinMax(Object.values(aggregatedDataByCrop), 'volumeProductionPerHectare'),
             income: calculateMinMax(Object.values(aggregatedDataByCrop), 'incomePerHectare'),
-            benefit: calculateMinMax(Object.values(aggregatedDataByCrop), 'benefitPerHectare'),
+            profit: calculateMinMax(Object.values(aggregatedDataByCrop), 'profitPerHectare'),
             price: calculateMinMax(Object.values(aggregatedDataByCrop), 'price'),
             pest: calculateMinMax(Object.values(aggregatedDataByCrop), 'pestOccurrence'),
             disease: calculateMinMax(Object.values(aggregatedDataByCrop), 'diseaseOccurrence'),
@@ -225,7 +225,7 @@ class TopCrops {
                 variety,
                 volumeProductionPerHectare: values.volumeProductionPerHectare,
                 incomePerHectare: values.incomePerHectare,
-                benefitPerHectare: values.benefitPerHectare,
+                profitPerHectare: values.profitPerHectare,
                 price: values.price,
                 pestOccurrence: values.pestOccurrence,
                 diseaseOccurrence: values.diseaseOccurrence,
@@ -326,7 +326,7 @@ class TopCrops {
                 `<p class="text-center"></br> Average production volume: <strong>${entry.volumeProductionPerHectare} per hectare/ha</strong>` +
                 `</br> Average price: <strong>₱${parseFloat(entry.price).toLocaleString()}</strong>` +
                 `</br> Average income: <strong>₱${parseFloat(entry.incomePerHectare).toLocaleString()} per hectare/ha</strong>` +
-                `</br> Average profit: <strong>₱${parseFloat(entry.benefitPerHectare).toLocaleString()} per hectare/ha</strong>` +
+                `</br> Average profit: <strong>₱${parseFloat(entry.profitPerHectare).toLocaleString()} per hectare/ha</strong>` +
                 `</br> Pest occurrence: <strong>${entry.pestOccurrence} (${calculateOccurrencePercentage(entry.pestOccurrence, entry.totalPlanted).toFixed(2)}%)</strong>` +
                 `</br> Disease occurrence: <strong>${entry.diseaseOccurrence} (${calculateOccurrencePercentage(entry.diseaseOccurrence, entry.totalPlanted).toFixed(2)}%)</strong><p>`
                 
@@ -462,7 +462,7 @@ function downloadCSV(filename, data) {
         type: 'Type',
         volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha ',
-        benefitPerHectare: 'Average Profit / ha',
+        profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
@@ -476,7 +476,7 @@ function downloadCSV(filename, data) {
         'type',
         'volumeProductionPerHectare',
         'incomePerHectare',
-        'benefitPerHectare',
+        'profitPerHectare',
         'price',
         'pestOccurrence',
         'diseaseOccurrence',
@@ -501,7 +501,7 @@ function downloadCSV(filename, data) {
         ...data.map(row => 
             headersToInclude.map(key => {
                 const value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
-                if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+                if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
                     return value !== '' ? `₱${parseFloat(value).toFixed(2)}` : '';
                 }
                 return escapeCSVValue(value);
@@ -532,7 +532,7 @@ function downloadExcel(filename, data) {
         type: 'Type',
         volumeProductionPerHectare: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha ',
-        benefitPerHectare: 'Average Profit / ha',
+        profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
@@ -546,7 +546,7 @@ function downloadExcel(filename, data) {
         'type',
         'volumeProductionPerHectare',
         'incomePerHectare',
-        'benefitPerHectare',
+        'profitPerHectare',
         'price',
         'pestOccurrence',
         'diseaseOccurrence',
@@ -575,7 +575,7 @@ function downloadExcel(filename, data) {
         worksheet.addRow(headersToInclude.map(header => {
             const value = row[headerMap[header]];
             // Format specific columns with peso sign
-            if (header === 'incomePerHectare' || header === 'benefitPerHectare' || header === 'price') {
+            if (header === 'incomePerHectare' || header === 'profitPerHectare' || header === 'price') {
                 return value ? `₱${parseFloat(value).toFixed(2)}` : '';
             }
             return value;

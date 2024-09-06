@@ -224,12 +224,12 @@ async function handleCategoryChange() {
     yearRange = await getYearRange();
     downloadYR = yearRange;
     switch (category) {
-        case 'total_planted':
-            key = "totalPlanted";
+        case 'area_planted':
+            key = "areaPlanted";
             data = await getProduction(crop, season);   
-            categoryText = `Total Planted Per Barangay (${yearRange})`;
-            dataset = stats.countTotalPlantedBarangay(data);
-            text = "total planted";
+            categoryText = `Area Planted Per Barangay (${yearRange})`;
+            dataset = stats.countAverageAreaPlantedBarangay(data);
+            text = "area planted";
             break;
         case 'production_volume':
             key = "volumeProduction";
@@ -259,12 +259,12 @@ async function handleCategoryChange() {
             dataset = stats.priceIncomePerHectareBarangay(data);
             text = "price income per hectare";
             break;
-        case 'benefit_per_hectare':
-            key = "benefitPerHectare";
+        case 'profit_per_hectare':
+            key = "profitPerHectare";
             data = await getProduction(crop, season);
-            categoryText = `Benefit per Hectare Per Barangay (${yearRange})`;
-            dataset = stats.benefitPerHectareBarangay(data);
-            text = "benefit per hectare";
+            categoryText = `Profit per Hectare Per Barangay (${yearRange})`;
+            dataset = stats.profitPerHectareBarangay(data);
+            text = "profit per hectare";
             break;
         default:
             categoryText = 'Category not recognized';
@@ -373,7 +373,7 @@ function downloadCSV(filename, data) {
       season: 'Season',
       volumeProduction: 'Average Volume Production (mt/ha)',
       incomePerHectare: 'Average Income / ha',
-      benefitPerHectare: 'Average Profit / ha',
+      profitPerHectare: 'Average Profit / ha',
       price: 'Price (kg)',
       pestOccurrence: 'Pest Observed',
       diseaseOccurrence: 'Disease Observed',
@@ -394,8 +394,8 @@ function downloadCSV(filename, data) {
   if (filenameLower.includes('incomeperhectare')) {
       additionalHeaders.push('incomePerHectare');
   }
-  if (filenameLower.includes('benefitperhectare')) {
-      additionalHeaders.push('benefitPerHectare');
+  if (filenameLower.includes('profitperhectare')) {
+      additionalHeaders.push('profitPerHectare');
   }
   if (filenameLower.includes('price')) {
       additionalHeaders.push('price');
@@ -425,7 +425,7 @@ function downloadCSV(filename, data) {
           const value = row[key];
 
           // Format specific columns with peso sign
-          if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+          if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
               return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
           }
           // Escape and format other values
@@ -457,7 +457,7 @@ function downloadExcel(filename, data) {
       season: 'Season',
       volumeProduction: 'Average Volume Production (mt/ha)',
       incomePerHectare: 'Average Income / ha',
-      benefitPerHectare: 'Average Profit / ha',
+      profitPerHectare: 'Average Profit / ha',
       price: 'Price (kg)',
       pestOccurrence: 'Pest Observed',
       diseaseOccurrence: 'Disease Observed',
@@ -478,8 +478,8 @@ function downloadExcel(filename, data) {
   if (filenameLower.includes('incomeperhectare')) {
       additionalHeaders.push('incomePerHectare');
   }
-  if (filenameLower.includes('benefitperhectare')) {
-      additionalHeaders.push('benefitPerHectare');
+  if (filenameLower.includes('profitperhectare')) {
+      additionalHeaders.push('profitPerHectare');
   }
   if (filenameLower.includes('price')) {
       additionalHeaders.push('price');
@@ -519,7 +519,7 @@ function downloadExcel(filename, data) {
       worksheet.addRow(headersToInclude.map(header => {
           const value = row[headerMap[header]];
           // Format specific columns with peso sign
-          if (header === 'incomePerHectare' || header === 'benefitPerHectare' || header === 'price') {
+          if (header === 'incomePerHectare' || header === 'profitPerHectare' || header === 'price') {
               return value ? `₱${parseFloat(value).toFixed(2)}` : '';
           }
           return value;

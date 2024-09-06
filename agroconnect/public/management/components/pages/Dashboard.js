@@ -1,5 +1,5 @@
 import { getCrop, getProduction, getPrice, getPest, getDisease, getProductions, getFarmer, getDataEntries, getRecord, getUsers, getBarangay, getConcerns, getDownloadCount, getUniqueCropNames} from '../../../js/fetch.js';
-import { countTotalPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, benefitPerHectare, getCropData } from '../../../js/statistics.js';
+import { countAverageAreaPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, profitPerHectare, getCropData } from '../../../js/statistics.js';
 import { user } from '../HeaderSidebar.js';
 
 export default function initDashboard() {
@@ -176,13 +176,13 @@ export default function initDashboard() {
               <div class="form-group col-md-4">
                 <label for="category">Category:</label>
                 <select id="category" class="form-control">
-                  <option value="total_planted">Total Planted</option>
-                  <option value="production_volume">Production Volume Per Hectare</option>
-                  <option value="price">Price</option>
-                  <option value="pest_occurrence">Pest Occurrence</option>
-                  <option value="disease_occurrence">Disease Occurrence</option>
-                  <option value="price_income_per_hectare">Price Income per Hectare</option>
-                  <option value="benefit_per_hectare">Benefit Per Hectare</option>
+                    <option value="production_volume">Average Production Volume</option>
+                    <option value="price_income_per_hectare">Average Income</option>
+                    <option value="profit_per_hectare">Average Profit</option>
+                    <option value="area">Average Area Planted</option>
+                    <option value="price">Average Price</option>
+                    <option value="pest_occurrence">Pest Occurrence</option>
+                    <option value="disease_occurrence">Disease Occurrence</option>
                 </select>
               </div>
             </form>
@@ -362,12 +362,12 @@ async function updateCropOptions() {
       
       try {
           switch (category) {
-              case 'total_planted':
-                  categoryText = 'Total Planted';
-                  key = ["totalPlanted"];
+              case 'area_planted':
+                  categoryText = 'Area Planted';
+                  key = ["areaPlanted"];
                   data = await getProduction(crop, season);
-                  dataset = countTotalPlanted(data);
-                  console.log(data);
+                  dataset = countAverageAreaPlanted(data);
+                  console.log(dataset);
                   break;
               case 'production_volume':
                   categoryText = 'Production Volume Per Hectare';
@@ -399,11 +399,11 @@ async function updateCropOptions() {
                   data = await getProduction(crop, season);
                   dataset = priceIncomePerHectare(data);
                   break;
-              case 'benefit_per_hectare':
-                  categoryText = 'Benefit per Hectare';
-                  key = ["benefitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
+              case 'profit_per_hectare':
+                  categoryText = 'Profit per Hectare';
+                  key = ["profitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
                   data = await getProduction(crop, season);
-                  dataset = benefitPerHectare(data);
+                  dataset = profitPerHectare(data);
                   break;
               default:
                   categoryText = 'Category not recognized';
@@ -569,7 +569,7 @@ async function updateCropOptions() {
             const indicators = {
                 volumeProduction: entry.volumeProductionPerHectare,
                 income: entry.incomePerHectare,
-                benefit: entry.benefitPerHectare,
+                profit: entry.profitPerHectare,
                 price: entry.price,
                 pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
                 disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence,
@@ -579,7 +579,7 @@ async function updateCropOptions() {
             const normalizedIndicators = {
                 volumeProduction: normalize(indicators.volumeProduction, ranges.volumeProduction.min, ranges.volumeProduction.max),
                 income: normalize(indicators.income, ranges.income.min, ranges.income.max),
-                benefit: normalize(indicators.benefit, ranges.benefit.min, ranges.benefit.max),
+                profit: normalize(indicators.profit, ranges.profit.min, ranges.profit.max),
                 price: normalize(indicators.price, ranges.price.min, ranges.price.max),
                 pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
                 disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min),
@@ -588,7 +588,7 @@ async function updateCropOptions() {
             return (
                 0.15 * normalizedIndicators.volumeProduction +
                 0.15 * normalizedIndicators.income +
-                0.15 * normalizedIndicators.benefit +
+                0.15 * normalizedIndicators.profit +
                 0.15 * normalizedIndicators.price +
                 0.1 * normalizedIndicators.pest +
                 0.1 * normalizedIndicators.disease
@@ -602,7 +602,7 @@ async function updateCropOptions() {
                 acc[key] = {
                     volumeProductionPerHectare: 0,
                     incomePerHectare: 0,
-                    benefitPerHectare: 0,
+                    profitPerHectare: 0,
                     price: 0,
                     pestOccurrence: 0,
                     diseaseOccurrence: 0,
@@ -613,7 +613,7 @@ async function updateCropOptions() {
             const item = acc[key];
             item.volumeProductionPerHectare += entry.volumeProductionPerHectare;
             item.incomePerHectare += entry.incomePerHectare;
-            item.benefitPerHectare += entry.benefitPerHectare;
+            item.profitPerHectare += entry.profitPerHectare;
             item.price += entry.price;
             item.pestOccurrence += entry.pestOccurrence;
             item.diseaseOccurrence += entry.diseaseOccurrence;
@@ -629,7 +629,7 @@ async function updateCropOptions() {
                 acc[`${cropName} - ${variety}`] = {
                     volumeProductionPerHectare: 0,
                     incomePerHectare: 0,
-                    benefitPerHectare: 0,
+                    profitPerHectare: 0,
                     price: 0,
                     pestOccurrence: 0,
                     diseaseOccurrence: 0,
@@ -641,7 +641,7 @@ async function updateCropOptions() {
             const item = acc[`${cropName} - ${variety}`];
             item.volumeProductionPerHectare += values.volumeProductionPerHectare / values.count;
             item.incomePerHectare += values.incomePerHectare / values.count;
-            item.benefitPerHectare += values.benefitPerHectare / values.count;
+            item.profitPerHectare += values.profitPerHectare / values.count;
             item.price += values.price / values.count;
             item.pestOccurrence += values.pestOccurrence / values.count;
             item.diseaseOccurrence += values.diseaseOccurrence / values.count;
@@ -651,7 +651,7 @@ async function updateCropOptions() {
                 monthYear,
                 volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
                 incomePerHectare: values.incomePerHectare / values.count,
-                benefitPerHectare: values.benefitPerHectare / values.count,
+                profitPerHectare: values.profitPerHectare / values.count,
                 price: values.price / values.count,
                 pestOccurrence: values.pestOccurrence / values.count,
                 diseaseOccurrence: values.diseaseOccurrence / values.count,
@@ -664,7 +664,7 @@ async function updateCropOptions() {
         const ranges = {
             volumeProduction: calculateMinMax(Object.values(aggregatedDataByCrop), 'volumeProductionPerHectare'),
             income: calculateMinMax(Object.values(aggregatedDataByCrop), 'incomePerHectare'),
-            benefit: calculateMinMax(Object.values(aggregatedDataByCrop), 'benefitPerHectare'),
+            profit: calculateMinMax(Object.values(aggregatedDataByCrop), 'profitPerHectare'),
             price: calculateMinMax(Object.values(aggregatedDataByCrop), 'price'),
             pest: calculateMinMax(Object.values(aggregatedDataByCrop), 'pestOccurrence'),
             disease: calculateMinMax(Object.values(aggregatedDataByCrop), 'diseaseOccurrence'),
@@ -689,7 +689,7 @@ async function updateCropOptions() {
                 variety,
                 volumeProductionPerHectare: values.volumeProductionPerHectare,
                 incomePerHectare: values.incomePerHectare,
-                benefitPerHectare: values.benefitPerHectare,
+                profitPerHectare: values.profitPerHectare,
                 price: values.price,
                 pestOccurrence: values.pestOccurrence,
                 diseaseOccurrence: values.diseaseOccurrence,

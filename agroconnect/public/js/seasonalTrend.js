@@ -331,11 +331,11 @@ async function handleCategoryChange() {
 
     let data = [];
     switch (category) {
-        case 'total_planted':
-            categoryText = 'Total Planted';
-            key = ["totalPlanted"];
+        case 'area_planted':
+            categoryText = 'Area Planted';
+            key = ["areaPlanted"];
             data = await getProduction(crop, season);
-            dataset = stats.countTotalPlanted(data);
+            dataset = stats.countAverageAreaPlanted(data);
             break;
         case 'production_volume':
             categoryText = 'Production Volume Per Hectare';
@@ -369,11 +369,11 @@ async function handleCategoryChange() {
             dataset = stats.priceIncomePerHectare(data);
             console.log(dataset);
             break;
-        case 'benefit_per_hectare':
-            categoryText = 'Benefit per Hectare';
-            key = ["benefitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
+        case 'profit_per_hectare':
+            categoryText = 'Profit per Hectare';
+            key = ["profitPerHectare", "totalArea", "totalIncome", "totalProductionCost"];
             data = await getProduction(crop, season);
-            dataset = stats.benefitPerHectare(data);
+            dataset = stats.profitPerHectare(data);
             break;
         default:
             categoryText = 'Category not recognized';
@@ -589,7 +589,7 @@ function downloadCSV(filename, data) {
         monthYear: 'Month-Year',
         volumeProduction: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha',
-        benefitPerHectare: 'Average Profit / ha',
+        profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
@@ -609,8 +609,8 @@ function downloadCSV(filename, data) {
     if (filenameLower.includes('incomeperhectare')) {
         additionalHeaders.push('incomePerHectare');
     }
-    if (filenameLower.includes('benefitperhectare')) {
-        additionalHeaders.push('benefitPerHectare');
+    if (filenameLower.includes('profitperhectare')) {
+        additionalHeaders.push('profitPerHectare');
     }
     if (filenameLower.includes('price')) {
         additionalHeaders.push('price');
@@ -635,7 +635,7 @@ function downloadCSV(filename, data) {
         ...data.map(row => headersToInclude.map(key => {
             const value = row[key];
             // Format specific columns with peso sign
-            if (key === 'incomePerHectare' || key === 'benefitPerHectare' || key === 'price') {
+            if (key === 'incomePerHectare' || key === 'profitPerHectare' || key === 'price') {
                 return value ? `"₱${parseFloat(value).toFixed(2)}"` : '';
             }
             return escapeCSVValue(value);
@@ -715,7 +715,7 @@ function downloadExcel(filename, data) {
         season: 'Season',
         volumeProduction: 'Average Volume Production (mt/ha)',
         incomePerHectare: 'Average Income / ha',
-        benefitPerHectare: 'Average Profit / ha',
+        profitPerHectare: 'Average Profit / ha',
         price: 'Price (kg)',
         pestOccurrence: 'Pest Observed',
         diseaseOccurrence: 'Disease Observed',
@@ -738,8 +738,8 @@ function downloadExcel(filename, data) {
     if (filenameLower.includes('incomeperhectare')) {
         additionalHeaders.push('incomePerHectare');
     }
-    if (filenameLower.includes('benefitperhectare')) {
-        additionalHeaders.push('benefitPerHectare');
+    if (filenameLower.includes('profitperhectare')) {
+        additionalHeaders.push('profitPerHectare');
     }
     if (filenameLower.includes('price')) {
         additionalHeaders.push('price');
@@ -779,8 +779,8 @@ function downloadExcel(filename, data) {
         worksheet.addRow(headersToInclude.map(header => {
             let value = row[headerMap[header]];
             
-            // Format specific columns with decimal places (e.g., income, benefit, price)
-            if (header === 'incomePerHectare' || header === 'benefitPerHectare' || header === 'price') {
+            // Format specific columns with decimal places (e.g., income, profit, price)
+            if (header === 'incomePerHectare' || header === 'profitPerHectare' || header === 'price') {
                 value = value ? `₱${parseFloat(value).toFixed(2)}` : ''; // Add decimal formatting and peso sign
             } else if (typeof value === 'number') {
                 value = value.toFixed(2); // Add decimal formatting for other numeric columns

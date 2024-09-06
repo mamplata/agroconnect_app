@@ -99,67 +99,77 @@ function isVariationLow(stdDev, threshold = 0.1) {
     return stdDev < threshold;
 }
 
-function countTotalPlanted(data) {
+function countAverageAreaPlanted(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
     }
 
+    console.log(data);
+
+    // Aggregate data
     const monthCropCounts = data.reduce((acc, item) => {
-        const { monthPlanted, cropName, season } = item;
+        const { monthPlanted, cropName, season, areaPlanted } = item;
 
         if (!acc[monthPlanted]) {
             acc[monthPlanted] = {};
         }
 
         if (!acc[monthPlanted][cropName]) {
-            acc[monthPlanted][cropName] = { season, totalPlanted: 0 };
+            acc[monthPlanted][cropName] = { season, totalPlanted: 0, areaPlanted: 0 };
         }
 
         acc[monthPlanted][cropName].totalPlanted++;
+        acc[monthPlanted][cropName].areaPlanted += areaPlanted;
+        
         return acc;
     }, {});
 
+    // Calculate averageAreaPlanted and prepare final output
     return Object.entries(monthCropCounts).flatMap(([month, crops]) =>
-        Object.entries(crops).map(([cropName, { season, totalPlanted }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalPlanted, areaPlanted }]) => ({
             monthYear: month,
             cropName,
             season,
-            totalPlanted
+            totalPlanted,
+            areaPlanted: parseFloat((areaPlanted / totalPlanted).toFixed(2)) // Compute averageAreaPlanted as totalArea / totalPlanted
         }))
     );
 }
 
-function countTotalPlantedBarangay(data) {
+function countAverageAreaPlantedBarangay(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
     }
 
     const barangayCropCounts = data.reduce((acc, item) => {
-        const { barangay, cropName, season } = item;
+        const { barangay, cropName, season, areaPlanted } = item;
 
         if (!acc[barangay]) {
             acc[barangay] = {};
         }
 
         if (!acc[barangay][cropName]) {
-            acc[barangay][cropName] = { season, totalPlanted: 0 };
+            acc[barangay][cropName] = { season, totalPlanted: 0, areaPlanted: 0 };
         }
 
         acc[barangay][cropName].totalPlanted++;
+        acc[barangay][cropName].areaPlanted += areaPlanted;
         return acc;
     }, {});
 
     return Object.entries(barangayCropCounts).flatMap(([barangay, crops]) =>
-        Object.entries(crops).map(([cropName, { season, totalPlanted }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalPlanted, areaPlanted }]) => ({
             barangay,
             cropName,
             season,
-            totalPlanted
+            totalPlanted,
+            areaPlanted: parseFloat((areaPlanted / totalPlanted).toFixed(2)) // Compute averageAreaPlanted as totalArea / totalPlanted
         }))
     );
 }
+
 
 function averageVolumeProduction(data) {
     if (!Array.isArray(data)) {
@@ -538,7 +548,7 @@ function priceIncomePerHectareBarangay(data) {
 }
 
 
-function benefitPerHectare(data) {
+function profitPerHectare(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
@@ -586,13 +596,13 @@ function benefitPerHectare(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 // Adjusted formula
+            profitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 // Adjusted formula
         }))
     );
 }
 
 
-function benefitPerHectareBarangay(data) {
+function profitPerHectareBarangay(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
@@ -643,7 +653,7 @@ function benefitPerHectareBarangay(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            benefitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 
+            profitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 
         }))
     );
 }
@@ -668,13 +678,13 @@ function getCropData(production, price, pest, disease, crops, type) {
     const filteredDisease = disease.filter(item => cropTypeMap[item.cropName] === type);
 
     // Extract related data from other datasets
-    const totalPlantedData = countTotalPlanted(filteredProduction);
+    const totalPlantedData = countAverageAreaPlanted(filteredProduction);
     const averageVolumeData = averageVolumeProduction(filteredProduction);
     const averagePriceData = averagePrice(filteredPrice);
     const pestOccurrenceData = countPestOccurrence(filteredPest);
     const diseaseOccurrenceData = countDiseaseOccurrence(filteredDisease);
     const priceIncomeData = priceIncomePerHectare(filteredProduction);
-    const benefitData = benefitPerHectare(filteredProduction);
+    const profitData = profitPerHectare(filteredProduction);
 
     return filteredProduction.map(prodItem => {
         const { cropName, variety, season, monthYear } = prodItem;
@@ -686,7 +696,7 @@ function getCropData(production, price, pest, disease, crops, type) {
         const pestData = pestOccurrenceData.find(item => item.cropName === cropName) || {};
         const diseaseData = diseaseOccurrenceData.find(item => item.cropName === cropName) || {};
         const incomeData = priceIncomeData.find(item => item.cropName === cropName) || {};
-        const benefitDataItem = benefitData.find(item => item.cropName === cropName) || {};
+        const profitDataItem = profitData.find(item => item.cropName === cropName) || {};
 
         return {
             cropName,
@@ -697,14 +707,14 @@ function getCropData(production, price, pest, disease, crops, type) {
             pestOccurrence: pestData.pestOccurrence || 0,
             diseaseOccurrence: diseaseData.diseaseOccurrence || 0,
             incomePerHectare: incomeData.incomePerHectare || 0,
-            benefitPerHectare: benefitDataItem.benefitPerHectare || 0,
+            profitPerHectare: profitDataItem.profitPerHectare || 0,
             season,
             monthYear
         };
     });
 };
 
-export { countTotalPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, benefitPerHectare, getCropData,
+export { countAverageAreaPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, profitPerHectare, getCropData,
     parseDate, calculateYearlyAverages, calculateZScoresForGrowthRates, interpretPerformance, interpretPerformanceScore,
-    countTotalPlantedBarangay, averageVolumeProductionBarangay, countPestOccurrenceBarangay, countDiseaseOccurrenceBarangay, priceIncomePerHectareBarangay, benefitPerHectareBarangay
+    countAverageAreaPlantedBarangay, averageVolumeProductionBarangay, countPestOccurrenceBarangay, countDiseaseOccurrenceBarangay, priceIncomePerHectareBarangay, profitPerHectareBarangay
 };
