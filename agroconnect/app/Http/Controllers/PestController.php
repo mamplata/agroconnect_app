@@ -52,6 +52,10 @@ class PestController extends Controller
     {
         $pestDataArray = $request->input('pestData');
 
+        if (empty($pestDataArray)) {
+            return response()->json(['message' => 'No data to process']);
+        }
+
         // Process and store each item in the validated data
         foreach ($pestDataArray as $pestData) {
             $request->validate([

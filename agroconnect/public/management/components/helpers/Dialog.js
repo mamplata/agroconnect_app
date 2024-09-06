@@ -201,104 +201,94 @@ class Dialog {
         });
     }
 
-   static async showCropModal(cropImg, description, cropVariety) {
-    // Create elements
-    const modal = document.createElement('dialog');
-    const container = document.createElement('div');
-    const imgContainer = document.createElement('div');
-    const img = document.createElement('img');
-    const descContainer = document.createElement('div');
-    const desc = document.createElement('p');
-    const btnClose = document.createElement('button');
-    const btnWrapper = document.createElement('div'); // Wrapper for the button
+    static async showCropModal(cropImg, description, cropVariety) {
+        // Create elements
+        const modal = document.createElement('dialog');
+        const container = document.createElement('div');
+        const imgContainer = document.createElement('div');
+        const img = document.createElement('img');
+        const descContainer = document.createElement('div');
+        const desc = document.createElement('p');
+        const btnClose = document.createElement('button');
+        const btnWrapper = document.createElement('div'); // Wrapper for the button
+        
+        // Add attributes
+        modal.setAttribute('id', 'messageDialog');
+        img.setAttribute('id', 'cropImg');
+        img.setAttribute('src', cropImg);
+        img.setAttribute('alt', 'Crop Image');
+        img.style.width = '20rem'; // Adjust image size as needed
+        img.style.height = 'auto'; // Maintain aspect ratio
+        desc.setAttribute('id', 'cropDescription');
+        desc.innerText = description;
+        btnClose.setAttribute('id', 'btnClose');
+        btnClose.innerText = 'Close';
+        
+        // Create headers
+        const imgHeader = document.createElement('p');
+        imgHeader.innerText = `${cropVariety}`;
+        imgHeader.style.fontWeight = "bold";
+        const descHeader = document.createElement('p');
+        descHeader.innerText = 'Description: ';
+        descHeader.style.fontWeight = "bold";
+        
+        // Style the elements
+        modal.style.maxWidth = '700px'; // Adjust as needed
+        modal.style.padding = '20px';
+        modal.style.textAlign = 'center';
+        
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column'; // Stack all elements vertically
+        container.style.alignItems = 'center'; // Center items horizontally
+        container.style.gap = '20px'; // Space between image, description, and button
+        
+        imgContainer.style.display = 'flex';
+        imgContainer.style.flexDirection = 'column'; // Stack header and image vertically
+        imgContainer.style.alignItems = 'center'; // Center the image horizontally
+        imgContainer.style.textAlign = 'center'; // Center the header and image horizontally
+        
+        descContainer.style.textAlign = 'left'; // Align text to the left
+        descContainer.style.padding = '10px'; // Add padding to separate text from image
+        
+        // Style the button wrapper
+        btnWrapper.style.display = 'flex';
+        btnWrapper.style.justifyContent = 'center'; // Center the button horizontally
+        
+        // Append headers and content
+        imgContainer.append(imgHeader, img);
+        descContainer.append(descHeader, desc);
+        btnWrapper.append(btnClose);
+        container.append(imgContainer, descContainer, btnWrapper);
+        modal.append(container);
+        document.body.append(modal);
+        
+        // Create dialogData object
+        const dialogData = {
+            operation: 0, // Default operation
+        };
+        
+        return new Promise((resolve) => {
+            if (!modal.open) {
+                // Display the modal
+                modal.showModal();
+        
+                btnClose.addEventListener('click', () => {
+                    // Close the modal
+                    modal.close();
+        
+                    // Remove the element
+                    modal.remove();
+        
+                    // Update dialogData to indicate close operation
+                    dialogData.operation = 1;
+        
+                    // Resolve the promise with dialogData
+                    resolve(dialogData);
+                });
+            }
+        });
+    }
     
-    // Add attributes
-    modal.setAttribute('id', 'messageDialog');
-    img.setAttribute('id', 'cropImg');
-    img.setAttribute('src', cropImg);
-    img.setAttribute('alt', 'Crop Image');
-    img.style.width = '20rem'; // Adjust image size as needed
-    img.style.height = 'auto'; // Maintain aspect ratio
-    desc.setAttribute('id', 'cropDescription');
-    desc.innerText = description;
-    btnClose.setAttribute('id', 'btnClose');
-    btnClose.innerText = 'Close';
-    
-    // Create headers
-    const imgHeader = document.createElement('p');
-    imgHeader.innerText = `${cropVariety}`;
-    imgHeader.style.fontWeight = "bold";
-    const descHeader = document.createElement('p');
-    descHeader.innerText = 'Description: ';
-    descHeader.style.fontWeight = "bold";
-    
-    // Style the elements
-    modal.style.maxWidth = '800px'; // Adjust as needed
-    modal.style.padding = '20px';
-    modal.style.textAlign = 'center';
-    
-    container.style.display = 'flex';
-    container.style.flexDirection = 'column'; // Stack image and description, then button
-    container.style.alignItems = 'center'; // Center items horizontally
-    container.style.gap = '20px'; // Space between image/description and button
-    
-    const contentContainer = document.createElement('div');
-    contentContainer.style.display = 'flex';
-    contentContainer.style.flexDirection = 'row'; // Arrange items in a row (two columns)
-    contentContainer.style.alignItems = 'center'; // Center items vertically
-    contentContainer.style.gap = '20px'; // Space between image and description
-    
-    imgContainer.style.flex = '1'; // Allow image container to grow
-    imgContainer.style.display = 'flex';
-    imgContainer.style.flexDirection = 'column'; // Stack header and image vertically
-    imgContainer.style.alignItems = 'center'; // Center the image horizontally
-    imgContainer.style.textAlign = 'center'; // Center the header and image horizontally
-    
-    descContainer.style.flex = '1'; // Allow description container to grow
-    descContainer.style.textAlign = 'left'; // Align text to the left
-    descContainer.style.padding = '10px'; // Add padding to separate text from image
-    descContainer.style.display = 'flex';
-    descContainer.style.flexDirection = 'column'; // Stack header and description vertically
-    
-    // Style the button wrapper
-    btnWrapper.style.display = 'flex';
-    btnWrapper.style.justifyContent = 'flex-end'; // Align items to the right
-    
-    // Append headers and content
-    imgContainer.append(imgHeader, img);
-    descContainer.append(descHeader, desc);
-    contentContainer.append(imgContainer, descContainer);
-    btnWrapper.append(btnClose);
-    container.append(contentContainer, btnWrapper);
-    modal.append(container);
-    document.body.append(modal);
-    
-    // Create dialogData object
-    const dialogData = {
-        operation: 0, // Default operation
-    };
-    
-    return new Promise((resolve) => {
-        if (!modal.open) {
-            // Display the modal
-            modal.showModal();
-    
-            btnClose.addEventListener('click', () => {
-                // Close the modal
-                modal.close();
-    
-                // Remove the element
-                modal.remove();
-    
-                // Update dialogData to indicate close operation
-                dialogData.operation = 1;
-    
-                // Resolve the promise with dialogData
-                resolve(dialogData);
-            });
-        }
-    });
-}
 
 static async downloadDialog() {
     // Create elements

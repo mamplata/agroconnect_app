@@ -175,6 +175,7 @@ function initializeMethodsFarmer() {
     var pageSize = 5;
     var currentPage = 1;
     var farmer = null;
+    var isEdit = false;
 
     async function displayFarmers(farmerName = null) {
 
@@ -267,7 +268,7 @@ function initializeMethodsFarmer() {
       var fieldType= $('#fieldType').val();
       var phoneNumber= $('#phoneNumber').val();
       var barangayId = parseInt($('#barangay-option').val(), 10);
-      if (selectedRow !== null) {
+      if (selectedRow !== null && isEdit) {
 
         let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType, phoneNumber);
         console.log(farmer);
@@ -276,6 +277,7 @@ function initializeMethodsFarmer() {
         $('#submitBtn').text('Add farmer');
         $('#cancelBtn').hide(); 
         resetFields();
+        isEdit = false;
       } else {
         let farmer = new Farmer(barangayId, farmerId, farmerName, fieldArea, fieldType, phoneNumber);
         console.log(farmer);
@@ -360,6 +362,7 @@ function initializeMethodsFarmer() {
           getFarmer();
           displayFarmers();
           resetFields();
+          isEdit = true;
       } else {
           // If Cancel is clicked, do nothing or add additional handling if needed
           console.log("Delete action was canceled.");

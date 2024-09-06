@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DamageReport;
 use App\Models\Record;
 use App\Models\Production;
 use App\Models\Price;
@@ -118,6 +119,9 @@ class RecordController extends Controller
             } else if ($record->type === 'soilHealth') {
                 // Delete associated records from the Price table
                 SoilHealth::where('recordId', $id)->delete();
+            } else if ($record->type === 'damage') {
+                // Delete associated records from the Price table
+                DamageReport::where('recordId', $id)->delete();
             }
 
             // Delete the record itself

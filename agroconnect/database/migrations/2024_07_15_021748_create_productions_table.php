@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('recordId')->references('recordId')->on('records');
             $table->string('barangay', 255);
             $table->string('cropName', 255);
-            $table->string('variety', 255);
+            $table->string('variety', 255)->nullable();
             $table->double('areaPlanted');
             $table->string('monthPlanted', 255);
             $table->string('monthHarvested', 255);

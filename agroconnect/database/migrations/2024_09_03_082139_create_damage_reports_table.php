@@ -10,13 +10,17 @@ class CreateDamageReportsTable extends Migration
     {
         Schema::create('damage_reports', function (Blueprint $table) {
             $table->id('damageId');
+            $table->unsignedBigInteger('recordId');
+            $table->foreign('recordId')->references('recordId')->on('records');
             $table->string('barangay');
             $table->string('cropName');
-            $table->string('variety');
+            $table->string('variety')->nullable();
             $table->integer('numberOfFarmers');
             $table->decimal('areaAffected', 8, 2); // 8 digits total, 2 decimal places
-            $table->decimal('yieldLoss', 5, 2); // 5 digits total, 2 decimal places
+            $table->string('yieldLoss');
             $table->decimal('grandTotalValue', 15, 2); // 15 digits total, 2 decimal places
+            $table->string('season');
+            $table->string('monthYear');
             $table->timestamps();
         });
     }

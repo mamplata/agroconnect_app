@@ -130,6 +130,7 @@ function initializeMethodsCrop() {
     var selectedRow = null;
     var pageSize = 5;
     var currentPage = 1;
+    var isEdit = false;
     var crop = null;
 
     async function displayCrops(cropName = null) {
@@ -144,18 +145,18 @@ function initializeMethodsCrop() {
   
       if (cropName) {
           // Display a single crop if cropName is provided
-          const foundcrops = searchCrop(cropName);
-          if (foundcrops.length > 0) {
-              foundcrops.forEach(crop => {
+          const foundCrops = searchCrop(cropName);
+          if (foundCrops.length > 0) {
+              foundCrops.forEach(crop => {
                   $('#cropTableBody').append(`
-                      <tr data-index=${crop.cropId}>
+                      <tr data-index=${crop.cropId} class="text-center">
                           <td style="display: none;">${crop.cropId}</td>
                           <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
-                          <td>${crop.description}</td>
                           <td>${crop.cropName}</td>
-                          <td>${crop.variety}</td>
+                          <td>${crop.variety ? crop.variety : ''}</td>
                           <td>${crop.type}</td>
                           <td>${crop.priceWeight}</td>
+                          <td><button class="btn btn-green view-btn" data-img="${crop.cropImg}" data-description="${crop.description}" data-variety="${crop.cropName} - ${crop.variety}">View</button></td>
                       </tr>
                   `);
               });
@@ -163,7 +164,7 @@ function initializeMethodsCrop() {
               // Handle case where cropName is not found
               $('#cropTableBody').append(`
                   <tr>
-                      <td colspan="7">Crop not found!</td>
+                      <td colspan="6">Crop not found!</td>
                   </tr>
               `);
           }
@@ -175,19 +176,36 @@ function initializeMethodsCrop() {
               }
               var crop = crops[i];
               $('#cropTableBody').append(`
-                  <tr data-index=${crop.cropId}>
+                  <tr data-index=${crop.cropId} class="text-center">
                       <td style="display: none;">${crop.cropId}</td>
                       <td><img src="${crop.cropImg}" alt="${crop.cropName}" class="img-thumbnail" width="50" height="50"></td>
-                      <td>${crop.description}</td>
                       <td>${crop.cropName}</td>
+                      <td>${crop.variety ? crop.variety : ''}</td>
                       <td>${crop.type}</td>
-                      <td>${crop.variety}</td>
                       <td>${crop.priceWeight}</td>
+                      <td><button class="btn btn-green view-btn" data-img="${crop.cropImg}" data-description="${crop.description}" data-variety="${crop.cropName} - ${crop.variety}">View</button></td>
                   </tr>
               `);
           }
       }
-  }  
+  
+      // Attach click event handler to View buttons
+      $('.view-btn').on('click', async function() {
+          const imgSrc = $(this).data('img');
+          const desc = $(this).data('description');
+          const variety = $(this).data('variety');
+  
+          // Call the custom modal function
+          const res = await Dialog.showCropModal(imgSrc, desc, variety);
+  
+          if (res.operation === Dialog.OK) {
+              console.log('Modal was closed by the user');
+          } else {
+              console.log('Modal was not closed');
+          }
+      });
+  }
+  
     
 
     // Display initial crops
@@ -235,8 +253,9 @@ $('#submitBtn').click(function(event) {
   // Get the file input element and the selected file
   var cropImgFile = document.getElementById('cropImg').files[0];
   var cropImgBase64 = null;  // Initialize as null
-
+  console.log(selectedRow);
   if (cropImgFile) {
+      
       var reader = new FileReader();
       reader.onloadend = function() {
           cropImgBase64 = reader.result; // This is the base64 string
@@ -244,11 +263,12 @@ $('#submitBtn').click(function(event) {
           // Create the Crop object with the base64 image string
           let crop = new Crop(cropId, cropName, priceWeight, type, variety, cropImgBase64, description);
 
-          if (selectedRow !== null) {
+          if (selectedRow !== null && isEdit) {
               crop.updateCrop(crop);
               selectedRow = null;
               $('#submitBtn').text('Add crop');
               $('#cancelBtn').hide(); 
+              isEdit = false;
           } else {
               crop.createCrop(crop);
           }
@@ -266,12 +286,13 @@ $('#submitBtn').click(function(event) {
   } else {
       // Handle form submission without a new image
       // Use null for image when no new image is provided during update
-      if (selectedRow !== null) {
+      if (selectedRow !== null && isEdit) {
           let crop = new Crop(cropId, cropName, priceWeight, type, variety, prevCropImg, description);
           crop.updateCrop(crop);
           selectedRow = null;
           $('#submitBtn').text('Add crop');
           $('#cancelBtn').hide(); 
+          isEdit = false;
       } else {
           let crop = new Crop(cropId, cropName, priceWeight, type, variety, null, description);
           crop.createCrop(crop);
@@ -316,6 +337,7 @@ $('#submitBtn').click(function(event) {
           prevCropImg = crop.cropImg;
           $('#description').val(crop.description);
           $('#lblCropImg').text('Upload New Image (Optional):');
+          isEdit = true;
           
           // Split the string at the '/' and take the first part
           var extractedValue = crop.priceWeight.split('/')[0].trim();

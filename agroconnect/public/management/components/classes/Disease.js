@@ -151,7 +151,7 @@ class Disease {
       } else {
         $('#diseaseTableBody').append(`
           <tr>
-            <td colspan="5">No results found!</td>
+            <td colspan="7">No results found!</td>
           </tr>
         `);
       }
@@ -475,8 +475,8 @@ function formatHeader(key) {
         });
 
         // Add the values of 'Total no. of Trees/Plants Planted' and 'Total no. of Trees/Plants Affected/Damaged'
-        diseaseData['TotalPlanted'] = worksheet[totalPlantedColumn] ? worksheet[totalPlantedColumn].v : '';
-        diseaseData['TotalAffected'] = worksheet[totalAffectedColumn] ? worksheet[totalAffectedColumn].v : '';
+        diseaseData['TotalPlanted'] = worksheet[totalPlantedColumn] ? worksheet[totalPlantedColumn].v : 0;
+        diseaseData['TotalAffected'] = worksheet[totalAffectedColumn] ? worksheet[totalAffectedColumn].v : 0;
 
         // Create a new Disease instance
         var disease = new Disease(
@@ -494,26 +494,34 @@ function formatHeader(key) {
         diseaseDatas.push(disease);
     }
 
-    // Check if the record ID already exists in the diseaseDatas array
-    var existingDisease = diseases.find(d => d.recordId === diseaseDatas[0].recordId);
+      if (diseaseDatas.length !== 0) {
+        // Check if the record ID already exists in the diseaseDatas array
+        var existingDisease = diseases.find(d => d.recordId === diseaseDatas[0].recordId);
 
-    if (existingDisease) {
-        // Remove existing disease before adding the new one
-        await diseaseDatas[0].removeDisease(diseaseDatas);
-    }
+        if (existingDisease) {
+            // Remove existing disease before adding the new one
+            await diseaseDatas[0].removeDisease(diseaseDatas);
+        }
 
-    diseaseDatas[0].addDisease(diseaseDatas.slice(2));
+        diseaseDatas[0].addDisease(diseaseDatas.slice(2));
+      }
     return diseases;
 }
 
   
-  function getKeyBySubstring(obj, substr) {
-    for (let key in obj) {
-      if (key.includes(substr)) {
-        return obj[key];
-      }
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
+function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
+  for (let key in obj) {
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
+      return obj[key];
     }
-    return null;
   }
+
+  return null;
+}
   
   export { Disease, getDiseases, diseases, initializeMethodsDisease, processDiseaseData };

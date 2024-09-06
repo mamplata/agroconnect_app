@@ -3,10 +3,15 @@ import { addDownload, getYearRange } from '../../../js/fetch.js';
 let damages = [];
 
 class Damage {
-  constructor(recordId, cropName, damage, season, monthYear) {
+  constructor(recordId, barangay, cropName, variety, numberOfFarmers, areaAffected, yieldLoss, grandTotalValue, season, monthYear) {
     this.recordId = recordId;
+    this.barangay = barangay;
     this.cropName = cropName;
-    this.damage = damage;
+    this.variety = variety;
+    this.numberOfFarmers = numberOfFarmers;
+    this.areaAffected = areaAffected;
+    this.yieldLoss = yieldLoss;
+    this.grandTotalValue = grandTotalValue;
     this.season = season;
     this.monthYear = monthYear;
   }
@@ -136,8 +141,13 @@ function initializeMethodsDamage() {
         var damage = foundDamages[i];
         $('#damageTableBody').append(`
           <tr data-index=${damage.damageId}>
+            <td>${damage.barangay}</td>
             <td>${damage.cropName}</td>
-            <td>${damage.damage}</td>
+            <td>${damage.variety}</td>
+            <td>${damage.numberOfFarmers}</td>
+            <td>${damage.areaAffected}</td>
+            <td>${(damage.yieldLoss * 100).toFixed(2)}%</td>
+            <td>₱${damage.grandTotalValue}</td>
             <td>${damage.season}</td>
             <td>${damage.monthYear}</td>
           </tr>
@@ -146,7 +156,7 @@ function initializeMethodsDamage() {
     } else {
       $('#damageTableBody').append(`
         <tr>
-          <td colspan="4">No results found!</td>
+          <td colspan="9">No results found!</td>
         </tr>
       `);
     }
@@ -202,7 +212,7 @@ function initializeMethodsDamage() {
   // Modified download function that uses the stored yearRange
   function download(format, data) {
       // Construct the filename using the stored yearRange
-      const filename = `Damages Data ${yearRange}`;
+      const filename = `Damages Report ${yearRange}`;
   
       // Call the appropriate download function based on the format
       if (format === 'csv') {
@@ -217,16 +227,26 @@ function initializeMethodsDamage() {
   function downloadCSV(filename, data) {
     // Define the header mapping for damage data
     const headerMap = {
+        barangay: 'Barangay',
         cropName: 'Commodity',
-        damage: 'Farm Gate Damage',
+        variety: 'Variety',
+        numberOfFarmers: 'Number of Farmers Affected',
+        areaAffected: 'Total Area Affected (ha)',
+        yieldLoss: 'Yield Loss (%)',
+        grandTotalValue: 'Grand Total Value',
         season: 'Season',
         monthYear: 'Month Year'
     };
 
     // Define the order of headers
     const headersToInclude = [
+        'barangay',
         'cropName',
-        'damage',
+        'variety',
+        'numberOfFarmers',
+        'areaAffected',
+        'yieldLoss',
+        'grandTotalValue',
         'season',
         'monthYear'
     ];
@@ -251,7 +271,7 @@ function initializeMethodsDamage() {
                 let value = row[key] !== undefined ? row[key] : ''; // Ensure non-null values
 
                 // Format specific columns with peso sign
-                if (key === 'damage') {
+                if (key === 'grandTotalValue') {
                     return value ? `₱${parseFloat(value).toFixed(2)}` : '';
                 }
                 return escapeCSVValue(value);
@@ -277,16 +297,26 @@ function initializeMethodsDamage() {
 function downloadExcel(filename, data) {
   // Define the header mapping for damage data
   const headerMap = {
+      barangay: 'Barangay',
       cropName: 'Commodity',
-      damage: 'Farm Gate Damage',
+      variety: 'Variety',
+      numberOfFarmers: 'Number of Farmers Affected',
+      areaAffected: 'Total Area Affected (ha)',
+      yieldLoss: 'Yield Loss (%)',
+      grandTotalValue: 'Grand Total Value',
       season: 'Season',
       monthYear: 'Month Year'
   };
 
   // Define the order of headers
   const headersToInclude = [
+      'barangay',
       'cropName',
-      'damage',
+      'variety',
+      'numberOfFarmers',
+      'areaAffected',
+      'yieldLoss',
+      'grandTotalValue',
       'season',
       'monthYear'
   ];
@@ -313,7 +343,7 @@ function downloadExcel(filename, data) {
       worksheet.addRow(headersToInclude.map(header => {
           const value = row[headerMap[header]];
           // Format specific columns with peso sign
-          if (header === 'damage') {
+          if (header === 'grandTotalValue') {
               return value ? `₱${parseFloat(value).toFixed(2)}` : '';
           }
           return value;
@@ -395,7 +425,7 @@ function downloadPDF(filename, data) {
   const doc = new jsPDF();
 
   // Specify the columns you want to include in the PDF for damage data
-  const columns = ['cropName', 'damage', 'season', 'monthYear'];
+  const columns = ['barangay', 'cropName', 'variety', 'numberOfFarmers', 'areaAffected', 'yieldLoss', 'grandTotalValue', 'season', 'monthYear'];
   const headers = columns.map(formatHeader);
 
   // Create the table using only the specified columns
@@ -418,8 +448,13 @@ function downloadPDF(filename, data) {
 
 function formatHeader(key) {
   const headerMap = {
+      barangay: 'Barangay',
       cropName: 'Commodity',
-      damage: 'Farm Gate Damage',
+      variety: 'Variety',
+      numberOfFarmers: 'Number of Farmers Affected',
+      areaAffected: 'Total Area Affected (ha)',
+      yieldLoss: 'Yield Loss (%)',
+      grandTotalValue: 'Grand Total Value',
       season: 'Season',
       monthYear: 'Month Year'
   };
@@ -459,8 +494,8 @@ async function processDamageData(workbook, cellMappings, id, season, monthYear) 
   var worksheet = workbook.Sheets[sheetName];   
 
   // Find the column index for 'Damage' in cellMappings
-  var damageColumn = getKeyBySubstring(cellMappings, 'Farm Gate Damage');
-  console.log(damageColumn);
+  var damageColumn = getKeyBySubstring(cellMappings, 'Grand Total Value');
+  console.log(cellMappings);
 
   // Decode the range of the worksheet
   var range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -483,14 +518,25 @@ async function processDamageData(workbook, cellMappings, id, season, monthYear) 
           var cellAddress = cellMappings[key].charAt(0) + (rowNum + 1); // Dynamically construct cell address based on key
           
           var cellValue = worksheet[cellAddress] ? worksheet[cellAddress].v : '';
+
+          if (key === 'Yield Loss (%)') {
+            if (cellValue > 1) {
+              cellValue /= 100;
+            }
+        }
           damageData[key] = cellValue; // Store value for the current key in damageData
       });
 
       // Create a new Damage instance
       var damage = new Damage(
           id,
+          getKeyBySubstring(damageData, 'Barangay'),
           getKeyBySubstring(damageData, 'Commodity'),
-          String(getKeyBySubstring(damageData, 'Farm Gate Damage')),
+          getKeyBySubstring(damageData, 'Variety'),
+          getKeyBySubstring(damageData, 'Number of Farmers Affected'),
+          getKeyBySubstring(damageData, 'Total Area Affected'),
+          getKeyBySubstring(damageData, 'Yield Loss'),
+          getKeyBySubstring(damageData, 'Grand Total Value'),
           season,
           monthYear,
       );
@@ -511,13 +557,18 @@ async function processDamageData(workbook, cellMappings, id, season, monthYear) 
   return damages;
 }
 
-// Function to find a key in object containing a substring
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
 function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
   for (let key in obj) {
-    if (key.includes(substr)) {
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
       return obj[key];
     }
   }
+
   return null;
 }
 

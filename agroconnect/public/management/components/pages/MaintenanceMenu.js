@@ -147,11 +147,11 @@ function initializeCropView() {
           <thead>
             <tr style="background-color: #2774E9; color: white;">
               <th scope="col">Crop Image</th>
-              <th scope="col">Description</th>
               <th scope="col">Crop Name</th>
               <th scope="col">Variety</th>
               <th scope="col">Type</th>
               <th scope="col">Price Weight (pc/kg)</th>
+              <th scope="col">Action</th>
             </tr>
           </thead>
           <tbody id="cropTableBody">

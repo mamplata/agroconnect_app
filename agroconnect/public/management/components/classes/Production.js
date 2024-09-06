@@ -152,8 +152,8 @@ function initializeMethodsProduction(){
             <td>${production.monthPlanted}</td>
             <td>${production.monthHarvested}</td>
             <td>${production.volumeProduction}</td>
-            <td>${production.productionCost}</td>
-            <td>${production.price}</td>
+            <td>₱${production.productionCost}</td>
+            <td>₱${production.price}</td>
             <td>${production.volumeSold}</td>
             <td>${production.season}</td>
             <td>${production.monthYear}</td>
@@ -574,15 +574,19 @@ function isNumeric(value) {
 }
 
 
-// Function to find a key in object containing a substring
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
 function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
   for (let key in obj) {
-      if (key.includes(substr)) {
-          return obj[key];
-      }
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
+      return obj[key];
+    }
   }
+
   return null;
 }
-
 
 export { Production, getProduction, productions, initializeMethodsProduction, processProductionData };

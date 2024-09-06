@@ -19,17 +19,21 @@ class DamageReportController extends Controller
     {
         // Validate incoming request data
         $request->validate([
+            'recordId' => 'required|exists:records,recordId',
             'barangay' => 'required|string|max:255',
             'cropName' => 'required|string|max:255',
-            'variety' => 'required|string|max:255',
+            'variety' => 'nullable|string|max:255',
             'numberOfFarmers' => 'required|integer',
             'areaAffected' => 'required|numeric',
             'yieldLoss' => 'required|numeric',
             'grandTotalValue' => 'required|numeric',
+            'season' => 'required|string|max:255',
+            'monthYear' => 'required|string|max:255',
         ]);
 
         // If validation passes, create a new damage report record
         $damageReport = new DamageReport([
+            'recordId' => $request->input('recordId'),
             'barangay' => $request->input('barangay'),
             'cropName' => $request->input('cropName'),
             'variety' => $request->input('variety'),
@@ -37,6 +41,8 @@ class DamageReportController extends Controller
             'areaAffected' => $request->input('areaAffected'),
             'yieldLoss' => $request->input('yieldLoss'),
             'grandTotalValue' => $request->input('grandTotalValue'),
+            'season' => $request->input('season'),
+            'monthYear' => $request->input('monthYear'),
         ]);
 
         // Save the damage report record to the database
@@ -53,24 +59,30 @@ class DamageReportController extends Controller
         // Process and store each item in the validated data
         foreach ($damageDataArray as $damageData) {
             $request->validate([
+                'damageData.*.recordId' => 'required|exists:records,recordId',
                 'damageData.*.barangay' => 'required|string|max:255',
                 'damageData.*.cropName' => 'required|string|max:255',
-                'damageData.*.variety' => 'required|string|max:255',
+                'damageData.*.variety' => 'nullable|string|max:255',
                 'damageData.*.numberOfFarmers' => 'required|integer',
                 'damageData.*.areaAffected' => 'required|numeric',
                 'damageData.*.yieldLoss' => 'required|numeric',
                 'damageData.*.grandTotalValue' => 'required|numeric',
+                'damageData.*.season' => 'required|string|max:255',
+                'damageData.*.monthYear' => 'required|string|max:255',
             ]);
 
             DamageReport::updateOrCreate(
                 [
+                    'recordId' => $damageData['recordId'],
                     'barangay' => $damageData['barangay'],
                     'cropName' => $damageData['cropName'],
                     'variety' => $damageData['variety'],
                     'numberOfFarmers' => $damageData['numberOfFarmers'],
                     'areaAffected' => $damageData['areaAffected'],
                     'yieldLoss' => $damageData['yieldLoss'],
-                    'grandTotalValue' => $damageData['grandTotalValue']
+                    'grandTotalValue' => $damageData['grandTotalValue'],
+                    'season' => $damageData['season'],
+                    'monthYear' => $damageData['monthYear']
                 ]
             );
         }

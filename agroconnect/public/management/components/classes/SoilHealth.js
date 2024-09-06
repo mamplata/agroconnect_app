@@ -529,14 +529,20 @@ async function processSoilHealthData(workbook, cellMappings, id, season, monthYe
   return soilHealths;
 }
   
-  function getKeyBySubstring(obj, substr) {
-    for (let key in obj) {
-      if (key.includes(substr)) {
-        return obj[key];
-      }
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
+function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
+  for (let key in obj) {
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
+      return obj[key];
     }
-    return null;
   }
+
+  return null;
+}
   
 
   export { SoilHealth, getSoilHealth, soilHealths, initializeMethodsSoilHealth, processSoilHealthData };

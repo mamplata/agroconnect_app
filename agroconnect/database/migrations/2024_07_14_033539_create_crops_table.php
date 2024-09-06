@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('priceWeight', 255);
             $table->string('type', 255);
             $table->longText('cropImg')->nullable();
-            $table->string('description', 255);
+            $table->longText('description')->nullable();;
             $table->timestamps();
         });
     }

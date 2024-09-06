@@ -223,7 +223,7 @@ function initializeDamageView() {
     <div class="row d-flex justify-content-between align-items-center mt-5">
       <div class="col">
         <div class="table-responsive">
-          <table id="diseaseTable" class="table table-custom table-sm text-center tablesorter">
+          <table id="damageTable" class="table table-custom table-sm text-center tablesorter">
             <thead>
               <tr style="background-color: #2774E9; color: white;">
                 <th scope="col">Barangay</th>
@@ -237,7 +237,7 @@ function initializeDamageView() {
                 <th scope="col">Month Year</th>
               </tr>
             </thead>
-            <tbody id="diseaseTableBody">
+            <tbody id="damageTableBody">
               <!-- Table rows will be dynamically added here -->
             </tbody>
           </table>
@@ -249,7 +249,7 @@ function initializeDamageView() {
       </div>
     </div>
     <div class="text-center mt-3">
-      <button id="downloadBtn" class="download-btn btn btn-primary">Download Diseases</button>
+      <button id="downloadBtn" class="download-btn btn btn-primary">Download Damage Reports</button>
     </div>
   `);  
   initializeMethodsDamage();

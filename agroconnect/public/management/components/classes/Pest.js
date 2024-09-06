@@ -151,7 +151,7 @@ class Pest {
       } else {
         $('#pestTableBody').append(`
           <tr>
-            <td colspan="5">No results found!</td>
+            <td colspan="7">No results found!</td>
           </tr>
         `);
       }
@@ -476,8 +476,8 @@ function formatHeader(key) {
         });
 
         // Add the values of 'Total no. of Trees/Plants Planted' and 'Total no. of Trees/Plants Affected/Damaged'
-        pestData['TotalPlanted'] = worksheet[totalPlantedColumn] ? worksheet[totalPlantedColumn].v : '';
-        pestData['TotalAffected'] = worksheet[totalAffectedColumn] ? worksheet[totalAffectedColumn].v : '';
+        pestData['TotalPlanted'] = worksheet[totalPlantedColumn] ? worksheet[totalPlantedColumn].v : 0;
+        pestData['TotalAffected'] = worksheet[totalAffectedColumn] ? worksheet[totalAffectedColumn].v : 0;
 
         // Create a new Pest instance
         var pest = new Pest(
@@ -485,8 +485,8 @@ function formatHeader(key) {
             getKeyBySubstring(pestData, 'Farm Location'),
             getKeyBySubstring(pestData, 'Crops Planted'),
             getKeyBySubstring(pestData, 'Pest Observed'),
-            pestData['TotalPlanted'],
-            pestData['TotalAffected'],
+            pestData['TotalPlanted'] || 0,
+            pestData['TotalAffected'] || 0,
             season,
             monthYear,
         );
@@ -495,26 +495,35 @@ function formatHeader(key) {
         pestDatas.push(pest);
     }
 
-    // Check if the record ID already exists in the pestDatas array
-    var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
+    if (pestDatas.length !== 0) {
 
-    if (existingPest) {
-        // Remove existing pest before adding the new one
-        await pestDatas[0].removePest(pestDatas);
+      // Check if the record ID already exists in the pestDatas array
+      var existingPest = pests.find(p => p.recordId === pestDatas[0].recordId);
+
+      if (existingPest) {
+          // Remove existing pest before adding the new one
+          await pestDatas[0].removePest(pestDatas);
+      }
+
+      pestDatas[0].addPest(pestDatas.slice(2));
     }
-
-    pestDatas[0].addPest(pestDatas.slice(2));
     return pests;
 }
 
   
-  function getKeyBySubstring(obj, substr) {
-    for (let key in obj) {
-      if (key.includes(substr)) {
-        return obj[key];
-      }
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
+function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
+  for (let key in obj) {
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
+      return obj[key];
     }
-    return null;
   }
-  
+
+  return null;
+}
+
   export { Pest, getPests, pests, initializeMethodsPest, processPestData };

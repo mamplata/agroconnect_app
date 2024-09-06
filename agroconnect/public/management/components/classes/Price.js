@@ -137,7 +137,7 @@ function initializeMethodsPrice() {
         $('#priceTableBody').append(`
           <tr data-index=${price.priceId}>
             <td>${price.cropName}</td>
-            <td>${price.price}</td>
+            <td>₱${price.price}</td>
             <td>${price.season}</td>
             <td>${price.monthYear}</td>
           </tr>
@@ -511,14 +511,18 @@ async function processPriceData(workbook, cellMappings, id, season, monthYear) {
   return prices;
 }
 
-// Function to find a key in object containing a substring
+// Function to find a key in object containing a substring (case-insensitive and trims extra spaces)
 function getKeyBySubstring(obj, substr) {
+  // Convert substring to lowercase and trim any extra spaces
+  const lowerSubstr = substr.trim().toLowerCase();
+
   for (let key in obj) {
-    if (key.includes(substr)) {
+    // Convert key to lowercase and trim any extra spaces
+    if (key.trim().toLowerCase().includes(lowerSubstr)) {
       return obj[key];
     }
   }
+
   return null;
 }
-
 export { Price, getPrices, prices, initializeMethodsPrice, processPriceData };

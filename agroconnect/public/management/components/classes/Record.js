@@ -2,6 +2,7 @@ import { processDiseaseData } from '../classes/Disease.js';
 import { processPestData } from '../classes/Pest.js';
 import { processPriceData } from '../classes/Price.js';
 import { processProductionData } from '../classes/Production.js';
+import { processDamageData } from '../classes/Damage.js';
 import { processSoilHealthData } from '../classes/SoilHealth.js';
 import Dialog from '../helpers/Dialog.js';
 import { user } from '../HeaderSidebar.js';
@@ -221,6 +222,7 @@ function initializeMethodsRecord(dataType) {
     var pageSize = 5;
     var currentPage = 1;
     var record = null;
+    var isEdit = false;
 
     async function displayRecords(recordName = null) {
 
@@ -385,9 +387,11 @@ function initializeMethodsRecord(dataType) {
       var fileInput = document.getElementById('fileRecord');
       var file = fileInput.files[0];
       let terms = getSearchTerms(dataType);
+
     
       try {
         if (file) {
+
           // Validate the search terms asynchronously
           let isValid = await validateSearchTerms(file, terms[0], terms[4]);
           
@@ -412,7 +416,7 @@ function initializeMethodsRecord(dataType) {
             let record = new Record(recordId, userId, name, season, monthYear, type, fileRecord);
             
             // Create or update record based on the selectedRow
-            let recordPromise = selectedRow !== null ? 
+            let recordPromise = selectedRow !== null && isEdit ? 
               record.updateRecord(record) :
               record.createRecord(record);
             
@@ -449,7 +453,7 @@ function initializeMethodsRecord(dataType) {
           
           readerBase64.readAsDataURL(blob);
         } else {
-          if (selectedRow !== null) {
+          if (selectedRow !== null && isEdit) {
             let record = new Record(recordId, userId, name, season, monthYear, type, '');
             record.updateRecord(record).then(() => {
               // Reset form and update UI
@@ -466,6 +470,7 @@ function initializeMethodsRecord(dataType) {
               updateMonthYear(dataType, requestData);
               displayRecords();
               resetFields();
+              isEdit = false;
               toastr.success('File uploaded successfully!', 'Success', {
                 timeOut: 5000,  // 5 seconds
                 positionClass: 'toast-top-center',
@@ -531,7 +536,7 @@ function initializeMethodsRecord(dataType) {
           break;
         case 'damage':
           checkFormat = "DAMAGE MONITORING REPORT";
-          terms = ["Barangay", "Commodity", "Variety", "NUMBER OF FARMERS AFFECTED", "AREA AFFECTED", "Yield Loss", "GRAND TOTAL VALUE"];
+          terms = ["Barangay", "Commodity", "Variety", "Number of Farmers Affected", "Total Area affected", "Yield Loss", "Grand Total Value"];
           methodName = processDamageData;
           break;
         default:
@@ -664,6 +669,7 @@ function initializeMethodsRecord(dataType) {
 
       // Call the specific process function based on the data type
       const rowsArray = processFunction(workbook, headers, id, season, monthYear);
+
     }
 
     function resetFields() {
@@ -687,7 +693,7 @@ function initializeMethodsRecord(dataType) {
           $('#dataEdit').text('record');
           $('#cancelBtn').show();
           $('#recordId').val(record.recordId);
-  
+          isEdit = true;
           // Assuming record.monthYear is like 'July 2024'
           var monthYear = record.monthYear;
   

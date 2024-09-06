@@ -146,6 +146,7 @@ function initializeMethodsBarangay() {
     var pageSize = 5;
     var currentPage = 1;
     var barangay = null;
+    var isEdit = false;
 
     async function displayBarangays(barangayName = null) {
 
@@ -227,7 +228,7 @@ function initializeMethodsBarangay() {
 
       var barangayId = Number($('#barangayId').val());
       var barangayName = $('#barangayName').val();
-      if (selectedRow !== null) {
+      if (selectedRow !== null && isEdit) {
         // Update existing barangay
         getCoordinates(barangayName).then(result => {
           coordinates = result; 
@@ -244,6 +245,7 @@ function initializeMethodsBarangay() {
         $('#submitBtn').text('Add barangay');
         $('#cancelBtn').hide(); 
         resetFields();
+        isEdit = false;
       } else {
         var coordinates = '';
         getCoordinates(barangayName).then(result => {
@@ -289,6 +291,7 @@ function initializeMethodsBarangay() {
           $('#barangayId').val(barangay.barangayId);
           $('#barangayName').val(barangay.barangayName);
           $('#submitBtn').text('Update Barangay');
+          isEdit = true;
       }
       $('#barangayTableBody tr').removeClass('selected-row');
       $('#editBtn').prop('disabled', true);

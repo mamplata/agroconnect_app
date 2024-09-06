@@ -29,6 +29,7 @@ Route::get('/productions', [ProductionController::class, 'index']);
 Route::get('/prices', [PriceController::class, 'index']);
 Route::get('/pests', [PestController::class, 'index']);
 Route::get('/diseases', [DiseaseController::class, 'index']);
+Route::get('/damages', [DamageReportController::class, 'index']);
 Route::get('/soilhealths', [SoilHealthController::class, 'index']);
 Route::get('/concerns', [ConcernController::class, 'index']);
 Route::get('/weatherforecasts', [WeatherForecastController::class, 'index']);

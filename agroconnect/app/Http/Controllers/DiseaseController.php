@@ -52,6 +52,11 @@ class DiseaseController extends Controller
     {
         $diseaseDataArray = $request->input('diseaseData');
 
+        // If $diseaseDataArray is empty or not present, skip processing and return
+        if (empty($diseaseDataArray)) {
+            return response()->json(['message' => 'No data to process']);
+        }
+
         // Process and store each item in the validated data
         foreach ($diseaseDataArray as $diseaseData) {
             $request->validate([

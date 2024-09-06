@@ -22,6 +22,7 @@ class CropController extends Controller
         $request->validate([
             'cropName' => 'required|string',
             'priceWeight' => 'required|string',
+            'variety' => 'nullable|string',
             'type' => 'required|string',
             'cropImg' => 'nullable|string',  // Optional field
             'description' => 'nullable|string',  // Optional field
@@ -31,6 +32,7 @@ class CropController extends Controller
         $crop = new Crop([
             'cropName' => $request->input('cropName'),
             'priceWeight' => $request->input('priceWeight'),
+            'variety' => $request->input('variety'),
             'type' => $request->input('type'),
             'cropImg' => $request->input('cropImg'),  // Optional field
             'description' => $request->input('description'),  // Optional field
@@ -56,13 +58,14 @@ class CropController extends Controller
         $request->validate([
             'cropName' => 'required|string',
             'priceWeight' => 'required|string',
+            'variety' => 'nullable|string',
             'type' => 'required|string',
             'cropImg' => 'nullable|string',  // Optional field
             'description' => 'nullable|string',  // Optional field
         ]);
 
         // Update crop attributes
-        $crop->fill($request->only(['cropName', 'priceWeight', 'type', 'cropImg', 'description']));
+        $crop->fill($request->only(['cropName', 'priceWeight', 'type', 'variety', 'cropImg', 'description']));
 
         // Save updated crop to the database
         $crop->save();
