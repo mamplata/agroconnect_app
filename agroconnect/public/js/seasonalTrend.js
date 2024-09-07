@@ -86,14 +86,30 @@ class SeasonalTrends {
 
     downloadYR = yearRange;
 
+    const monthToNumber = {
+        'January': 1,
+        'February': 2,
+        'March': 3,
+        'April': 4,
+        'May': 5,
+        'June': 6,
+        'July': 7,
+        'August': 8,
+        'September': 9,
+        'October': 10,
+        'November': 11,
+        'December': 12
+    };
+    
+
     // Prepare data for line chart
-     // Prepare and sort monthly labels
     const monthlyLabels = Array.from(new Set(dataset.map(entry => entry.monthYear)))
-        .sort((a, b) => {
-            const [monthA, yearA] = a.split(' ');
-            const [monthB, yearB] = b.split(' ');
-            return yearA - yearB || monthA.localeCompare(monthB);
-        });
+    .sort((a, b) => {
+        const [monthA, yearA] = a.split(' ');
+        const [monthB, yearB] = b.split(' ');
+        return yearA - yearB || monthToNumber[monthA] - monthToNumber[monthB];
+    });
+
     const crops = Array.from(new Set(dataset.map(entry => entry.cropName)));
 
     const dataValues = crops.map(crop => {

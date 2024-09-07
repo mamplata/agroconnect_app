@@ -99,6 +99,38 @@ function isVariationLow(stdDev, threshold = 0.1) {
     return stdDev < threshold;
 }
 
+
+   // Function to extract numeric value from price string
+   function parsePrice(priceString) {
+    // Regular expressions for different formats
+    const matchPiece = priceString.match(/^(\d+(\.\d+)?)\/pc$/); // Matches price/pc
+    const matchBundle = priceString.match(/^(\d+(\.\d+)?)\/bundle$/); // Matches price/bundle
+
+    // Check if priceString is a range (e.g., "10-15")
+    if (typeof priceString === 'string' && priceString.includes('-')) {
+        const [min, max] = priceString.split('-').map(parseFloat);
+        return (min + max) / 2; // Return the average of the range
+    }
+
+    // Extract price based on format
+    if (matchPiece) {
+        // Extract price per piece and convert to price per kilogram
+        const pricePerPiece = parseFloat(matchPiece[1]);
+        const weightPerPiece = 0.2; // Define this based on your needs
+        console.log(pricePerPiece);
+        console.log(pricePerPiece / weightPerPiece);
+        return pricePerPiece / weightPerPiece;
+    } else if (matchBundle) {
+        // Extract price per bundle and convert to price per kilogram
+        const pricePerBundle = parseFloat(matchBundle[1]);
+        const weightPerBundle = 1; // Define this based on your needs
+        return pricePerBundle / weightPerBundle;
+    } else {
+        // If the price string is numeric or a range without a unit, assume it is per kilogram
+        return parseFloat(priceString);
+    }
+}
+
 function countAverageAreaPlanted(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
@@ -261,12 +293,7 @@ function averagePrice(data) {
         const { monthYear, cropName, season, price } = item;
         let numericalPrice = 0;
 
-        if (typeof price === 'string' && price.includes('-')) {
-            const [minPrice, maxPrice] = price.split('-').map(Number);
-            numericalPrice = (minPrice + maxPrice) / 2;
-        } else {
-            numericalPrice = Number(price);
-        }
+        numericalPrice = parsePrice(price);
 
         if (!acc[monthYear]) {
             acc[monthYear] = {};
@@ -441,20 +468,11 @@ function countDiseaseOccurrenceBarangay(data) {
     );
 }
 
-
 function priceIncomePerHectare(data) {
     if (!Array.isArray(data)) {
         console.error('Expected data to be an array');
         return [];
     }
-
-    const parsePrice = (price) => {
-        if (typeof price === 'string' && price.includes('-')) {
-            const [min, max] = price.split('-').map(parseFloat);
-            return (min + max) / 2;
-        }
-        return parseFloat(price);
-    };
 
     const monthCropTotals = data.reduce((acc, item) => {
         const { monthPlanted, cropName, season, volumeSold, areaPlanted, price } = item;
@@ -469,11 +487,7 @@ function priceIncomePerHectare(data) {
 
         let calculatedPrice = parsePrice(price);
         let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
-
-        // Apply specific conversion logic for Upo or any other crop
-        if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice *= 3; // Example multiplier for Upo
-        }
+        
 
         acc[monthPlanted][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[monthPlanted][cropName].totalArea += areaPlanted;
@@ -499,13 +513,6 @@ function priceIncomePerHectareBarangay(data) {
         return [];
     }
 
-    const parsePrice = (price) => {
-        if (typeof price === 'string' && price.includes('-')) {
-            const [min, max] = price.split('-').map(parseFloat);
-            return (min + max) / 2;
-        }
-        return parseFloat(price);
-    };
 
     const barangayCropTotals = data.reduce((acc, item) => {
         const { barangay, cropName, volumeSold, areaPlanted, price, season } = item;
@@ -520,11 +527,6 @@ function priceIncomePerHectareBarangay(data) {
 
         let calculatedPrice = parsePrice(price);
         let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
-
-        // Apply specific conversion logic for Upo or any other crop
-        if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice *= 3; // Example multiplier for Upo
-        }
 
         acc[barangay][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[barangay][cropName].totalArea += areaPlanted;
@@ -554,14 +556,6 @@ function profitPerHectare(data) {
         return [];
     }
 
-    const parsePrice = (price) => {
-        if (typeof price === 'string' && price.includes('-')) {
-            const [min, max] = price.split('-').map(parseFloat);
-            return (min + max) / 2;
-        }
-        return parseFloat(price);
-    };
-
     const monthCropTotals = data.reduce((acc, item) => {
         const { monthPlanted, cropName, season, volumeSold, areaPlanted, price, productionCost } = item;
 
@@ -570,33 +564,33 @@ function profitPerHectare(data) {
         }
 
         if (!acc[monthPlanted][cropName]) {
-            acc[monthPlanted][cropName] = { season, totalIncome: 0, totalArea: 0, totalProductionCost: 0 };
+            acc[monthPlanted][cropName] = { season, totalIncome: 0, totalArea: 0, totalProductionCost: 0, count: 0  };
         }
 
         let calculatedPrice = parsePrice(price);
         let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
-        // Apply specific conversion logic for Upo or any other crop
-        if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice *= 3; // Example multiplier for Upo
-        }
-
         acc[monthPlanted][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[monthPlanted][cropName].totalArea += areaPlanted;
         acc[monthPlanted][cropName].totalProductionCost += productionCost;
+        acc[monthPlanted][cropName].count += 1; 
 
         return acc;
     }, {});
 
+    
+
     return Object.entries(monthCropTotals).flatMap(([month, crops]) =>
-        Object.entries(crops).map(([cropName, { season, totalIncome, totalArea, totalProductionCost }]) => ({
+        Object.entries(crops).map(([cropName, { season, totalIncome, totalArea, totalProductionCost, count }]) => ({
+
             monthYear: month,
             cropName,
             season,
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
-            profitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0 // Adjusted formula
+            profitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0
+
         }))
     );
 }
@@ -607,14 +601,6 @@ function profitPerHectareBarangay(data) {
         console.error('Expected data to be an array');
         return [];
     }
-
-    const parsePrice = (price) => {
-        if (typeof price === 'string' && price.includes('-')) {
-            const [min, max] = price.split('-').map(parseFloat);
-            return (min + max) / 2;
-        }
-        return parseFloat(price);
-    };
 
     const barangayCropTotals = data.reduce((acc, item) => {
         const { barangay, cropName, volumeSold, areaPlanted, price, productionCost, season } = item;
@@ -630,10 +616,6 @@ function profitPerHectareBarangay(data) {
         let calculatedPrice = parsePrice(price);
         let calculatedVolume = volumeSold * 1000; // Convert metric tons to kilograms
 
-        // Apply specific conversion logic for Upo or any other crop
-        if (cropName.toLowerCase() === 'upo') {
-            calculatedPrice *= 3; // Example multiplier for Upo
-        }
 
         acc[barangay][cropName].totalIncome += calculatedVolume * calculatedPrice;
         acc[barangay][cropName].totalArea += areaPlanted;

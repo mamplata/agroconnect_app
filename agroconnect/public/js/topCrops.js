@@ -71,6 +71,78 @@ function calculateOccurrencePercentage(occurence, totalPlanted) {
     return (occurence / totalPlanted) * 100;
 }
 
+function calculateGrowthRate(cropData) {
+    // Group data by crop name and variety
+    const groupedData = cropData.reduce((acc, entry) => {
+        const key = `${entry.cropName}-${entry.variety || 'No Variety'}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(entry);
+        return acc;
+    }, {});
+
+    // Calculate growth rate for each crop and variety
+    return Object.keys(groupedData).map(key => {
+        const entries = groupedData[key];
+
+        // Sort by monthYear to get the earliest and latest data
+        entries.sort((a, b) => new Date(a.monthYear) - new Date(b.monthYear));
+
+        // Calculate growth rate: (latest production - earliest production) / earliest production
+        const earliest = entries[0].volumeProductionPerHectare;
+        const latest = entries[entries.length - 1].volumeProductionPerHectare;
+        const growthRate = earliest ? (latest - earliest) / earliest : 0;
+
+        return {
+            cropName: entries[0].cropName,
+            variety: entries[0].variety || 'No Variety',
+            growthRate: growthRate || 0
+        };
+    });
+}
+
+function calculateBestMonthRange(cropData) {
+    // Group data by crop name, variety, and month
+    const groupedData = cropData.reduce((acc, entry) => {
+        const key = `${entry.cropName}-${entry.variety || 'No Variety'}`;
+        const month = new Date(entry.monthYear).getMonth(); // Extract month from monthYear
+        if (!acc[key]) acc[key] = {};
+        if (!acc[key][month]) acc[key][month] = { totalProduction: 0, count: 0 };
+        
+        acc[key][month].totalProduction += entry.volumeProductionPerHectare;
+        acc[key][month].count += 1;
+
+        return acc;
+    }, {});
+
+    // Calculate the best month range for each crop and variety
+    return Object.keys(groupedData).map(key => {
+        const monthlyData = groupedData[key];
+
+        // Find the month with the highest average production
+        let bestMonth = null;
+        let highestAvgProduction = 0;
+
+        for (const month in monthlyData) {
+            const avgProduction = monthlyData[month].totalProduction / monthlyData[month].count;
+            if (avgProduction > highestAvgProduction) {
+                highestAvgProduction = avgProduction;
+                bestMonth = month;
+            }
+        }
+
+        // Convert month number back to month name (e.g., 0 -> January, 1 -> February, etc.)
+        const monthNames = ["January", "February", "March", "April", "May", "June", 
+                            "July", "August", "September", "October", "November", "December"];
+        const bestMonthName = bestMonth !== null ? monthNames[bestMonth] : "Unknown";
+
+        return {
+            cropName: key.split('-')[0],
+            variety: key.split('-')[1],
+            bestMonthRange: bestMonthName
+        };
+    });
+}
+
 class TopCrops {
     constructor(season, type) {
         this.season = season;
@@ -336,7 +408,7 @@ class TopCrops {
         return {
             ...entry,
             type: $('#typeSelect').val(),
-            remarks: `<strong>Rank ${rank}</strong>: <p class="text-justify">This variety (${entry.variety}) of ${entry.cropName} has a growth rate of <strong>${(entry.growthRate * 100).toFixed(2)}%</strong>, indicating its current performance. ` +
+            remarks: `<strong>Rank ${rank}</strong>: <p class="text-justify">${entry.variety ? `This variety (${entry.variety}) of ${entry.cropName}` : `This variety of ${entry.cropName}` } has a growth rate of <strong>${(entry.growthRate * 100).toFixed(2)}%</strong>, indicating its current performance. ` +
                 `The growth rate over time is <strong>${(entry.growthRateOverTime * 100).toFixed(2)}%</strong>, which reflects how its performance has changed over the evaluated period. ` +
                 `Compared to other crops and varieties, this variety demonstrates <strong>${performance}</strong> performance. ` +
                 `The ideal months for this crop variety are <strong>${bestMonthRangeForCrop}</strong>.</p>` +
@@ -346,13 +418,12 @@ class TopCrops {
                 `</br> Average profit: <strong>₱${parseFloat(entry.profitPerHectare).toLocaleString()} per hectare/ha</strong>` +
                 `</br> Pest occurrence: <strong>${entry.pestOccurrence} (${calculateOccurrencePercentage(entry.pestOccurrence, entry.totalPlanted).toFixed(2)}%)</strong>` +
                 `</br> Disease occurrence: <strong>${entry.diseaseOccurrence} (${calculateOccurrencePercentage(entry.diseaseOccurrence, entry.totalPlanted).toFixed(2)}%)</strong><p>`
-                
+
         };
     });
 
     return topCropsWithRemarks;
 }
-
     
 
  displayTopCrops(data) {
