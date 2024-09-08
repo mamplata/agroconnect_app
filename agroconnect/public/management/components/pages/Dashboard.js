@@ -199,7 +199,7 @@ export default function initDashboard() {
             </div>
           </div>
           <div class="col-md-4">
-            <div class="container mt-4">
+            <div class="container">
               <div class="mb-4">
                 <div class="row">
                   <div class="col-md-12">
@@ -223,14 +223,18 @@ export default function initDashboard() {
                   </div>
                 </div>
               </div>
-              <table class="table table-bordered" id="cropsTable">
+              <table class="table table-bordered table-striped table-hover table-sm" id="cropsTable">
                 <thead>
-                  <div class="text-center mb-3">
-                     <a href="../top-crops" class="underline-link" target="_blank">View Top Crops</a>
-                  </div>
+                  <tr>
+                    <th colspan="2">
+                      <div class="text-center mb-3">
+                        <a href="../top-crops" class="underline-link" target="_blank">View Seasonal Top Crops</a>
+                      </div>
+                    </th>
+                  </tr>
                   <tr>
                     <th>Commodity</th>
-                    <th>Variety</th>                                       
+                    <th>Variety</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -582,9 +586,21 @@ async function updateCropOptions() {
         // Process each crop entry
         const processedCrops = cropData.map(item => {
     
+            // Calculate composite score based on total values
+            const compositeScore = (
+                item.totalArea * weights.plantedWeight +
+                item.totalVolume * weights.volumeWeight +
+                item.price * weights.priceWeight +
+                item.pestOccurrence * weights.pestWeight +
+                item.diseaseOccurrence * weights.diseaseWeight +
+                item.totalIncome * weights.incomeWeight +
+                item.totalProfit * weights.profitWeight
+            );
+    
             return {
                 cropName: item.cropName,
                 variety: item.variety || '',
+                compositeScore: compositeScore,
             };
         });
     
@@ -593,8 +609,7 @@ async function updateCropOptions() {
     
         // Optionally, filter or slice to get the top N crops
         return sortedCrops.slice(0, 5);
-     }
-    
+    }
 
       displayTopCrops(data) {
           const tableBody = $('#cropsTable tbody');

@@ -5,6 +5,8 @@ import { initializeMethodsFarmer, getBarangayNames } from '../classes/Farmer.js'
 import { initializeMethodsRecord } from '../classes/Record.js';
 import Dialog from '../helpers/Dialog.js';
 
+
+
 function loadMonthYear() {
     $(document).ready(function() {
       // Get the current year
@@ -78,94 +80,94 @@ function initializeMaintenanceMenu(option) {
 
 // Function to initialize Barangay Records view
 function initializeCropView() {
-   // Example content for Crop Records
-   $('#maintenance-content').html(`
-    <div class="row d-flex justify-content-between align-items-center mt-5">
-      <div class="col-md-4">
-        <form id="cropForm">
-          <input type="hidden" class="form-control" id="cropId" name="cropId">
-          
-          <div class="mb-3">
-            <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
-          </div>
-          
-          <div class="mb-3">
-            <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
-          </div>
-          
-          <div class="mb-3">
-            <select class="form-control" id="type" name="type" required>
-              <option value="" disabled selected>Select Type</option>
-              <option value="Vegetables">Vegetables</option>
-              <option value="Rice">Rice</option>
-              <option value="Fruits">Fruits</option>
-            </select>
-          </div>
-          
-          <div class="mb-3">
-            <select class="form-control" id="priceWeight" name="priceWeight" required>
-              <option value="" disabled selected>Select Price Weight (kg/pc)</option>
-              <option value="kg">kilogram</option>
-              <option value="pc">piece</option>
-            </select>
-          </div>
-          
-          <div class="mb-3">
-            <input style="display: none;" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg">
-          </div>
-          <div  class="mb-3">
-              <label id="lblCropImg">
-                Upload Image:
-              </label>
-              <div class="input-group mb-3" style="width: 100%;">
-                <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
-                <div class="input-group-append">
-                  <label class="input-group-text" for="cropImg">
-                    <i class="fas fa-upload"></i>
-                  </label>
+    // Example content for Crop Records
+    $('#maintenance-content').html(`
+      <div class="row d-flex justify-content-between align-items-center mt-5">
+        <div class="col-md-4">
+          <form id="cropForm">
+            <input type="hidden" class="form-control" id="cropId" name="cropId">
+            
+            <div class="mb-3">
+              <input placeholder="Crop Name" type="text" class="form-control" id="cropName" name="cropName" required>
+            </div>
+            
+            <div class="mb-3">
+              <input placeholder="Variety (optional)" type="text" class="form-control" id="variety" name="variety">
+            </div>
+            
+            <div class="mb-3">
+              <select class="form-control" id="type" name="type" required>
+                <option value="" disabled selected>Select Type</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Rice">Rice</option>
+                <option value="Fruits">Fruits</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <select class="form-control" id="priceWeight" name="priceWeight" required>
+                <option value="" disabled selected>Select Price Weight (kg/pc)</option>
+                <option value="kg">kilogram</option>
+                <option value="pc">piece</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <input style="display: none;" placeholder="Kilogram per piece" type="text" class="form-control" id="pcToKg" name="pcToKg">
+            </div>
+            <div  class="mb-3">
+                <label id="lblCropImg">
+                  Upload Image:
+                </label>
+                <div class="input-group mb-3" style="width: 100%;">
+                  <input type="file" class="form-control" id="cropImg" name="cropImg" accept="image/*">
+                  <div class="input-group-append">
+                    <label class="input-group-text" for="cropImg">
+                      <i class="fas fa-upload"></i>
+                    </label>
+                  </div>
                 </div>
-              </div>
+            </div>
+            <div class="mb-3">
+              <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+            
+            <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
+            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+          </form>
+        </div>
+    
+        <div class="col-md-8 actionBtn">
+          <div class="d-flex justify-content-end align-items-center mb-2">
+            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
           </div>
-          <div class="mb-3">
-            <textarea placeholder="Description (optional)" class="form-control" id="description" name="description" rows="3"></textarea>
+    
+          <div class="table-responsive">
+            <table id="cropTable" class="table table-custom text-center">
+              <thead>
+                <tr style="background-color: #2774E9; color: white;">
+                  <th scope="col">Crop Image</th>
+                  <th scope="col">Crop Name</th>
+                  <th scope="col">Variety</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Price Weight (pc/kg)</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="cropTableBody">
+                <!-- Table rows will be dynamically added here -->
+              </tbody>
+            </table>
           </div>
           
-          <button type="button" class="btn btn-custom" id="submitBtn">Add Crop</button>
-          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-        </form>
-      </div>
-  
-      <div class="col-md-7">
-        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-          <div id="delete"></div>
-          <div id="edit"></div>
-        </div>
-  
-        <table id="cropTable" class="table table-custom text-center">
-          <thead>
-            <tr style="background-color: #2774E9; color: white;">
-              <th scope="col">Crop Image</th>
-              <th scope="col">Crop Name</th>
-              <th scope="col">Variety</th>
-              <th scope="col">Type</th>
-              <th scope="col">Price Weight (pc/kg)</th>
-              <th scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody id="cropTableBody">
-            <!-- Table rows will be dynamically added here -->
-          </tbody>
-        </table>
-        
-        <div class="text-right">
-          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-          <button id="nextBtn" class="btn btn-green">Next</button>
+          <div class="text-right">
+            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+            <button id="nextBtn" class="btn btn-green">Next</button>
+          </div>
         </div>
       </div>
-    </div>
-  `);  
+    `); 
   $(document).ready(function() {
       $('#pcToKg').hide();
       $('#priceWeight').change(function() {
@@ -185,43 +187,44 @@ function initializeCropView() {
 // Function to initialize Barangay Records view
 function initializeBarangayView() {
     // Example content for Barangay Records
-    $('#maintenance-content').html(`
-       <div class="row d-flex justify-content-between align-items-center mt-5">
-        <div class="col-md-4">
-          <form id="barangayForm">
-             <input type="hidden" class="form-control" id="barangayId" name="barangayId">
-            <div class="mb-3">
-              <input placeholder="Barangay" type="text" class="form-control" id="barangayName" name="barangayName" required>
-            </div>
-            <button type="button" class="btn btn-custom" id="submitBtn">Add Barangay</button>
-            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-          </form>
+$('#maintenance-content').html(`
+  <div class="row d-flex justify-content-between align-items-center mt-5">
+    <div class="col-md-4">
+      <form id="barangayForm">
+        <input type="hidden" class="form-control" id="barangayId" name="barangayId">
+        <div class="mb-3">
+          <input placeholder="Barangay" type="text" class="form-control" id="barangayName" name="barangayName" required>
         </div>
-        <div class="col-md-7">
-          <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-            <div id="delete"></div>
-            <div id="edit"></div>
-          </div>
-          <table id="barangayTable" class="table table-custom text-center">
-            <thead>
-              <tr style="background-color: #2774E9; color: white;">
-                <th scope="col">Barangay</th>
-                <th scope="col">Coordinates</th>
-              </tr>
-            </thead>
-            <tbody id="barangayTableBody">
-              <!-- Table rows will be dynamically added here -->
-            </tbody>
-          </table>
-          <div class="text-right">
-            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-            <button id="nextBtn" class="btn btn-green">Next</button>
-          </div>
-        </div>
+        <button type="button" class="btn btn-custom" id="submitBtn">Add Barangay</button>
+        <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+      </form>
+    </div>
+    <div class="col-md-8">
+      <div class="d-flex justify-content-end align-items-center mb-2 ">
+        <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+        <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
       </div>
-    `);
+      <div class="table-responsive">
+        <table id="barangayTable" class="table table-custom text-center">
+          <thead>
+            <tr style="background-color: #2774E9; color: white;">
+              <th scope="col">Barangay</th>
+              <th scope="col">Coordinates</th>
+            </tr>
+          </thead>
+          <tbody id="barangayTableBody">
+            <!-- Table rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="text-right">
+        <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+        <button id="nextBtn" class="btn btn-green">Next</button>
+      </div>
+    </div>
+  </div>
+`);
+
     initializeMethodsBarangay();
     createDeleteModal();
     createEditModal();  
@@ -234,16 +237,21 @@ function initializeFarmerView() {
       <div class="col-md-4">
         <form id="farmerForm">
           <input type="hidden" class="form-control" id="farmerId" name="farmerId">
+          
           <div class="mb-3">
             <select style='width: 100%;' id="barangay-option" class="form-control" name="barangayId" required>
+              <!-- Options will be populated dynamically -->
             </select>
           </div>
+          
           <div class="mb-3">
             <input placeholder="Farmer Name" type="text" class="form-control" id="farmerName" name="farmerName" required>
           </div>
+          
           <div class="mb-3">
             <input placeholder="Field Area" type="number" step="0.01" class="form-control" id="fieldArea" name="fieldArea">
           </div>
+          
           <div class="mb-3">
             <select style='width: 100%;' id="fieldType" class="form-control" name="fieldType" required>
               <option value="" disabled selected>Select Field Type</option>
@@ -254,40 +262,46 @@ function initializeFarmerView() {
               <option value='Corn'>Corn</option>
             </select>
           </div>
+          
           <div class="mb-3">
             <input placeholder="Phone Number (optional)" type="text" class="form-control" id="phoneNumber" name="phoneNumber">
           </div>
+          
           <button type="button" class="btn btn-custom" id="submitBtn">Add Farmer</button>
           <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
         </form>
       </div>
-      <div class="col-md-7">
-        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+      
+      <div class="col-md-8 actionBtn">
+        <div class="d-flex justify-content-end align-items-center mb-2 ">
           <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
           <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-          <div id="delete"></div>
-          <div id="edit"></div>
         </div>
-        <table id="farmerTable" class="table table-custom text-center">
-          <thead>
-            <tr style="background-color: #2774E9; color: white;">
-              <th scope="col">Barangay</th>
-              <th scope="col">Farmer Name</th>
-              <th scope="col">Field Area</th>
-              <th scope="col">Field Type</th>
-              <th scope="col">Phone Number</th>
-            </tr>
-          </thead>
-          <tbody id="farmerTableBody">
-            <!-- Table rows will be dynamically added here -->
-          </tbody>
-        </table>
+        
+        <div class="table-responsive">
+          <table id="farmerTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">Barangay</th>
+                <th scope="col">Farmer Name</th>
+                <th scope="col">Field Area</th>
+                <th scope="col">Field Type</th>
+                <th scope="col">Phone Number</th>
+              </tr>
+            </thead>
+            <tbody id="farmerTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        
         <div class="text-right">
           <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
           <button id="nextBtn" class="btn btn-green">Next</button>
         </div>
       </div>
     </div>
+    
     <div class="text-center mt-3">
       <button id="downloadBtn" class="download-btn btn btn-primary">Download Farmers</button>
     </div>
@@ -302,69 +316,73 @@ function initializeFarmerView() {
 
 // Function to initialize Supply and Market view
 function initializeProductionView() {
-    // Example content for Supply and Market
-    $('#maintenance-content').html(`
-      <div class="row d-flex justify-content-between align-items-center mt-5">
-        <div class="col-md-4">
-          <form id="recordForm" enctype="multipart/form-data">
-            <input type="hidden" class="form-control" id="recordId" name="recordId">
-            <input type="hidden" class="form-control" id="userId" name="userId">
-            <div class="mb-3">
-              <div class="input-group" id="monthPicker" style="width: 100%;">
-                  <select class="form-control" required>
-                      <option value="January">January</option>
-                      <option value="February">February</option>
-                      <option value="March">March</option>
-                      <option value="April">April</option>
-                      <option value="May">May</option>
-                      <option value="June">June</option>
-                      <option value="July">July</option>
-                      <option value="August">August</option>
-                      <option value="September">September</option>
-                      <option value="October">October</option>
-                      <option value="November">November</option>
-                      <option value="December">December</option>
-                  </select>
-                  <span class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                  </span>
-              </div>
-          </div>
+  $('#maintenance-content').html(`
+    <div class="row d-flex justify-content-between align-items-center mt-5">
+      <div class="col-md-4">
+        <form id="recordForm" enctype="multipart/form-data">
+          <input type="hidden" class="form-control" id="recordId" name="recordId">
+          <input type="hidden" class="form-control" id="userId" name="userId">
+          
           <div class="mb-3">
-              <div class="input-group" id="yearPicker" style="width: 100%;">
-                  <select id="yearSelect" class="form-control" required>
-                      <!-- Options will be added by jQuery -->
-                  </select>
-                  <span class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                  </span>
-              </div>
+            <div class="input-group" id="monthPicker" style="width: 100%;">
+              <select class="form-control" required>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
+            </div>
           </div>
-            <div  class="mb-3">
-              <label id="lblUpload">
-                Upload File:
-              </label>
-              <div class="input-group" style="width: 100%;">
-                <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
-                <div class="input-group-append">
-                  <label class="input-group-text" for="fileRecord" id="btnUpload">
-                    <i class="fas fa-upload"></i>
-                  </label>
-                </div>
+          
+          <div class="mb-3">
+            <div class="input-group" id="yearPicker" style="width: 100%;">
+              <select id="yearSelect" class="form-control" required>
+                <!-- Options will be added by jQuery -->
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label id="lblUpload">Upload File:</label>
+            <div class="input-group" style="width: 100%;">
+              <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
+              <div class="input-group-append">
+                <label class="input-group-text" for="fileRecord" id="btnUpload">
+                  <i class="fas fa-upload"></i>
+                </label>
               </div>
             </div>
-            <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
-            <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
-          </form>
-        </div>
-        <div class="col-md-7">
-          <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-            <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
-              <i class="fas fa-info-circle"></i>
-            </button>
-            <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
-            <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
           </div>
+          
+          <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
+          <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
+        </form>
+      </div>
+      
+      <div class="col-md-8 actionBtn">
+        <div class="d-flex justify-content-end align-items-center mb-2">
+          <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
+            <i class="fas fa-info-circle"></i>
+          </button>
+          <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
+        </div>
+        
+        <div class="table-responsive">
           <table id="recordTable" class="table table-custom text-center">
             <thead>
               <tr style="background-color: #2774E9; color: white;">
@@ -376,13 +394,16 @@ function initializeProductionView() {
               <!-- Table rows will be dynamically added here -->
             </tbody>
           </table>
-          <div class="text-right">
-            <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
-            <button id="nextBtn" class="btn btn-green">Next</button>
-          </div>
+        </div>
+        
+        <div class="text-right">
+          <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
+          <button id="nextBtn" class="btn btn-green">Next</button>
         </div>
       </div>
-    `);
+    </div>
+  `);
+  
     $(document).ready(function() {
       $('#infoBtn').click(function() {
         let htmlScript = `
@@ -439,41 +460,42 @@ function initializePriceMonitoringView() {
             <form id="recordForm" enctype="multipart/form-data">
               <input type="hidden" class="form-control" id="recordId" name="recordId">
               <input type="hidden" class="form-control" id="userId" name="userId">
+              
               <div class="mb-3">
                 <div class="input-group" id="monthPicker" style="width: 100%;">
-                    <select class="form-control" required>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                    <span class="input-group-append">
-                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                    </span>
+                  <select class="form-control" required>
+                    <option value="January">January</option>
+                    <option value="February">February</option>
+                    <option value="March">March</option>
+                    <option value="April">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="August">August</option>
+                    <option value="September">September</option>
+                    <option value="October">October</option>
+                    <option value="November">November</option>
+                    <option value="December">December</option>
+                  </select>
+                  <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
                 </div>
-            </div>
-            <div class="mb-3">
+              </div>
+              
+              <div class="mb-3">
                 <div class="input-group" id="yearPicker" style="width: 100%;">
-                    <select id="yearSelect" class="form-control" required>
-                        <!-- Options will be added by jQuery -->
-                    </select>
-                    <span class="input-group-append">
-                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                    </span>
+                  <select id="yearSelect" class="form-control" required>
+                    <!-- Options will be added by jQuery -->
+                  </select>
+                  <span class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  </span>
                 </div>
-            </div>
-              <div  class="mb-3">
-                <label id="lblUpload">
-                  Upload File:
-                </label>
+              </div>
+              
+              <div class="mb-3">
+                <label id="lblUpload">Upload File:</label>
                 <div class="input-group" style="width: 100%;">
                   <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
                   <div class="input-group-append">
@@ -483,29 +505,35 @@ function initializePriceMonitoringView() {
                   </div>
                 </div>
               </div>
+              
               <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
               <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
             </form>
           </div>
-          <div class="col-md-7">
-            <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-              <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+          
+          <div class="col-md-8 actionBtn">
+            <div class="d-flex justify-content-end align-items-center mb-2 ">
+              <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
                 <i class="fas fa-info-circle"></i>
               </button>
               <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
               <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
             </div>
-            <table id="recordTable" class="table table-custom text-center">
-              <thead>
-                <tr style="background-color: #2774E9; color: white;">
-                  <th scope="col">File Name</th>
-                  <th scope="col">File Size</th>
-                </tr>
-              </thead>
-              <tbody id="recordTableBody">
-                <!-- Table rows will be dynamically added here -->
-              </tbody>
-            </table>
+            
+            <div class="table-responsive">
+              <table id="recordTable" class="table table-custom text-center">
+                <thead>
+                  <tr style="background-color: #2774E9; color: white;">
+                    <th scope="col">File Name</th>
+                    <th scope="col">File Size</th>
+                  </tr>
+                </thead>
+                <tbody id="recordTableBody">
+                  <!-- Table rows will be dynamically added here -->
+                </tbody>
+              </table>
+            </div>
+            
             <div class="text-right">
               <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
               <button id="nextBtn" class="btn btn-green">Next</button>
@@ -513,6 +541,7 @@ function initializePriceMonitoringView() {
           </div>
         </div>
       `);
+      
       $(document).ready(function() {
         $('#infoBtn').click(function() {
           let htmlScript = `
@@ -562,41 +591,42 @@ function initializePestReportsView() {
           <form id="recordForm" enctype="multipart/form-data">
             <input type="hidden" class="form-control" id="recordId" name="recordId">
             <input type="hidden" class="form-control" id="userId" name="userId">
+            
             <div class="mb-3">
               <div class="input-group" id="monthPicker" style="width: 100%;">
-                  <select class="form-control" required>
-                      <option value="January">January</option>
-                      <option value="February">February</option>
-                      <option value="March">March</option>
-                      <option value="April">April</option>
-                      <option value="May">May</option>
-                      <option value="June">June</option>
-                      <option value="July">July</option>
-                      <option value="August">August</option>
-                      <option value="September">September</option>
-                      <option value="October">October</option>
-                      <option value="November">November</option>
-                      <option value="December">December</option>
-                  </select>
-                  <span class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                  </span>
+                <select class="form-control" required>
+                  <option value="January">January</option>
+                  <option value="February">February</option>
+                  <option value="March">March</option>
+                  <option value="April">April</option>
+                  <option value="May">May</option>
+                  <option value="June">June</option>
+                  <option value="July">July</option>
+                  <option value="August">August</option>
+                  <option value="September">September</option>
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
               </div>
-          </div>
-          <div class="mb-3">
+            </div>
+            
+            <div class="mb-3">
               <div class="input-group" id="yearPicker" style="width: 100%;">
-                  <select id="yearSelect" class="form-control" required>
-                      <!-- Options will be added by jQuery -->
-                  </select>
-                  <span class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                  </span>
+                <select id="yearSelect" class="form-control" required>
+                  <!-- Options will be added by jQuery -->
+                </select>
+                <span class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </span>
               </div>
-          </div>
-            <div  class="mb-3">
-              <label id="lblUpload">
-                Upload File:
-              </label>
+            </div>
+            
+            <div class="mb-3">
+              <label id="lblUpload">Upload File:</label>
               <div class="input-group" style="width: 100%;">
                 <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
                 <div class="input-group-append">
@@ -606,29 +636,35 @@ function initializePestReportsView() {
                 </div>
               </div>
             </div>
+            
             <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
             <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
           </form>
         </div>
-        <div class="col-md-7">
-          <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-            <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+        
+        <div class="col-md-8 actionBtn">
+          <div class="d-flex justify-content-end align-items-center mb-2 ">
+            <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
               <i class="fas fa-info-circle"></i>
             </button>
             <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
             <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
           </div>
-          <table id="recordTable" class="table table-custom text-center">
-            <thead>
-              <tr style="background-color: #2774E9; color: white;">
-                <th scope="col">File Name</th>
-                <th scope="col">File Size</th>
-              </tr>
-            </thead>
-            <tbody id="recordTableBody">
-              <!-- Table rows will be dynamically added here -->
-            </tbody>
-          </table>
+          
+          <div class="table-responsive">
+            <table id="recordTable" class="table table-custom text-center">
+              <thead>
+                <tr style="background-color: #2774E9; color: white;">
+                  <th scope="col">File Name</th>
+                  <th scope="col">File Size</th>
+                </tr>
+              </thead>
+              <tbody id="recordTableBody">
+                <!-- Table rows will be dynamically added here -->
+              </tbody>
+            </table>
+          </div>
+          
           <div class="text-right">
             <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
             <button id="nextBtn" class="btn btn-green">Next</button>
@@ -636,6 +672,7 @@ function initializePestReportsView() {
         </div>
       </div>
     `);
+    
     $(document).ready(function() {
       $('#infoBtn').click(function() {
         let htmlScript = `
@@ -693,41 +730,42 @@ function initializeDamageReportsView() {
         <form id="recordForm" enctype="multipart/form-data">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
+          
           <div class="mb-3">
             <div class="input-group" id="monthPicker" style="width: 100%;">
-                <select class="form-control" required>
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                </select>
-                <span class="input-group-append">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                </span>
+              <select class="form-control" required>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
             </div>
-        </div>
-        <div class="mb-3">
+          </div>
+          
+          <div class="mb-3">
             <div class="input-group" id="yearPicker" style="width: 100%;">
-                <select id="yearSelect" class="form-control" required>
-                    <!-- Options will be added by jQuery -->
-                </select>
-                <span class="input-group-append">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                </span>
+              <select id="yearSelect" class="form-control" required>
+                <!-- Options will be added by jQuery -->
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
             </div>
-        </div>
-          <div  class="mb-3">
-            <label id="lblUpload">
-              Upload File:
-            </label>
+          </div>
+          
+          <div class="mb-3">
+            <label id="lblUpload">Upload File:</label>
             <div class="input-group" style="width: 100%;">
               <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
               <div class="input-group-append">
@@ -737,29 +775,35 @@ function initializeDamageReportsView() {
               </div>
             </div>
           </div>
+          
           <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
           <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
         </form>
       </div>
-      <div class="col-md-7">
-        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-          <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+      
+      <div class="col-md-8 actionBtn">
+        <div class="d-flex justify-content-end align-items-center mb-2 ">
+          <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
             <i class="fas fa-info-circle"></i>
           </button>
           <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
           <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
         </div>
-        <table id="recordTable" class="table table-custom text-center">
-          <thead>
-            <tr style="background-color: #2774E9; color: white;">
-              <th scope="col">File Name</th>
-              <th scope="col">File Size</th>
-            </tr>
-          </thead>
-          <tbody id="recordTableBody">
-            <!-- Table rows will be dynamically added here -->
-          </tbody>
-        </table>
+        
+        <div class="table-responsive">
+          <table id="recordTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">File Name</th>
+                <th scope="col">File Size</th>
+              </tr>
+            </thead>
+            <tbody id="recordTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        
         <div class="text-right">
           <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
           <button id="nextBtn" class="btn btn-green">Next</button>
@@ -767,6 +811,7 @@ function initializeDamageReportsView() {
       </div>
     </div>
   `);
+  
   $(document).ready(function() {
     $('#infoBtn').click(function() {
       let htmlScript = `
@@ -820,41 +865,42 @@ function initializeSoilHealthView() {
         <form id="recordForm" enctype="multipart/form-data">
           <input type="hidden" class="form-control" id="recordId" name="recordId">
           <input type="hidden" class="form-control" id="userId" name="userId">
+          
           <div class="mb-3">
             <div class="input-group" id="monthPicker" style="width: 100%;">
-                <select class="form-control" required>
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September">September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                </select>
-                <span class="input-group-append">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                </span>
+              <select class="form-control" required>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
             </div>
-        </div>
-         <div class="mb-3">
-              <div class="input-group" id="yearPicker" style="width: 100%;">
-                  <select id="yearSelect" class="form-control" required>
-                      <!-- Options will be added by jQuery -->
-                  </select>
-                  <span class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                  </span>
-              </div>
           </div>
-          <div  class="mb-3">
-            <label id="lblUpload">
-              Upload File:
-            </label>
+          
+          <div class="mb-3">
+            <div class="input-group" id="yearPicker" style="width: 100%;">
+              <select id="yearSelect" class="form-control" required>
+                <!-- Options will be added by jQuery -->
+              </select>
+              <span class="input-group-append">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label id="lblUpload">Upload File:</label>
             <div class="input-group" style="width: 100%;">
               <input type="file" class="form-control" id="fileRecord" name="fileRecord" accept=".xls, .xlsx" required>
               <div class="input-group-append">
@@ -864,29 +910,35 @@ function initializeSoilHealthView() {
               </div>
             </div>
           </div>
+          
           <button type="button" class="btn btn-custom" id="submitBtn">Add Record</button>
           <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
         </form>
       </div>
-      <div class="col-md-7">
-        <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
-          <button id="infoBtn" class="btn btn-info text-left" style="margin-right: 10px;">
+      
+      <div class="col-md-8 actionBtn">
+        <div class="d-flex justify-content-end align-items-center mb-2 ">
+          <button id="infoBtn" class="btn btn-info" style="margin-right: 10px;">
             <i class="fas fa-info-circle"></i>
           </button>
           <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
           <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
         </div>
-        <table id="recordTable" class="table table-custom text-center">
-          <thead>
-            <tr style="background-color: #2774E9; color: white;">
-              <th scope="col">File Name</th>
-              <th scope="col">File Size</th>
-            </tr>
-          </thead>
-          <tbody id="recordTableBody">
-            <!-- Table rows will be dynamically added here -->
-          </tbody>
-        </table>
+        
+        <div class="table-responsive">
+          <table id="recordTable" class="table table-custom text-center">
+            <thead>
+              <tr style="background-color: #2774E9; color: white;">
+                <th scope="col">File Name</th>
+                <th scope="col">File Size</th>
+              </tr>
+            </thead>
+            <tbody id="recordTableBody">
+              <!-- Table rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        
         <div class="text-right">
           <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
           <button id="nextBtn" class="btn btn-green">Next</button>
@@ -894,6 +946,7 @@ function initializeSoilHealthView() {
       </div>
     </div>
   `);
+  
   $(document).ready(function() {
     $('#infoBtn').click(function() {
       let htmlScript = `

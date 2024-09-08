@@ -211,7 +211,7 @@ class Dialog {
         const desc = document.createElement('p');
         const btnClose = document.createElement('button');
         const btnWrapper = document.createElement('div'); // Wrapper for the button
-        
+
         // Add attributes
         modal.setAttribute('id', 'messageDialog');
         img.setAttribute('id', 'cropImg');

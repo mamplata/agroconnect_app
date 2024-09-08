@@ -175,6 +175,16 @@ function initializeMethodsCrop() {
                   break;
               }
               var crop = crops[i];
+              function escapeHtml(text) {
+                return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+            
+              crop.description = escapeHtml(crop.description);
               $('#cropTableBody').append(`
                   <tr data-index=${crop.cropId} class="text-center">
                       <td style="display: none;">${crop.cropId}</td>
@@ -183,7 +193,7 @@ function initializeMethodsCrop() {
                       <td>${crop.variety ? crop.variety : ''}</td>
                       <td>${crop.type}</td>
                       <td>${crop.priceWeight}</td>
-                      <td><button class="btn btn-green view-btn" data-img="${crop.cropImg}" data-description="${crop.description}" data-variety="${crop.cropName} - ${crop.variety}">View</button></td>
+                      <td><button class="btn btn-green view-btn" data-img="${crop.cropImg}" data-description="${crop.description}" data-variety="${crop.variety ? `${crop.cropName} - ${crop.variety}` : crop.cropName}">View</button></td>
                   </tr>
               `);
           }

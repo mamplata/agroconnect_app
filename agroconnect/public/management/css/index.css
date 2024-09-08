@@ -26,11 +26,7 @@ body {
     flex-grow: 1;
     overflow: hidden; /* Ensure that only content scrolls */
 }
-.sidebar {
-    background-color: #2774E9;
-    padding: 15px;
-    flex-shrink: 0; /* Prevent the sidebar from shrinking */
-}
+
 .content {
     flex-grow: 1;
     overflow-y: auto; /* Make the content area scrollable */
@@ -43,6 +39,12 @@ body {
 }
 
 .header-logo {
+    z-index: 1;
+    height: 60px; /* Adjust logo height */
+    margin-left: 20px;
+}
+
+.sidebar-logo {
     z-index: 1;
     height: 60px; /* Adjust logo height */
     margin-left: 20px;
@@ -206,4 +208,82 @@ background-color: #f1f1f1;
   .toast-success-custom {
     background-color: #28a745; /* Green color for success */
     color: #ffffff; /* White text color */
+}
+
+.sidebar {
+    background-color: #2774E9;
+    padding: 15px;
+    flex-shrink: 0; /* Prevent the sidebar from shrinking */
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+/* Full-screen sidebar on small screens */
+@media (max-width: 767px) {
+    #sidebar {
+        width: 100%;
+        height: 100vh; /* Full viewport height */
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+    #sidebar.show {
+        transform: translateX(0);
+    }
+    .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .actionBtn {
+        margin-top: 3em !important;
+    }
+}
+
+/* Ensure the sidebar is always visible on larger screens */
+@media (min-width: 768px) {
+    #sidebar {
+        transform: translateX(0); /* Always show on larger screens */
+        display: block;
+    }
+}
+
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+#totalPerYearChart {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .form-group {
+        margin-bottom: 1rem;
+    }
 }

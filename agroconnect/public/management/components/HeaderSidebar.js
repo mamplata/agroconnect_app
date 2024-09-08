@@ -75,30 +75,40 @@ $(document).ready(function() {
         $('head').prepend(`
             <link rel="icon" href="../../../img/logo.png" type="image/png">   
         `);
-
-        // Prepend header and sidebar structure to the body
         $('body').prepend(`
-        <div class="wrapper">
+            <div class="wrapper">
                 <!-- Header -->
                 <div class="header">
                     <header class="header d-flex justify-content-between align-items-center" style="background-color: #008000;">
                         <div class="header d-flex align-items-center p-2">
-                            <img src="../img/logo.png" alt="Logo" class="header-logo">
-                            <h3 id="appName" class="pl-3">AgroConnect Cabuyao</h3>
+                            <!-- Burger Menu Icon for smaller screens -->
+                            <button class="navbar-toggler d-md-none mr-3" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"><i class="fas fa-bars"></i></span>
+                            </button>
+                            <img src="../img/logo.png" alt="Logo" class="header-logo d-none d-md-block">
+                            <h3 id="appName" class="pl-3 d-none d-md-block">AgroConnect Cabuyao</h3> <!-- Hidden on small screens -->
                         </div>
                         <div class="pr-4 d-flex align-items-center">
                             <span class="username font-weight-bold">${user.username}</span>
-                            <span class="user-icon">
-                                <i class="fas fa-user"></i>
+                            <span class="user-icon ml-3">
+                                <i class="fas fa-user-circle"></i>
                             </span>
                         </div>
                     </header>
                 </div>
-
+        
                 <!-- Sidebar and Content Wrapper -->
-                <div class="content-wrapper">
+                <div class="content-wrapper d-flex">
                     <!-- Sidebar -->
-                    <nav class="sidebar">
+                    <nav id="sidebar" class="sidebar collapse">
+                        <!-- Close button for small screens -->
+                        <button class="btn-close d-md-none" aria-label="Close" type="button">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <!-- Logo for small screens -->
+                        <div class="d-md-none text-center my-3">
+                            <img src="../img/logo.png" alt="Logo" class="sidebar-logo">
+                        </div>
                         <div>
                             <ul class="nav flex-column mt-4" id="sidebar-links">
                                 <!-- Links will be dynamically added here -->
@@ -113,7 +123,7 @@ $(document).ready(function() {
                             </ul>
                         </div>
                     </nav>
-
+        
                     <!-- Main Content Area -->
                     <main role="main" id="main-content" class="content ml-sm-auto col-lg-10 pr-4">
                         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -127,7 +137,22 @@ $(document).ready(function() {
                     </main>
                 </div>
             </div>
+            <script>
+                $(document).ready(function() {
+                     // Close sidebar when close button is clicked
+                    $('.btn-close').on('click', function() {
+                        $('#sidebar').collapse('hide');
+                    });
+
+                    // Close sidebar when any sidebar link is clicked
+                    $('#sidebar').on('click', '.nav-link', function() {
+                        $('#sidebar').collapse('hide');
+                    });
+                });
+            </script>
         `);
+        
+        
 
         // Determine which sidebar links to show based on user role
         function initializeSidebar() {

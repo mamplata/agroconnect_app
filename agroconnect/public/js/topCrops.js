@@ -115,12 +115,10 @@ class TopCrops {
             const incomePerHectare = item.totalArea > 0 ? (item.totalIncome / item.totalArea) : 0;
             const profitPerHectare = item.totalArea > 0 ? (item.totalProfit / item.totalArea) : 0;
             let totalPlanted = item.totalPlanted; // Total planted area or similar context
-            let pestOccurrencePercentage = calculateOccurrencePercentage(item.pestOccurrence, totalPlanted);
-            let diseaseOccurrencePercentage = calculateOccurrencePercentage(item.diseaseOccurrence, totalPlanted);
     
             // Calculate composite score based on total values
             const compositeScore = (
-                item.totalPlanted * weights.plantedWeight +
+                item.totalArea * weights.plantedWeight +
                 item.totalVolume * weights.volumeWeight +
                 item.price * weights.priceWeight +
                 item.pestOccurrence * weights.pestWeight +
@@ -167,12 +165,13 @@ class TopCrops {
 
     data.forEach(crop => {
         // Find matching crop details
-        const cropDetails = crops.find(c => c.cropName === crop.cropName && c.variety === crop.variety);
+        const cropDetails = crops.find(c => c.cropName === crop.cropName && c.variety === (crop.variety || null));
 
         // Default values if no matching crop is found
         const cropImg = cropDetails ? cropDetails.cropImg : '';
-        const description = cropDetails ? cropDetails.description : 'No description available';
-        const cropVariety = `${crop.cropName} - ${crop.variety}`;
+        const desc = cropDetails ? cropDetails.description : 'No description available';
+        const description = desc.replace(/"/g, '&quot;');
+        const cropVariety = crop.variety ? `${crop.cropName} - ${crop.variety}` : crop.cropName;
 
         // Create table row with View button
         const row = `<tr class="text-center">

@@ -15,7 +15,8 @@ export default function initDashboard() {
             <input placeholder="Search username..." type="text" class="form-control rounded-pill" id="search" name="search">
           </div>
         </div>
-        <div class="row d-flex justify-content-between align-items-center mt-5">
+      
+        <div class="row d-flex justify-content-between align-items-start mt-5">
           <div class="col-md-4">
             <form id="userForm">
               <div class="mb-3">
@@ -35,34 +36,38 @@ export default function initDashboard() {
               <button type="button" class="btn btn-custom mt-2" id="cancelBtn" style="display: none;">Cancel</button>
             </form>
           </div>
-          <div class="col-md-7">
-            <div class="d-flex justify-content-center justify-content-md-end flex-wrap flex-md-nowrap align-items-center mb-2">
+      
+          <div class="col-md-8 actionBtn">
+            <div class="d-flex justify-content-end align-items-center mb-2">
               <button id="editBtn" class="btn btn-warning" style="margin-right: 10px;" disabled>Edit</button>
               <button id="deleteBtn" class="btn btn-danger" disabled>Delete</button>
-              <div id="delete"></div>
-              <div id="edit"></div>
             </div>
-            <table id="userTable" class="table table-custom text-center">
-              <thead>
-                <tr style="background-color: #2774E9; color: white;">
-                  <th scope="col">First Name</th>
-                  <th scope="col">Last Name</th>
-                  <th scope="col">Username</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">Action</th>
-                </tr>
-              </thead>
-              <tbody id="userTableBody">
-                <!-- Table rows will be dynamically added here -->
-              </tbody>
-            </table>
-            <div class="text-right">
+      
+            <div class="table-responsive">
+              <table id="userTable" class="table table-custom text-center">
+                <thead>
+                  <tr style="background-color: #2774E9; color: white;">
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody">
+                  <!-- Table rows will be dynamically added here -->
+                </tbody>
+              </table>
+            </div>
+      
+            <div class="text-right mt-3">
               <button id="prevBtn" class="btn btn-green mr-2">Previous</button>
               <button id="nextBtn" class="btn btn-green">Next</button>
             </div>
           </div>
         </div>
       `);
+      
 
       var selectedRow = null;
       var pageSize = 5;
