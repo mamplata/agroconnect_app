@@ -117,8 +117,6 @@ function isVariationLow(stdDev, threshold = 0.1) {
         // Extract price per piece and convert to price per kilogram
         const pricePerPiece = parseFloat(matchPiece[1]);
         const weightPerPiece = 0.2; // Define this based on your needs
-        console.log(pricePerPiece);
-        console.log(pricePerPiece / weightPerPiece);
         return pricePerPiece / weightPerPiece;
     } else if (matchBundle) {
         // Extract price per bundle and convert to price per kilogram
@@ -589,6 +587,7 @@ function profitPerHectare(data) {
             totalIncome: parseFloat(totalIncome.toFixed(2)),
             totalArea: parseFloat(totalArea.toFixed(2)),
             totalProductionCost: parseFloat(totalProductionCost.toFixed(2)),
+            totalProfit: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost)).toFixed(2)) : 0,
             profitPerHectare: totalArea > 0 ? parseFloat(((totalIncome - totalProductionCost) / totalArea).toFixed(2)) : 0
 
         }))
@@ -641,60 +640,143 @@ function profitPerHectareBarangay(data) {
 }
 
 
-function getCropData(production, price, pest, disease, crops, type) {
+// Function to get crop data with price parsing
+function getCropData(production, price, pest, disease, crops, type, variety) {
     if (!Array.isArray(production) || !Array.isArray(price) || !Array.isArray(pest) || !Array.isArray(disease)) {
         console.error('Expected all inputs to be arrays');
         return [];
     }
 
-    // Create a map to associate crop names with their types
+    // Create a map to associate crop names with their types, ensuring unique crop names
     const cropTypeMap = crops.reduce((map, crop) => {
-        map[crop.cropName] = crop.type;
+        if (!map[crop.cropName]) {
+            map[crop.cropName] = crop.type;
+        }
         return map;
     }, {});
 
-    // Filter production data based on the specified type
-    const filteredProduction = production.filter(item => cropTypeMap[item.cropName] === type);
+    // Filter production data based on the specified type and variety (if available)
+    const filteredProduction = production.filter(item => {
+        const cropType = cropTypeMap[item.cropName];
+        return cropType === type && (!variety || item.variety === variety);
+    });
+
+    // Filter price, pest, and disease data based on the specified type only
     const filteredPrice = price.filter(item => cropTypeMap[item.cropName] === type);
     const filteredPest = pest.filter(item => cropTypeMap[item.cropName] === type);
     const filteredDisease = disease.filter(item => cropTypeMap[item.cropName] === type);
 
-    // Extract related data from other datasets
-    const totalPlantedData = countAverageAreaPlanted(filteredProduction);
-    const averageVolumeData = averageVolumeProduction(filteredProduction);
-    const averagePriceData = averagePrice(filteredPrice);
-    const pestOccurrenceData = countPestOccurrence(filteredPest);
-    const diseaseOccurrenceData = countDiseaseOccurrence(filteredDisease);
-    const priceIncomeData = priceIncomePerHectare(filteredProduction);
-    const profitData = profitPerHectare(filteredProduction);
+    // Initialize variables to hold computed data
+    const cropDataMap = new Map();
 
-    return filteredProduction.map(prodItem => {
-        const { cropName, variety, season, monthYear } = prodItem;
+    filteredProduction.forEach(item => {
+        const { cropName, variety, areaPlanted, volumeSold, volumeProduction, price, productionCost } = item;
 
-        // Find related data from other datasets, using default values if necessary
-        const plantedData = totalPlantedData.find(item => item.cropName === cropName) || {};
-        const volumeData = averageVolumeData.find(item => item.cropName === cropName) || {};
-        const priceData = averagePriceData.find(item => item.cropName === cropName) || {};
-        const pestData = pestOccurrenceData.find(item => item.cropName === cropName) || {};
-        const diseaseData = diseaseOccurrenceData.find(item => item.cropName === cropName) || {};
-        const incomeData = priceIncomeData.find(item => item.cropName === cropName) || {};
-        const profitDataItem = profitData.find(item => item.cropName === cropName) || {};
+        // Create a unique key for each crop variety combination
+        const key = `${cropName}|${variety || 'default'}`;
 
-        return {
-            cropName,
-            variety: variety || '',
-            totalPlanted: plantedData.totalPlanted || 0,
-            volumeProductionPerHectare: volumeData.volumeProduction || 0,
-            price: priceData.price || 0,
-            pestOccurrence: pestData.pestOccurrence || 0,
-            diseaseOccurrence: diseaseData.diseaseOccurrence || 0,
-            incomePerHectare: incomeData.incomePerHectare || 0,
-            profitPerHectare: profitDataItem.profitPerHectare || 0,
-            season,
-            monthYear
-        };
+        if (!cropDataMap.has(key)) {
+            cropDataMap.set(key, {
+                cropName,
+                variety: variety || '',
+                totalPlanted: 0,
+                totalArea: 0,
+                totalVolume: 0,
+                price: 0,
+                pestOccurrence: 0,
+                diseaseOccurrence: 0,
+                totalIncome: 0,
+                totalProfit: 0,
+                season: '', // Placeholder in case you need it later
+            });
+        }
+
+        const data = cropDataMap.get(key);
+        data.totalPlanted += 1 || 0;
+        data.totalVolume += volumeProduction || 0;
+        data.totalArea += areaPlanted || 0;
+        data.totalIncome += (volumeSold * 1000 || 0) * parsePrice(price);
+        data.totalProfit += ((volumeSold * 1000 || 0) * (parsePrice(price) || 0)) - (productionCost || 0);
     });
-};
+    // Process filteredPrice to accumulate total prices and counts
+    filteredPrice.forEach(item => {
+        const { cropName, price } = item;
+        const parsedPrice = parsePrice(price);
+
+        cropDataMap.forEach((value, key) => {
+            if (key.includes(cropName)) {
+                // Initialize the value in cropDataMap if not present
+                if (!value.totalPrice) {
+                    value.totalPrice = 0;
+                    value.count = 0;
+                }
+                // Accumulate total price and count
+                value.totalPrice += parsedPrice;
+                value.count += 1;
+            }
+        });
+    });
+
+    // Process filteredPest to accumulate pest occurrences
+    filteredPest.forEach(item => {
+        const { cropName } = item;
+
+        cropDataMap.forEach((value, mapKey) => {
+            if (mapKey.includes(cropName)) {
+                // Initialize the pestOccurrence field if not present
+                if (!value.pestOccurrence) {
+                    value.pestOccurrence = 0;
+                }
+                // Increment pest occurrences
+                value.pestOccurrence += 1;
+            }
+        });
+    });
+
+// Process filteredDisease to accumulate disease occurrences
+filteredDisease.forEach(item => {
+    const { cropName } = item;
+
+    cropDataMap.forEach((value, mapKey) => {
+        if (mapKey.includes(cropName)) {
+            // Initialize the diseaseOccurrence field if not present
+            if (!value.diseaseOccurrence) {
+                value.diseaseOccurrence = 0;
+            }
+            // Increment disease occurrences
+            value.diseaseOccurrence += 1;
+        }
+    });
+});
+
+// Update cropDataMap with average prices
+cropDataMap.forEach((value, key) => {
+    if (value.count > 0) {
+        // Calculate and update the average price
+        value.price = value.totalPrice / value.count;
+        // Remove temporary properties if needed
+        delete value.totalPrice;
+        delete value.count;
+    }
+});
+
+
+    // Update cropDataMap with average prices
+    cropDataMap.forEach((value, key) => {
+        if (value.count > 0) {
+            value.price = value.totalPrice / value.count; // Calculate average price
+            // Remove temporary properties if needed
+            delete value.totalPrice;
+            delete value.count;
+        }
+    });
+
+
+    // Convert the map to an array of results
+    return Array.from(cropDataMap.values());
+}
+
+
 
 export { countAverageAreaPlanted, averageVolumeProduction, averagePrice, countPestOccurrence, countDiseaseOccurrence, priceIncomePerHectare, profitPerHectare, getCropData,
     parseDate, calculateYearlyAverages, calculateZScoresForGrowthRates, interpretPerformance, interpretPerformanceScore,

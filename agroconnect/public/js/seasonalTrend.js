@@ -418,10 +418,19 @@ async function handleCategoryChange() {
 $(document).ready(async function() {
     updateCropOptions().then(() =>  handleCategoryChange());
 
-    // Attach event listeners for changes
+
+    // Attach event listener to #type element
     $('#type').on('change', function() {
         updateCropOptions().then(() => handleCategoryChange());
+
     });
+
+    // Attach event listener to #season element
+    $('#season').on('change', function() {
+        updateCropOptions().then(() => handleCategoryChange());
+    
+    });
+
     $('#category, #crop, #season').on('change', function() {
         handleCategoryChange();
     });

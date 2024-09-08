@@ -290,7 +290,17 @@ $(document).ready(async function () {
     await updateCropOptions();
     await handleCategoryChange();
 
-    $('#type').on('change', updateCropOptions);
+    // Attach event listener to #type element
+    $('#type').on('change', function() {
+        updateCropOptions().then(() => handleCategoryChange());
+
+    });
+
+    // Attach event listener to #season element
+    $('#season').on('change', function() {
+        updateCropOptions().then(() => handleCategoryChange());
+    
+    });
     $('#type, #category, #crop, #season').on('change', handleCategoryChange);
 
     $(document).ready(function() {

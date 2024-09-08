@@ -254,9 +254,16 @@ export default function initDashboard() {
       initializeDashboard();
       updateCropOptions().then(() =>  handleCategoryChange());
 
-      // Attach event listeners for changes
+      // Attach event listener to #type element
       $('#type').on('change', function() {
           updateCropOptions().then(() => handleCategoryChange());
+
+      });
+
+      // Attach event listener to #season element
+      $('#season').on('change', function() {
+          updateCropOptions().then(() => handleCategoryChange());
+      
       });
       $('#category, #crop, #season').on('change', function() {
           handleCategoryChange();
@@ -554,165 +561,39 @@ async function updateCropOptions() {
           }
       }
 
-      generateTopCrops(data) {
-        const calculateMinMax = (data, key) => {
-            const values = data.map(entry => entry[key]);
-            return { min: Math.min(...values), max: Math.max(...values) };
+      generateTopCrops(cropData) {
+        console.log(cropData);
+        if (!Array.isArray(cropData)) {
+            console.error('Expected input to be an array');
+            return [];
+        }
+    
+        // Define the weights for each metric (adjust these based on importance)
+        const weights = {
+            plantedWeight: 0.35,
+            volumeWeight: 0.35,
+            priceWeight: 0.1,
+            pestWeight: -0.05,   // Negative weight since higher pest occurrence is bad
+            diseaseWeight: -0.05, // Negative weight since higher disease occurrence is bad
+            incomeWeight: 0.1,
+            profitWeight: 0.1
         };
     
-        const normalize = (value, min, max) => {
-            if (max === min) return 0; // Avoid division by zero
-            return Math.max(0, (value - min) / (max - min));
-        };
-    
-        const calculateCompositeScore = (entry, ranges) => {
-            const indicators = {
-                volumeProduction: entry.volumeProductionPerHectare,
-                income: entry.incomePerHectare,
-                profit: entry.profitPerHectare,
-                price: entry.price,
-                pest: entry.pestOccurrence === 0 ? 0 : -entry.pestOccurrence,
-                disease: entry.diseaseOccurrence === 0 ? 0 : -entry.diseaseOccurrence,
-                totalPlanted: entry.totalPlanted // Include totalPlanted here
-            };
-    
-            const normalizedIndicators = {
-                volumeProduction: normalize(indicators.volumeProduction, ranges.volumeProduction.min, ranges.volumeProduction.max),
-                income: normalize(indicators.income, ranges.income.min, ranges.income.max),
-                profit: normalize(indicators.profit, ranges.profit.min, ranges.profit.max),
-                price: normalize(indicators.price, ranges.price.min, ranges.price.max),
-                pest: normalize(indicators.pest, -ranges.pest.max, -ranges.pest.min),
-                disease: normalize(indicators.disease, -ranges.disease.max, -ranges.disease.min),
-            };
-    
-            return (
-                0.15 * normalizedIndicators.volumeProduction +
-                0.15 * normalizedIndicators.income +
-                0.15 * normalizedIndicators.profit +
-                0.15 * normalizedIndicators.price +
-                0.1 * normalizedIndicators.pest +
-                0.1 * normalizedIndicators.disease
-            );
-        };
-    
-        // Aggregate data by crop, variety, and month
-        const aggregatedData = data.reduce((acc, entry) => {
-            const key = `${entry.cropName} - ${entry.variety} - ${entry.monthYear}`;
-            if (!acc[key]) {
-                acc[key] = {
-                    volumeProductionPerHectare: 0,
-                    incomePerHectare: 0,
-                    profitPerHectare: 0,
-                    price: 0,
-                    pestOccurrence: 0,
-                    diseaseOccurrence: 0,
-                    totalPlanted: 0, // Initialize totalPlanted
-                    count: 0
-                };
-            }
-            const item = acc[key];
-            item.volumeProductionPerHectare += entry.volumeProductionPerHectare;
-            item.incomePerHectare += entry.incomePerHectare;
-            item.profitPerHectare += entry.profitPerHectare;
-            item.price += entry.price;
-            item.pestOccurrence += entry.pestOccurrence;
-            item.diseaseOccurrence += entry.diseaseOccurrence;
-            item.totalPlanted += entry.totalPlanted; // Aggregate totalPlanted
-            item.count += 1;
-            return acc;
-        }, {});
-    
-        // Aggregate data by crop and variety
-        const aggregatedDataByCrop = Object.entries(aggregatedData).reduce((acc, [key, values]) => {
-            const [cropName, variety, monthYear] = key.split(' - ');
-            if (!acc[`${cropName} - ${variety}`]) {
-                acc[`${cropName} - ${variety}`] = {
-                    volumeProductionPerHectare: 0,
-                    incomePerHectare: 0,
-                    profitPerHectare: 0,
-                    price: 0,
-                    pestOccurrence: 0,
-                    diseaseOccurrence: 0,
-                    totalPlanted: 0, // Initialize totalPlanted
-                    count: 0,
-                    monthlyData: []
-                };
-            }
-            const item = acc[`${cropName} - ${variety}`];
-            item.volumeProductionPerHectare += values.volumeProductionPerHectare / values.count;
-            item.incomePerHectare += values.incomePerHectare / values.count;
-            item.profitPerHectare += values.profitPerHectare / values.count;
-            item.price += values.price / values.count;
-            item.pestOccurrence += values.pestOccurrence / values.count;
-            item.diseaseOccurrence += values.diseaseOccurrence / values.count;
-            item.totalPlanted += values.totalPlanted / values.count; // Aggregate totalPlanted
-            item.count += 1;
-            item.monthlyData.push({
-                monthYear,
-                volumeProductionPerHectare: values.volumeProductionPerHectare / values.count,
-                incomePerHectare: values.incomePerHectare / values.count,
-                profitPerHectare: values.profitPerHectare / values.count,
-                price: values.price / values.count,
-                pestOccurrence: values.pestOccurrence / values.count,
-                diseaseOccurrence: values.diseaseOccurrence / values.count,
-                totalPlanted: values.totalPlanted / values.count // Include totalPlanted in monthlyData
-            });
-            return acc;
-        }, {});
-    
-        // Calculate ranges for normalization
-        const ranges = {
-            volumeProduction: calculateMinMax(Object.values(aggregatedDataByCrop), 'volumeProductionPerHectare'),
-            income: calculateMinMax(Object.values(aggregatedDataByCrop), 'incomePerHectare'),
-            profit: calculateMinMax(Object.values(aggregatedDataByCrop), 'profitPerHectare'),
-            price: calculateMinMax(Object.values(aggregatedDataByCrop), 'price'),
-            pest: calculateMinMax(Object.values(aggregatedDataByCrop), 'pestOccurrence'),
-            disease: calculateMinMax(Object.values(aggregatedDataByCrop), 'diseaseOccurrence'),
-            totalPlanted: calculateMinMax(Object.values(aggregatedDataByCrop), 'totalPlanted') // Calculate range for totalPlanted
-        };
-    
-        // Calculate growth rate over time
-        const calculateGrowthRateOverTime = (monthlyData) => {
-            if (monthlyData.length < 2) return 0; // Not enough data to calculate growth rate
-    
-            let initial = monthlyData[0].incomePerHectare;
-            let final = monthlyData[monthlyData.length - 1].incomePerHectare;
-            return (final - initial) / initial;
-        };
-    
-        const scoredData = Object.entries(aggregatedDataByCrop).map(([key, values]) => {
-            const [cropName, variety] = key.split(' - ');
-            const growthRateOverTime = calculateGrowthRateOverTime(values.monthlyData);
+        // Process each crop entry
+        const processedCrops = cropData.map(item => {
     
             return {
-                cropName,
-                variety,
-                volumeProductionPerHectare: values.volumeProductionPerHectare,
-                incomePerHectare: values.incomePerHectare,
-                profitPerHectare: values.profitPerHectare,
-                price: values.price,
-                pestOccurrence: values.pestOccurrence,
-                diseaseOccurrence: values.diseaseOccurrence,
-                totalPlanted: values.totalPlanted, // Include totalPlanted
-                growthRate: calculateCompositeScore(values, ranges),
-                growthRateOverTime // Added growth rate over time
+                cropName: item.cropName,
+                variety: item.variety || '',
             };
         });
     
-
-            const rankedData = scoredData.sort((a, b) => b.growthRate - a.growthRate);
+        // Sort crops by composite score in descending order
+        const sortedCrops = processedCrops.sort((a, b) => b.compositeScore - a.compositeScore);
     
-            // Get the top 5 entries
-            const top5 = rankedData.slice(0, 5);
-    
-            // Map through the top 5 entries to add rank and performance
-            return top5.map((entry, index) => {
-    
-                return {
-                    ...entry
-                };
-            });
-       }
+        // Optionally, filter or slice to get the top N crops
+        return sortedCrops.slice(0, 5);
+     }
     
 
       displayTopCrops(data) {

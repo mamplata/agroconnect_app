@@ -92,18 +92,22 @@ class CropController extends Controller
         $type = $request->query('type'); // e.g., 'vegetable', 'fruit', 'rice'
 
         // Build the query to filter crops based on production season and crop type
-        $query = Crop::whereHas('productions', function ($query) use ($season) {
-            if ($season) {
-                $query->where('season', $season); // Filter by season if provided
-            }
-        });
+        $query = Production::select('cropName')
+            ->groupBy('cropName')
+            ->havingRaw('COUNT(*) >= 5'); // Filter crops with at least 5 records
+
+        if ($season) {
+            $query->where('season', $season); // Filter by season if provided
+        }
 
         if ($type) {
-            $query->where('type', $type); // Filter by type if provided
+            $query->whereHas('crop', function ($query) use ($type) {
+                $query->where('type', $type); // Filter by type if provided
+            });
         }
 
         // Get distinct crop names
-        $uniqueCropNames = $query->distinct()->pluck('cropName');
+        $uniqueCropNames = $query->pluck('cropName');
 
         return response()->json($uniqueCropNames, 200);
     }
