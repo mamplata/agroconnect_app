@@ -262,11 +262,6 @@ background-color: #f1f1f1;
     height: auto;
 }
 
-#totalPerYearChart {
-    width: 100% !important;
-    height: auto !important;
-}
-
 .form-group {
     margin-bottom: 1rem;
 }
